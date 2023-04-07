@@ -1,0 +1,222 @@
+{
+  "project_info": {
+    "project_number": "750301894200",
+    "project_id": "buzz-c48fe",
+    "storage_bucket": "buzz-c48fe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750301894200:android:9eb6e2ecb58a1787e8f8cd",
+        "android_client_info": {
+          "package_name": "com.example.buzz.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750301894200-cali4hgsamsrmj4efi8opv5aac8kest5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.buzz.driver",
+            "certificate_hash": "a1c408b331310ce2c5210128dfc1076de6b461f1"
+          }
+        },
+        {
+          "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdENTLujBTtXbKCMcFQlBMNmDJHxvpx9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750301894200-o5bnbsslvsaipmc72pcsv1l0p1lnt0eh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tws.busalertDriver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750301894200:android:636a9c6be5bdb3d3e8f8cd",
+        "android_client_info": {
+          "package_name": "com.example.buzz.passenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750301894200-tqgpfdfaqhkv9cj8c0o5ufkns29a3i9i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.buzz.passenger",
+            "certificate_hash": "a1c408b331310ce2c5210128dfc1076de6b461f1"
+          }
+        },
+        {
+          "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdENTLujBTtXbKCMcFQlBMNmDJHxvpx9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750301894200-o5bnbsslvsaipmc72pcsv1l0p1lnt0eh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tws.busalertDriver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750301894200:android:d54a7c1ac754207be8f8cd",
+        "android_client_info": {
+          "package_name": "com.tws.busalert.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdENTLujBTtXbKCMcFQlBMNmDJHxvpx9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750301894200-o5bnbsslvsaipmc72pcsv1l0p1lnt0eh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tws.busalertDriver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750301894200:android:ec144b559adab8c6e8f8cd",
+        "android_client_info": {
+          "package_name": "com.tws.busalert.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750301894200-kcu6kaev0l7u1mqcb9tpb6f4gli10ob0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tws.busalert.user",
+            "certificate_hash": "baf7f0f9ff7545360554e76790449c41640c53a2"
+          }
+        },
+        {
+          "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdENTLujBTtXbKCMcFQlBMNmDJHxvpx9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750301894200-o5bnbsslvsaipmc72pcsv1l0p1lnt0eh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tws.busalertDriver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750301894200:android:cedc2459809fc6bfe8f8cd",
+        "android_client_info": {
+          "package_name": "com.tws.composebusalert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750301894200-hg3e5k3flkbmj3e2mgmlc4osfdd16ucf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tws.composebusalert",
+            "certificate_hash": "baf7f0f9ff7545360554e76790449c41640c53a2"
+          }
+        },
+        {
+          "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdENTLujBTtXbKCMcFQlBMNmDJHxvpx9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750301894200-67lrp2trslp4q0jpa7imt50otv5jldfh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "750301894200-o5bnbsslvsaipmc72pcsv1l0p1lnt0eh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tws.busalertDriver"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

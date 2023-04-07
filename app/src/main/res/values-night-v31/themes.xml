@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="SplashTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#03A9F4</item>
+        <!--        <item name="windowSplashScreenBackground">@android:color/transparent</item>-->
+        <!--        <item name="windowSplashScreenAnimatedIcon">@drawable/baseline_local_florist_24</item>-->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
+        <!--        <item name="splashScreenIconSize">500dp</item>-->
+        <!--        <item name="windowSplashScreenAnimationDuration">500</item>-->
+        <!--        <item name="android:windowSplashScreenBrandingImage">@drawable/img</item>-->
+
+    </style>
+</resources>
