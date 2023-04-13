@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.responses.CheckMobileNumberResponse
 import com.tws.composebusalert.responses.Profile
+import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.responses.UserRegisterResponse
 import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.services.ResourceBus
@@ -25,7 +26,9 @@ interface AuthorizationRepo {
     suspend fun getDriveDetails(id: String): ResourceBus<Profile>
 //    suspend fun firebaseAuth():FirebaseAuth
 
-
+    suspend fun getRouteList(
+        branchId: String?
+    ): ResourceBus<List<RouteListResponse>>
    /* suspend fun checkMobile(
         checkMobileNumberRequest: CheckMobileNumberRequest
     ): Resource<CheckMobileNumberResponse>*/

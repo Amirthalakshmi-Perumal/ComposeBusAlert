@@ -4,6 +4,7 @@ import com.tws.composebusalert.request.CheckMobileNumberRequest
 import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.responses.CheckMobileNumberResponse
 import com.tws.composebusalert.responses.Profile
+import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.responses.UserRegisterResponse
 import retrofit2.Response
 import retrofit2.http.*
@@ -31,6 +32,12 @@ interface UserDataSource {
      * */
     @GET("/api/v1/profile/{id}")
     suspend fun getProfile(@Path("id") id: String): Profile
+    @GET("/api/v1/route")
+    suspend fun getRouteList(
+        @Query("branch") branchID: String?,
+        @Query("isDeleted") deleteItem: Boolean,
+        @Query("fields") value: String
+    ): List<RouteListResponse>
 
 
 }

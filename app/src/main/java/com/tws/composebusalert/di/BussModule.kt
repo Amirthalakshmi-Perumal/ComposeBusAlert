@@ -29,15 +29,20 @@ object BussModule {
 
     private val client = OkHttpClient.Builder().build()
 
+  /*  private val client1 = OkHttpClient.Builder().addInterceptor { chain ->
+        val newRequest = chain.request().newBuilder().addHeader(
+            "Authorization",
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxMzY0OTQ4LCJleHAiOjE2ODE0NTEzNDh9.tz1hma10j10Hrv5J_G2O19htZRsHXD22zBK2Ld5BzJg"
+        ).build()
+        chain.proceed(newRequest)
+    }.build()*/
+
     @Provides
     @Singleton
     fun createOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
 
-        val clientBuilder =
-            OkHttpClient.Builder()
-                .connectTimeout(TIME_OUT, TimeUnit.SECONDS)
-                .readTimeout(TIME_OUT, TimeUnit.SECONDS)
-                .writeTimeout(TIME_OUT, TimeUnit.SECONDS)
+        val clientBuilder = OkHttpClient.Builder().connectTimeout(TIME_OUT, TimeUnit.SECONDS)
+            .readTimeout(TIME_OUT, TimeUnit.SECONDS).writeTimeout(TIME_OUT, TimeUnit.SECONDS)
 
         clientBuilder.addInterceptor(HttpInterceptor(context))
 
@@ -54,12 +59,9 @@ object BussModule {
     }
 
     private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
-        val retrofit =
-            Retrofit.Builder()
-                .baseUrl(SERVER_URL)
-                .client(okHttpClient)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create()).build()
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL).client(okHttpClient)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create()).build()
 
         return retrofit.create(AppSettingDataSource::class.java)
     }
@@ -69,11 +71,8 @@ object BussModule {
     fun createBussDataSource(
         okHttpClient: OkHttpClient
     ): BusDataSource {
-        val retrofit =
-            Retrofit.Builder()
-                .baseUrl(SERVER_URL)
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create()).build()
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL).client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create()).build()
 
         return retrofit.create(BusDataSource::class.java)
     }
@@ -82,8 +81,7 @@ object BussModule {
     @Provides
     @Singleton
     fun providePreferenceManager(
-        @ApplicationContext context: Context,
-        settings: Settings
+        @ApplicationContext context: Context, settings: Settings
     ): PreferenceManager {
         return PreferenceManager(context, settings)
     }
@@ -91,12 +89,16 @@ object BussModule {
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
-            .build()
+        return Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create()).client(client).build()
     }
+
+   /* @Provides
+    @Singleton
+    fun provideRetrofit1(): Retrofit {
+        return Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create()).client(client1).build()
+    }*/
 
     @Provides
     @Singleton
@@ -104,8 +106,14 @@ object BussModule {
         return retrofit.create(UserDataSource::class.java)
     }
 
+  /*  @Provides
+    @Singleton
+    fun provideUserApi1(retrofit: Retrofit): UserDataSource {
+        return retrofit.create(UserDataSource::class.java)
+    }*/
+
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth= FirebaseAuth.getInstance()
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
 }

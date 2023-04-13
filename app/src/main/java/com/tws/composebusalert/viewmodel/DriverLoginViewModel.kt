@@ -3,9 +3,11 @@ package com.tws.composebusalert.viewmodel
 
 import android.app.Activity
 import android.content.Context
+import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.NavController
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
@@ -23,25 +25,39 @@ import com.tws.composebusalert.util.livedata.toSingleEvent
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.responses.Profile
+import com.tws.composebusalert.responses.RouteListResponse
+import com.tws.composebusalert.responses.RouteSelectionResponseModel
 import com.tws.composebusalert.usecase.AuthUseCase
 import com.tws.composebusalert.webservice.UserDataSource
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 import kotlin.system.exitProcess
 
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
     private val authUseCase: AuthUseCase,
+    private val driverDashBoardUseCase: AuthUseCase,
     private val authorizationRepoImpl: AuthorizationRepoImpl,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val firstName = MediatorLiveData<String>().apply {
         addSource(driverUserResponse) {
             value = it?.createdAt.toString()
         }
     }
+    private val _routeList = MutableLiveData<List<RouteListResponse>>()
+    val routeList: LiveData<List<RouteListResponse>> = _routeList
+    fun getRouteList() {
+        viewModelScope.launch {
+            val response = apiService.getRouteList(   "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type")
+            _routeList.value = response
+        }
+    }
+    var listResponse: List<RouteListResponse>? = null
 
     /* val address = MediatorLiveData<String>().apply {
          addSource(driverUserResponse) {
@@ -51,16 +67,27 @@ class DriverLoginViewModel @Inject constructor(
          }
      }*/
     val client = OkHttpClient.Builder().addInterceptor { chain ->
-            val newRequest = chain.request().newBuilder().addHeader(
-                    "Authorization",
-                    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZDJiNWVlZDgtOTZhMS00MDAzLThlN2ItNjU3MTc2N2U5NjljIiwiaWF0IjoxNjgwODUyOTM3LCJleHAiOjE2ODA5MzkzMzd9.ntlzuhZ-AwQscIYgDVWMVs2SRM3h-ABSMcJ8vN9E3UY"
-                ).build()
-            chain.proceed(newRequest)
-        }.build()
+        val newRequest = chain.request().newBuilder().addHeader(
+            "Authorization",
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxMzY0OTQ4LCJleHAiOjE2ODE0NTEzNDh9.tz1hma10j10Hrv5J_G2O19htZRsHXD22zBK2Ld5BzJg"
+        ).build()
+        chain.proceed(newRequest)
+    }.build()
+
     val retrofit =
         Retrofit.Builder().baseUrl("http://206.189.137.65/api/v1/profile/").client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()
     val apiService = retrofit.create(UserDataSource::class.java)
+
+    val retrofit1: Retrofit =
+        Retrofit.Builder().baseUrl("http://206.189.137.65/api/v1/route/").client(client)
+            .addConverterFactory(GsonConverterFactory.create()).build()
+    val apiService1 = retrofit1.create(UserDataSource::class.java)
+
+    private val _routeListResponse = ArrayList<RouteListResponse>()
+    private var previouSelectedRouteName: String = ""
+    val isFrom = savedStateHandle.get<String>("DriverDashBoard")
+    private var previouSelectedRoutePostion: Int? = null
 
 //    val response = apiService.getProfile()
 
@@ -70,6 +97,9 @@ class DriverLoginViewModel @Inject constructor(
     private val _isLoading = MutableLiveData<Boolean>()
     private val _driverUserResponse = MediatorLiveData<Profile>()
     val driverUserResponse: LiveData<Profile?> = _driverUserResponse
+    private val _groupedRoutesList = ArrayList<RouteSelectionResponseModel>()
+    private val _filteredRoute = ArrayList<RouteSelectionResponseModel>()
+    val filteredRoute = MutableLiveData<List<RouteSelectionResponseModel>?>()
 
     val isLoading: LiveData<Boolean> = _isLoading.toSingleEvent()
     private val auth: FirebaseAuth by lazy {
@@ -113,8 +143,16 @@ class DriverLoginViewModel @Inject constructor(
 
     private val _progress = MutableLiveData<Boolean>()
     val progress: LiveData<Boolean> = _progress
+    val a = MutableLiveData<Boolean>()
+    private val _listData = MutableLiveData<String>()
+    val listData: LiveData<String> = _listData
+   /* fun fetchData() {
+        viewModelScope.launch {
+            val result =getRouteList("")
 
-
+            _listData.value = result.toString()
+        }
+    }*/
     fun firebaseAuth(
         navController: NavController? = null, context: Context, number: String
     ) {
@@ -203,7 +241,6 @@ class DriverLoginViewModel @Inject constructor(
                                 Toast.makeText(
                                     context, "Verification successful..", Toast.LENGTH_SHORT
                                 ).show()
-
                             } else {
                                 _isLoading.value = false
                                 _validationError.value = "Test not found"
@@ -245,6 +282,7 @@ class DriverLoginViewModel @Inject constructor(
 
     private fun setNetworkError(message: String?) {
         _validationError.value = message!!
+        Log.e("DLVM", message)
     }
 
     private fun handleRegisterSuccess(user: FirebaseUser) {
@@ -275,11 +313,11 @@ class DriverLoginViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.Main.immediate) {
             try {
-            Log.e("Responses", "response.createdAt.toString()")
-            val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
-            Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  "+responses.createdAt.toString())
-
-
+                Log.e("Responses", "response.createdAt.toString()")
+                val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
+                Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  " + responses.createdAt.toString())
+//                getRouteList("")
+                Log.e("DLVM 11111 Responses", listResponse.toString())
 
 //                val response = authUseCase.getDriverDetails()
 //                _isLoading.value = false
@@ -296,6 +334,64 @@ class DriverLoginViewModel @Inject constructor(
                 Log.e("DLVM", e.message.toString())
 //                setNetworkError(e.localizedMessage)
             }
+        }
+    }
+
+    fun getRouteList(from: String): List<RouteListResponse>? {
+        _isLoading.value = true
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                val responses = apiService1.getRouteList(
+                    "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
+                )
+                Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  " + responses.size)
+
+                listResponse = responses
+                a.value = true
+                Log.e("Responses", "New Responses  $listResponse")
+
+//                search("")
+                /*   driverDashBoardUseCase.getRouteList()?.let { response ->
+                       _isLoading.value = false
+                       _routeListResponse.addAll(response)
+                       _groupedRoutesList.addAll(driverDashBoardUseCase.getGroupedList(response))
+                       Log.e("VM_getRouteList1", "getRouteList")
+                       if (isFrom == "DriverDashBoard") {
+                           _groupedRoutesList.forEach {
+                               if (it.name == driverDashBoardUseCase.getRouteName()) {
+                                   it.isChecked = true
+                                   previouSelectedRouteName = it.name
+                               }
+                           }
+                       }
+                       search("")
+                   }*/
+            } catch (e: Exception) {
+                _isLoading.value = false
+//                appLogger.error(e) {
+//                    e.localizedMessage
+//                }
+                Log.e("VMgetRouteList", "localizedMessage")
+                setNetworkError(e.localizedMessage)
+            }
+        }
+        return listResponse
+    }
+
+    private fun search(query: String) {
+
+        if (!TextUtils.isEmpty(query)) {
+            val wanted = _groupedRoutesList.filter {
+                it.name.lowercase(Locale.getDefault())
+                    .contains(query.lowercase(Locale.getDefault()))
+            }.toList()
+            _filteredRoute.clear()
+            _filteredRoute.addAll(wanted)
+            filteredRoute.value = _filteredRoute
+        } else {
+            _filteredRoute.clear()
+            _filteredRoute.addAll(_groupedRoutesList)
+            filteredRoute.value = _filteredRoute
         }
     }
 
@@ -320,14 +416,25 @@ class DriverLoginViewModel @Inject constructor(
                         Log.e("VVVMMWW", "uiuiuiui${it.apiError?.message}")
 //                            Log.e("VVVMMWW", "uiuiuiui${it.status}")
 //                            Log.e("VVVMMWW", "uiuiuiui${it.data}")
-
                     }
-
                 }
             }
-
         }
+    }
 
+    fun updateRouteSelection(postion: Int, selectedRouteName: String) {
+        val roulteList: MutableList<RouteSelectionResponseModel> = _filteredRoute
+        if (!TextUtils.isEmpty(previouSelectedRouteName)) {
+            _groupedRoutesList.forEach { routeResponse ->
+                if (routeResponse.name == previouSelectedRouteName) {
+                    routeResponse.isChecked = false
+                }
+            }
+        }
+        roulteList[postion].isChecked = !roulteList[postion].isChecked
+        previouSelectedRoutePostion = postion
+        previouSelectedRouteName = selectedRouteName
+        filteredRoute.value = roulteList
     }
 }
 

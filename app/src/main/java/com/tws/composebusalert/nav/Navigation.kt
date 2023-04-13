@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.screens.*
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 
@@ -17,6 +18,7 @@ fun Navigation(
     navController: NavHostController = rememberNavController(),
     driverLoginViewModel: DriverLoginViewModel? = null,
     startDestination: String,
+    list:List<RouteListResponse>?=null
 ) {
 
 

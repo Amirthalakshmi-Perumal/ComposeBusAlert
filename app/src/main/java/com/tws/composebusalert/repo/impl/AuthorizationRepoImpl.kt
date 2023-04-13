@@ -22,6 +22,7 @@ import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.services.ResourceBus
 import com.tws.composebusalert.webservice.UserDataSource
 import com.tws.composebusalert.network.ResponseHandler
+import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -29,6 +30,8 @@ import java.lang.Exception
 
 class AuthorizationRepoImpl @Inject constructor(
     private val userDataSource: UserDataSource,
+//    private val authorizationRepo: AuthorizationRepo,
+
 //    private val firebaseAuth: FirebaseAuth,
 ) : AuthorizationRepo {
     lateinit var oneTime: String
@@ -95,7 +98,6 @@ class AuthorizationRepoImpl @Inject constructor(
             responseHandler.handleException(e)
         }
     }
-
     override suspend fun getDriveDetails(id: String): ResourceBus<Profile> {
         return try {
             val response = userDataSource.getProfile(id)
@@ -103,9 +105,16 @@ class AuthorizationRepoImpl @Inject constructor(
         } catch (e: Exception) {
             responseHandler.handleException(e)
         }
-
     }
 
+    override suspend fun getRouteList(branchId: String?): ResourceBus<List<RouteListResponse>> {
+        return try {
+            val response = userDataSource.getRouteList(branchId, false,"id,name,type")
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }
 }
 
 

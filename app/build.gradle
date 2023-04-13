@@ -28,9 +28,30 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "boolean", "isDebug", "true"
+        }
         release {
+            buildConfigField "boolean", "isDebug", "false"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "version"
+    productFlavors {
+        user {
+            dimension "version"
+//            applicationIdSuffix ".user"
+//            versionNameSuffix "-user"
+//            applicationId "com.tws.composebusalert.user"
+        }
+        driver {
+            dimension "version"
+//            applicationIdSuffix ".driver"
+//            versionNameSuffix "-driver"
+//            applicationId "com.tws.composebusalert.driver"
+
         }
     }
     compileOptions {
@@ -51,9 +72,20 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-
+    sourceSets {
+        user {
+            java.srcDirs = ['src/user/java']
+        }
+        driver {
+            java.srcDirs = ['src/driver/java']
+        }
+    }
 }
 dependencies {
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+
 //    implementation "androidx.preference:preference-ktx:1.2.0"
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 

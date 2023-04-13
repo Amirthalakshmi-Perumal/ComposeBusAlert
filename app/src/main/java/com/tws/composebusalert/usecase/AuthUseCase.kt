@@ -5,15 +5,15 @@ import android.util.Log
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.tws.composebusalert.di.Settings
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.preference.PREF_DRIVER_CODE
 import com.tws.composebusalert.preference.PREF_DRIVER_PROFILE_ID
+import com.tws.composebusalert.preference.PREF_DRIVER_ROUTE_NAME
 import com.tws.composebusalert.preference.PreferenceManager
 import com.tws.composebusalert.repo.AuthorizationRepo
 import com.tws.composebusalert.request.UserData
-import com.tws.composebusalert.responses.CheckMobileNumberResponse
-import com.tws.composebusalert.responses.Profile
-import com.tws.composebusalert.responses.UserRegisterResponse
+import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.services.ApiFailureException
 import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
@@ -32,7 +32,14 @@ class AuthUseCase @Inject constructor(
         FirebaseAuth.getInstance().signOut()
     }
     //    val loginViewModel= DriverLoginViewModel()
+
+    val getRouteName = {
+        "driver_route_name"
+//        preferenceManager.getValue(PREF_DRIVER_ROUTE_NAME)
+    }
     val loginViewModel: DriverLoginViewModel? = null
+    @Inject
+    lateinit var settings: Settings
     suspend fun checkRegisterMobileNumber(
         countryCode: String,
         mobNum: String,
@@ -48,6 +55,42 @@ class AuthUseCase @Inject constructor(
             context
         )
     }
+
+    /**
+     * suspend function used to handle network call to get
+     * the list of route from server
+     * */
+    suspend fun getRouteList(): List<RouteListResponse>? {
+        authorizationRepo.getRouteList(settings.branchId).apply {
+            Log.e("AuthUseCaseGetRouteList","authorizationRepo.getRouteList")
+            return when (this.status) {
+                Status.SUCCESS -> {
+                    this.data
+                }
+                Status.ERROR -> {
+                    throw ApiFailureException(this.message)
+                }
+                else -> {
+                    null
+                }
+            }
+        }
+    }
+
+    fun getGroupedList(
+        routeListResponse: List<RouteListResponse>
+    ): List<RouteSelectionResponseModel> {
+        val routNameList: List<String> = routeListResponse.map { it.name }
+        val route = routNameList.distinct()
+
+        val routeList: MutableList<RouteSelectionResponseModel> = mutableListOf()
+        route.forEach {
+            routeList.add(RouteSelectionResponseModel(it, false))
+        }
+
+        return routeList
+    }
+
     /**
      * this method is triggered after fire base sign in to register the user in server with social login id
      * @param [user] is the social user profile after Fire base sign in
