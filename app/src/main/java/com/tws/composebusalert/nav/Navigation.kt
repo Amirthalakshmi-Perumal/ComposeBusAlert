@@ -16,7 +16,7 @@ import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 fun Navigation(
     flavor: String,
     navController: NavHostController = rememberNavController(),
-    driverLoginViewModel: DriverLoginViewModel? = null,
+    driverLoginViewModel: DriverLoginViewModel ,
     startDestination: String,
     list:List<RouteListResponse>?=null
 ) {

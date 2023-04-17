@@ -18,7 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tws.composebusalert.data.DataStoreManager
+import com.tws.composebusalert.data.Detail
 import com.tws.composebusalert.data.UserStore
 import com.tws.composebusalert.nav.Navigation
 import com.tws.composebusalert.nav.Routes
@@ -33,11 +37,12 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
-
+//    val context = this
     private val sharedPrefFile = "kotlin_shared_preference"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +54,6 @@ class MainActivity : ComponentActivity() {
                 this.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE)
             val loginViewModel = viewModel(modelClass = DriverLoginViewModel::class.java)
             ComposeBusAlertTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
@@ -60,34 +64,29 @@ class MainActivity : ComponentActivity() {
                     var isAuthSuccessful by remember { mutableStateOf(false) }
                     val sharedIdValue = sharedPreferences.getInt("id_key", 0)
                     val sharedNameValue = sharedPreferences.getString("name_key", "defaultname")
-                     if(sharedIdValue == 0 && sharedNameValue.equals("defaultname")){
-//                         MyScreen(loginViewModel)
-                         Navigation(flavor = "driver", startDestination = Routes.DriverSelectRouteScreen.name)
-                     }else{
+
+
+                    if (sharedIdValue == 0 && sharedNameValue.equals("defaultname")) {
                          MyScreen(loginViewModel)
-                     }
-//                    MyScreen(loginViewModel)
-                   /* if (sharedIdValue == 22 && sharedNameValue.equals("name")) {
-//                        MyScreen(loginViewModel)
+
+                    } else {
                         Navigation(
                             flavor = "driver",
-                            startDestination = Routes.DriverSelectRouteScreen.name
+                            startDestination = Routes.DriverSelectRouteScreen.name,
+                            driverLoginViewModel = driverLoginViewModel
                         )
-                    } else {
-                        MyScreen(loginViewModel)
-                    }*/
-//                    val sharedPreferences = LocalContext.current.getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
-                    // Check if the user has already authenticated
-//                    isAuthSuccessful = sharedPreferences.getBoolean(KEY_AUTHENTICATED, false)
+//                        MyScreen(loginViewModel)
+                    }
 
-                    /* if (tokenText.value!="") {
-                         // User has already authenticated, show the main screen
-                        Navigation(flavor = "driver", startDestination = Routes.DriverSelectRouteScreen.name)
+                    /* if (sharedIdValue == 22 && sharedNameValue.equals("name")) {
+                         Navigation(
+                             flavor = "driver",
+                             startDestination = Routes.DriverSelectRouteScreen.name
+                         )
                      } else {
- //                        MyScreen(loginViewModel)
                          MyScreen(loginViewModel)
- //                        sharedPreferences.edit().putBoolean(KEY_AUTHENTICATED, true).apply()
                      }*/
+
                 }
             }
         }
@@ -96,15 +95,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         driverLoginViewModel.getDriverDetailsVM()
-        Log.e("Resume",driverLoginViewModel.listResponse?.size.toString())
-        Log.e("Resume",  driverLoginViewModel.listResponse.toString())
+        Log.e("ResumeMain", driverLoginViewModel.listResponse?.size.toString())
+        Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
 
-          Handler().postDelayed({
-              Log.e("ResumeHandle",driverLoginViewModel.listResponse?.size.toString())
-              Log.e("ResumeHandle",  driverLoginViewModel.listResponse.toString())
+        Handler().postDelayed({
+            Log.e("ResumeHandleMain", driverLoginViewModel.listResponse?.size.toString())
+            Log.e("ResumeHandleMain", driverLoginViewModel.listResponse.toString())
 
-              driverLoginViewModel.a.value=true
-          }, 30000)
+            driverLoginViewModel.a.value = true
+        }, 30000)
 //        driverLoginViewModel.getRouteList("")
 //      Log.e("Resume",driverLoginViewModel.listResponse?.size.toString())
     }
@@ -112,8 +111,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyScreen(loginViewModel: DriverLoginViewModel) {
-//    isAuthSuccessful = true
-//    sharedPreferences.edit().putBoolean(KEY_AUTHENTICATED, true).apply()
     var showDialog by remember { mutableStateOf(false) }
     val onBackPressedCallback = remember {
         object : OnBackPressedCallback(true) {

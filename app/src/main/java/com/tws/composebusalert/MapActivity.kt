@@ -277,7 +277,8 @@ class MapActivity  : ComponentActivity(), OnMapReadyCallback {
                                         if (buttonClicked) {
                                             Navigation(
                                                 flavor = "driver",
-                                                startDestination = Routes.DriverDashboard.name
+                                                startDestination = Routes.DriverDashboard.name,
+                                                driverLoginViewModel = driverLoginViewModel
                                             )
                                         }
                                     },

@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ScaffoldState
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -33,6 +36,8 @@ import androidx.navigation.NavController
 import com.tws.composebusalert.R
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +70,7 @@ fun Mobile_Number(
         )
     }
     val msg = loginViewModel?.onSuccess?.collectAsState()
-
+var bar=true
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -131,6 +136,7 @@ fun Mobile_Number(
                     if (TextUtils.isEmpty(number)) {
                         Toast.makeText(context, "Please enter phone number..", Toast.LENGTH_SHORT)
                             .show()
+
                     } else if (number.length == 10) {
                         Toast.makeText(context, "Verifying..", Toast.LENGTH_SHORT).show()
 //                        loginViewModel?.signIn(
@@ -157,8 +163,12 @@ fun Mobile_Number(
 
             if (!msg?.value.isNullOrEmpty()) {
                 msg?.value?.let {
-                    ShowToast(content = it)
+                    ShowToast(content = it,bar)
                 }
+            }
+            if (bar) {
+                    ShowToast(content = "Snack Bar",bar)
+
             }
 
         }
@@ -179,17 +189,51 @@ fun Mobile_Number(
     }
     snack.show()
 }
+
 @Composable
 fun ShowToast(
-    content: String,
+    content: String,onClick:Boolean
 ) {
 //    val context = LocalContext.current
 //    Toast.makeText(context, content, Toast.LENGTH_SHORT).show()
 
-    Snackbar(action = {
+   /* Snackbar(action = {
         // Optional action button
         Text(text = "Dismiss")
     }, content = {
         Text(text = content)
-    })
+    })*/
+var bar=onClick
+    if(bar){
+        Snackbar(
+            modifier = Modifier.padding(4.dp),
+//            action = {
+//                TextButton(onClick = {
+//                    bar=false
+//
+//                }) {
+//                    Text(text = "Remove")
+//                }
+//            }
+
+        ) {
+            Text(text = "This is a basic Snackbar with action item")
+        }
+    }
+
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+
+    /*Scaffold(scaffoldState = scaffoldState) {
+        Button(onClick = {
+            coroutineScope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    message = "This is your message",
+                    actionLabel = "Do something"
+                )
+            }
+        }) {
+            Text(text = "Click me!")
+        }
+    }*/
 }

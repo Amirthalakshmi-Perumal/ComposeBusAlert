@@ -53,7 +53,7 @@ class DriverLoginViewModel @Inject constructor(
     val routeList: LiveData<List<RouteListResponse>> = _routeList
     fun getRouteList() {
         viewModelScope.launch {
-            val response = apiService.getRouteList(   "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type")
+            val response = apiService.getRouteList("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb", false, "id,name,type")
             _routeList.value = response
         }
     }
@@ -69,7 +69,7 @@ class DriverLoginViewModel @Inject constructor(
     val client = OkHttpClient.Builder().addInterceptor { chain ->
         val newRequest = chain.request().newBuilder().addHeader(
             "Authorization",
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxMzY0OTQ4LCJleHAiOjE2ODE0NTEzNDh9.tz1hma10j10Hrv5J_G2O19htZRsHXD22zBK2Ld5BzJg"
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxNjQ2ODYxLCJleHAiOjE2ODE3MzMyNjF9.WdajptMU_cGPbwr6L_eKYkLfXkLrdSb0r8h9wQ7yYuo"
         ).build()
         chain.proceed(newRequest)
     }.build()
@@ -188,7 +188,7 @@ class DriverLoginViewModel @Inject constructor(
 
     }
 
-    fun checkSuccess(navController: NavController? = null, flavor: String? = null, number: String) {
+    fun checkSuccess(navController: NavController? = null, flavor: String? = null, number: String,contexta: Context) {
         if (checkoneTime == "checked") {
             val otp = oneTime
             val user: MutableLiveData<FirebaseUser>? = MutableLiveData()
@@ -200,7 +200,7 @@ class DriverLoginViewModel @Inject constructor(
                 mAuth,
                 user,
                 context as Activity,
-                context,
+                contexta,
                 message,
                 navController,
                 flavor,
@@ -233,7 +233,7 @@ class DriverLoginViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.Main) {
                     if (mAuthUser != null) {
                         authUseCase.registerUserToServer(
-                            mAuthUser, LoginType.PHONE_NUMBER, number
+                            mAuthUser, LoginType.PHONE_NUMBER, number,context
                         ).apply {
                             if (this != null) {
                                 _isLoading.value = false
@@ -313,9 +313,9 @@ class DriverLoginViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.Main.immediate) {
             try {
-                Log.e("Responses", "response.createdAt.toString()")
+                Log.e("ResponsesDLVM", "response.createdAt.toString()")
                 val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
-                Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  " + responses.createdAt.toString())
+                Log.e("ResponsesDLVM", "gshtrstrdhtgfdtytrfjyt  " + responses.createdAt.toString())
 //                getRouteList("")
                 Log.e("DLVM 11111 Responses", listResponse.toString())
 
@@ -342,10 +342,9 @@ class DriverLoginViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Main) {
             try {
                 val responses = apiService1.getRouteList(
-                    "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
+                    "f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb", false, "id,name,type"
                 )
                 Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  " + responses.size)
-
                 listResponse = responses
                 a.value = true
                 Log.e("Responses", "New Responses  $listResponse")
