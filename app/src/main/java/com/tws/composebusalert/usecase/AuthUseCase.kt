@@ -1,20 +1,13 @@
 package com.tws.composebusalert.usecase
 
+import Status
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.di.Settings
 import com.tws.composebusalert.nav.LoginType
-import com.tws.composebusalert.preference.PREF_DRIVER_CODE
-import com.tws.composebusalert.preference.PREF_DRIVER_PROFILE_ID
-import com.tws.composebusalert.preference.PREF_DRIVER_ROUTE_NAME
-import com.tws.composebusalert.preference.PreferenceManager
 import com.tws.composebusalert.repo.AuthorizationRepo
 import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.responses.*
@@ -43,7 +36,7 @@ class AuthUseCase @Inject constructor(
         "driver_route_name"
 //        preferenceManager.getValue(PREF_DRIVER_ROUTE_NAME)
     }
-    val loginViewModel: DriverLoginViewModel? = null
+//    val loginViewModel: DriverLoginViewModel? = null
 
     @Inject
     lateinit var settings: Settings
@@ -110,9 +103,7 @@ class AuthUseCase @Inject constructor(
         context: Context
     ): UserRegisterResponse? {
 
-        val dataStore = StoreData(context)
 
-        val savedEmail = dataStore.getEmail
         var countryCode: String? = null
         var phNo: String? = null
         if (loginType == LoginType.PHONE_NUMBER) {
@@ -143,7 +134,7 @@ class AuthUseCase @Inject constructor(
 
 //                        dataStore.saveToken("it.token")
 
-                        Log.e("Auth UseCase TOKEN", savedEmail.toString())
+//                        Log.e("Auth UseCase TOKEN", savedEmail.toString())
                         Log.e(
                             "Auth UseCase",
                             " RESPONSENEW Auth UseCase ${it.user.phoneNumber}   ${it.user.email}  ${it.caretaker}   ${it.user.id}"
@@ -152,8 +143,6 @@ class AuthUseCase @Inject constructor(
                             "Auth UseCase AAAAAAA ",
                             "${it.token}   ${it.user}  ${it.caretaker} "
                         )
-                        dataStore.saveToken(it.token)
-                        Log.e("TOKEN", savedEmail.toString())
 
 //                            Toast.makeText(context, "Success!", Toast.LENGTH_SHORT).show()
 

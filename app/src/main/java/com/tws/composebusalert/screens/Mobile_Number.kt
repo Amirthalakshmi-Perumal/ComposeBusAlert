@@ -1,6 +1,7 @@
 package com.tws.composebusalert.screens
 
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
+import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -46,31 +48,21 @@ fun Mobile_Number(
     navController: NavController? = null,
     loginViewModel: DriverLoginViewModel? = null,
 ) {
-    var cc = false
-    val mContext = LocalContext.current
-    loginViewModel?.isLoading?.observeAsState {
-        cc = true
-    }
-    val view=LocalView.current
-     loginViewModel?.validationError?.observeAsState {
-         showErrorMessage("Failed Registry",view)
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreData(context)
+    val savedNo = dataStore.getNo.collectAsState(initial = "")
+
+
+    val view = LocalView.current
+    loginViewModel?.validationError?.observeAsState {
+        showErrorMessage("Failed Registry", view)
     }
 
- /*   LiveData.observeAsState().value?.let { value ->
 
-        if (value == null) {
-            showErrorMessage(errorMessage, view)
-        }
-    }*/
-    if (cc) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .wrapContentSize()
-        )
-    }
     val msg = loginViewModel?.onSuccess?.collectAsState()
-var bar=true
+    var bar = true
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -103,7 +95,8 @@ var bar=true
             )
             var number by remember { mutableStateOf("") }
 
-            OutlinedTextField(value = number,
+            OutlinedTextField(
+                value = number,
                 onValueChange = { newValue ->
                     if (newValue.length <= 10) {
                         number = newValue
@@ -142,9 +135,16 @@ var bar=true
 //                        loginViewModel?.signIn(
 //                            "+91", loginViewModel.phoneNumber, "driver", navController, context
 //                        )
+
                         loginViewModel?.signIn(
                             "+91", number, "driver", navController, context
                         )
+                        navController?.navigate(Routes.OTP.name)
+
+                        scope.launch {
+                            dataStore.saveNo(number)
+                        }
+                        Log.e("TOKEN", savedNo.value!!)
                     } else {
                         Toast.makeText(context, "Invalid Phone Number..", Toast.LENGTH_SHORT).show()
                     }
@@ -160,15 +160,14 @@ var bar=true
                     " Submit", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.Black
                 )
             }
-
             if (!msg?.value.isNullOrEmpty()) {
                 msg?.value?.let {
-                    ShowToast(content = it,bar)
+                    ShowToast(content = it, bar)
                 }
             }
             if (bar) {
-                    ShowToast(content = "Snack Bar",bar)
-
+                ShowToast(content = "Snack Bar", bar)
+                bar = false
             }
 
         }
@@ -178,11 +177,9 @@ var bar=true
 
 }
 
- fun showErrorMessage(message: String, view: View) {
+fun showErrorMessage(message: String, view: View) {
     val snack = com.google.android.material.snackbar.Snackbar.make(
-        view,
-        message,
-        com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE
+        view, message, com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE
     )
     snack.setAction("OK") {
         snack.dismiss()
@@ -192,21 +189,21 @@ var bar=true
 
 @Composable
 fun ShowToast(
-    content: String,onClick:Boolean
+    content: String, onClick: Boolean
 ) {
 //    val context = LocalContext.current
 //    Toast.makeText(context, content, Toast.LENGTH_SHORT).show()
 
-   /* Snackbar(action = {
-        // Optional action button
-        Text(text = "Dismiss")
-    }, content = {
-        Text(text = content)
-    })*/
-var bar=onClick
-    if(bar){
-        Snackbar(
-            modifier = Modifier.padding(4.dp),
+    /* Snackbar(action = {
+         // Optional action button
+         Text(text = "Dismiss")
+     }, content = {
+         Text(text = content)
+     })*/
+    var bar = onClick
+//    if(bar){
+//        Snackbar(
+//            modifier = Modifier.padding(4.dp),
 //            action = {
 //                TextButton(onClick = {
 //                    bar=false
@@ -216,10 +213,10 @@ var bar=onClick
 //                }
 //            }
 
-        ) {
-            Text(text = "This is a basic Snackbar with action item")
-        }
-    }
+//        ) {
+//            Text(text = "This is a basic Snackbar with action item")
+//        }
+//    }
 
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()

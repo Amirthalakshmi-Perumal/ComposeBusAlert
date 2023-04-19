@@ -8,7 +8,7 @@
         <item name="windowSplashScreenAnimationDuration">500</item>
         <!--        <item name="android:windowSplashScreenBrandingImage">@drawable/img</item>-->
         <!--        <item name="android:windowBackground" targetApi="s">@drawable/splash</item>-->
-        <item name="android:windowBackground">@drawable/img_1</item>
+        <item name="android:windowBackground">@drawable/img</item>
         <!--  <item name="android:statusBarColor">@color/white</item>
           <item name="android:navigationBarColor">@color/white</item>
           <item name="android:windowSplashScreenAnimatedIcon">@null</item>-->

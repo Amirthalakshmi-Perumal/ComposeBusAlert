@@ -243,11 +243,11 @@ fun CardViewStudent() {
 
 
                 }
-                Image(
+            /*    Image(
                     painter = painterResource(id = R.drawable.student),
                     contentDescription = "My Image",
                     contentScale = ContentScale.Crop
-                )
+                )*/
             }
 
         }

@@ -82,6 +82,8 @@ android {
     }
 }
 dependencies {
+//    Be aware of liveData versions (Duplicate class may found)
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 

@@ -2,6 +2,7 @@ package com.tws.composebusalert.nav
 
 
 import androidx.compose.runtime.*
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,10 +19,10 @@ fun Navigation(
     navController: NavHostController = rememberNavController(),
     driverLoginViewModel: DriverLoginViewModel ,
     startDestination: String,
-    list:List<RouteListResponse>?=null
+    list:List<RouteListResponse>?=null,
+//    lifecycleOwner: LifecycleOwner?=null
+    lifecycleOwner: LifecycleOwner
 ) {
-
-
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -37,7 +38,7 @@ fun Navigation(
             OTPScreen(navController, driverLoginViewModel)
         }
         composable(route = Routes.DriverSelectRouteScreen.name) {
-           DriverSelectRouteScreen(navController,driverLoginViewModel)
+           DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner)
         }
         composable(route = Routes.DriverDashboard.name) {
             DriverDashboard(navController, driverLoginViewModel)

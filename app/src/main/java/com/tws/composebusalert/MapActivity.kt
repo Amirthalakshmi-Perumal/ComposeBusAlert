@@ -81,7 +81,7 @@ class MapActivity  : ComponentActivity(), OnMapReadyCallback {
     private var locationRequired = false
     private var counter = 0
     private lateinit var a: LatLng
-
+val lifeCycleOwner=this
     private val locationFlow = callbackFlow {
 
         while (true) {
@@ -278,7 +278,8 @@ class MapActivity  : ComponentActivity(), OnMapReadyCallback {
                                             Navigation(
                                                 flavor = "driver",
                                                 startDestination = Routes.DriverDashboard.name,
-                                                driverLoginViewModel = driverLoginViewModel
+                                                driverLoginViewModel = driverLoginViewModel,
+                                                lifecycleOwner = lifeCycleOwner
                                             )
                                         }
                                     },

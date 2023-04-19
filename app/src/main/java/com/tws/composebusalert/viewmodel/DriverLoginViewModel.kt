@@ -7,34 +7,29 @@ import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.*
-import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.NavController
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
+import com.tws.composebusalert.nav.LoginType
+import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
+import com.tws.composebusalert.responses.Profile
+import com.tws.composebusalert.responses.RouteListResponse
+import com.tws.composebusalert.responses.RouteSelectionResponseModel
+import com.tws.composebusalert.usecase.AuthUseCase
+import com.tws.composebusalert.webservice.UserDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import com.google.firebase.auth.FirebaseUser
-import com.tws.composebusalert.util.livedata.toSingleEvent
-import com.tws.composebusalert.nav.LoginType
-import com.tws.composebusalert.nav.Routes
-import com.tws.composebusalert.responses.Profile
-import com.tws.composebusalert.responses.RouteListResponse
-import com.tws.composebusalert.responses.RouteSelectionResponseModel
-import com.tws.composebusalert.usecase.AuthUseCase
-import com.tws.composebusalert.webservice.UserDataSource
-import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
-import kotlin.system.exitProcess
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
 @HiltViewModel
@@ -53,26 +48,24 @@ class DriverLoginViewModel @Inject constructor(
     val routeList: LiveData<List<RouteListResponse>> = _routeList
     fun getRouteList() {
         viewModelScope.launch {
-            val response = apiService.getRouteList("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb", false, "id,name,type")
+            val response = apiService.getRouteList(
+                "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
+            )
             _routeList.value = response
         }
     }
-    var listResponse: List<RouteListResponse>? = null
 
-    /* val address = MediatorLiveData<String>().apply {
-         addSource(driverUserResponse) {
-             it?.profilePicURL?.let { url ->
-                 value = url
-             }
-         }
-     }*/
-    val client = OkHttpClient.Builder().addInterceptor { chain ->
-        val newRequest = chain.request().newBuilder().addHeader(
-            "Authorization",
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxNjQ2ODYxLCJleHAiOjE2ODE3MzMyNjF9.WdajptMU_cGPbwr6L_eKYkLfXkLrdSb0r8h9wQ7yYuo"
-        ).build()
-        chain.proceed(newRequest)
-    }.build()
+    //    var listResponse = MutableLiveData<List<RouteListResponse>>()
+    var listResponse: List<RouteListResponse>? = null
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
+        .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
+            val newRequest = chain.request().newBuilder().addHeader(
+                "Authorization",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
+            ).build()
+            chain.proceed(newRequest)
+        }.build()
 
     val retrofit =
         Retrofit.Builder().baseUrl("http://206.189.137.65/api/v1/profile/").client(client)
@@ -89,19 +82,18 @@ class DriverLoginViewModel @Inject constructor(
     val isFrom = savedStateHandle.get<String>("DriverDashBoard")
     private var previouSelectedRoutePostion: Int? = null
 
-//    val response = apiService.getProfile()
-
     private val _onSuccess = MutableStateFlow("")
     val onSuccess get() = _onSuccess as StateFlow<String>
     val check = authorizationRepoImpl.onSuccess
-    private val _isLoading = MutableLiveData<Boolean>()
+
+    //    private val _isLoading = MutableLiveData<Boolean>()
     private val _driverUserResponse = MediatorLiveData<Profile>()
     val driverUserResponse: LiveData<Profile?> = _driverUserResponse
     private val _groupedRoutesList = ArrayList<RouteSelectionResponseModel>()
     private val _filteredRoute = ArrayList<RouteSelectionResponseModel>()
     val filteredRoute = MutableLiveData<List<RouteSelectionResponseModel>?>()
 
-    val isLoading: LiveData<Boolean> = _isLoading.toSingleEvent()
+    //    val isLoading: LiveData<Boolean> = _isLoading.toSingleEvent()
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
     }
@@ -113,24 +105,12 @@ class DriverLoginViewModel @Inject constructor(
 
     private var currentUser: FirebaseUser? = null
 
-    private var loginType: LoginType = LoginType.GOOGLE
-    val TAG = "Bus-App"
-
-
-    /**
-     * To kill the app if user press the back button
-     * */
-
-    fun killApp() {
-        android.os.Process.killProcess(android.os.Process.myPid())
-        exitProcess(1)
-    }
-
     private val _validationError = MutableLiveData<String>()
     val validationError: LiveData<String> = _validationError
 
     private val _stPhoneNo = MutableLiveData<String>()
     val stPhoneNo: LiveData<String> = _stPhoneNo
+
     lateinit var phoneNumber: String
     lateinit var oneTime: String
     var checkoneTime: String = "notChecked"
@@ -146,28 +126,16 @@ class DriverLoginViewModel @Inject constructor(
     val a = MutableLiveData<Boolean>()
     private val _listData = MutableLiveData<String>()
     val listData: LiveData<String> = _listData
-   /* fun fetchData() {
-        viewModelScope.launch {
-            val result =getRouteList("")
 
-            _listData.value = result.toString()
-        }
-    }*/
     fun firebaseAuth(
         navController: NavController? = null, context: Context, number: String
     ) {
-//        var isAuthSuccessful by remember { mutableStateOf(false) }
-//        val PREFS_FILENAME = "com.example.myapp.prefs"
-//        val KEY_AUTHENTICATED = "authenticated"
-//        val sharedPreferences = context.getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
-
         this.context = context
         lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
         callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(p0: PhoneAuthCredential) {
                 message = "Verification successful"
-//                Toast.makeText(context, "Verification successful..", Toast.LENGTH_SHORT).show()
-//                sharedPreferences.edit().putBoolean(KEY_AUTHENTICATED, true).apply()
+
             }
 
             override fun onVerificationFailed(p0: FirebaseException) {
@@ -188,7 +156,12 @@ class DriverLoginViewModel @Inject constructor(
 
     }
 
-    fun checkSuccess(navController: NavController? = null, flavor: String? = null, number: String,contexta: Context) {
+    fun checkSuccess(
+        navController: NavController? = null,
+        flavor: String? = null,
+        number: String,
+        contexta: Context
+    ) {
         if (checkoneTime == "checked") {
             val otp = oneTime
             val user: MutableLiveData<FirebaseUser>? = MutableLiveData()
@@ -223,7 +196,7 @@ class DriverLoginViewModel @Inject constructor(
         flavor: String? = null,
         number: String
     ): MutableLiveData<FirebaseUser>? {
-        var message = mess
+
 
         auth.signInWithCredential(credential).addOnCompleteListener(activity) { task ->
             if (task.isSuccessful) {
@@ -233,16 +206,16 @@ class DriverLoginViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.Main) {
                     if (mAuthUser != null) {
                         authUseCase.registerUserToServer(
-                            mAuthUser, LoginType.PHONE_NUMBER, number,context
+                            mAuthUser, LoginType.PHONE_NUMBER, number, context
                         ).apply {
                             if (this != null) {
-                                _isLoading.value = false
+
                                 handleRegisterSuccess(mAuthUser)
                                 Toast.makeText(
                                     context, "Verification successful..", Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                _isLoading.value = false
+
                                 _validationError.value = "Test not found"
                                 handleFailue()
                             }
@@ -306,29 +279,17 @@ class DriverLoginViewModel @Inject constructor(
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
-    /**
-     * This method is returned currently logged in user profile
-     * */
+
     fun getDriverDetailsVM() {
-        _isLoading.value = true
+
         viewModelScope.launch(Dispatchers.Main.immediate) {
             try {
-                Log.e("ResponsesDLVM", "response.createdAt.toString()")
+
                 val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
-                Log.e("ResponsesDLVM", "gshtrstrdhtgfdtytrfjyt  " + responses.createdAt.toString())
-//                getRouteList("")
+                Log.e("ResponsesDLVM", " responses.createdAt " + responses.createdAt.toString())
                 Log.e("DLVM 11111 Responses", listResponse.toString())
 
-//                val response = authUseCase.getDriverDetails()
-//                _isLoading.value = false
-//                _driverUserResponse.value = response!!
-
             } catch (e: Exception) {
-//                Log.e("DLVM", "Api call failed")
-
-//                _isLoading.value = false
-//                appLogger.error(e) {
-//                    "Api call failed"
 
                 Log.e("DLVM", "Api call failed")
                 Log.e("DLVM", e.message.toString())
@@ -338,42 +299,25 @@ class DriverLoginViewModel @Inject constructor(
     }
 
     fun getRouteList(from: String): List<RouteListResponse>? {
-        _isLoading.value = true
-        viewModelScope.launch(Dispatchers.Main) {
-            try {
-                val responses = apiService1.getRouteList(
-                    "f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb", false, "id,name,type"
-                )
-                Log.e("Responses", "gshtrstrdhtgfdtytrfjyt  " + responses.size)
-                listResponse = responses
-                a.value = true
-                Log.e("Responses", "New Responses  $listResponse")
-
-//                search("")
-                /*   driverDashBoardUseCase.getRouteList()?.let { response ->
-                       _isLoading.value = false
-                       _routeListResponse.addAll(response)
-                       _groupedRoutesList.addAll(driverDashBoardUseCase.getGroupedList(response))
-                       Log.e("VM_getRouteList1", "getRouteList")
-                       if (isFrom == "DriverDashBoard") {
-                           _groupedRoutesList.forEach {
-                               if (it.name == driverDashBoardUseCase.getRouteName()) {
-                                   it.isChecked = true
-                                   previouSelectedRouteName = it.name
-                               }
-                           }
-                       }
-                       search("")
-                   }*/
-            } catch (e: Exception) {
-                _isLoading.value = false
-//                appLogger.error(e) {
-//                    e.localizedMessage
-//                }
-                Log.e("VMgetRouteList", "localizedMessage")
-                setNetworkError(e.localizedMessage)
+        var responses: List<RouteListResponse>? = null
+        try {
+            viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    responses = apiService1.getRouteList("524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type")
+//                    list.value = responses
+                    listResponse = responses
+                    Log.e(
+                        "Responses",
+                        "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
+                    )
+                }
             }
+            Log.e("Responses", "New Responses  ${this.listResponse}")
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
         }
+        Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
         return listResponse
     }
 

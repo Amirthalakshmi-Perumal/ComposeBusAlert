@@ -27,16 +27,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
-import com.tws.composebusalert.data.DataStoreManager
-import com.tws.composebusalert.data.Detail
-import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 
 @Composable

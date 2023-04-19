@@ -1,7 +1,5 @@
 package com.tws.composebusalert.screens
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,18 +29,194 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
-import com.tws.composebusalert.data.UserStore
 import com.tws.composebusalert.datastore.StoreData
-import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@Composable
+fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel: DriverLoginViewModel,lifecycleOwner: LifecycleOwner) {
 
+//    var listResponse11: List<RouteListResponse>? = null
+//    loginViewModel.getRouteList(navController)
+    Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
+//  }
+    Column {
+
+        Text(
+            text = "TITLE",
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(CenterHorizontally)
+                .padding(10.dp)
+        )
+
+
+        val textState = remember { mutableStateOf(TextFieldValue("")) }
+        SearchView(textState,loginViewModel,lifecycleOwner=lifecycleOwner)
+    }
+
+
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchView(
+    state: MutableState<TextFieldValue>,
+    loginViewModel: DriverLoginViewModel? = null,
+    navController: NavController? = null,
+    lifecycleOwner: LifecycleOwner
+) {
+    val context = LocalContext.current
+
+
+    TextField(
+        value = state.value,
+        onValueChange = { value ->
+            state.value = value
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp, 18.dp, 16.dp, 18.dp)
+            .background(Color.White)
+            .border(
+                width = 1.dp,
+                color = Color.DarkGray,
+                shape = RoundedCornerShape(12.dp)
+            ),
+
+        textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
+        leadingIcon = {
+            Icon(
+                Icons.Default.Search,
+                contentDescription = "",
+                modifier = Modifier
+                    .padding(15.dp)
+                    .size(24.dp)
+            )
+        },
+
+        trailingIcon = {
+            if (state.value != TextFieldValue("")) {
+                IconButton(
+                    onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+//                            store.saveToken(tokenValue.value.text)
+                            loginViewModel?.getRouteList("")
+                        }
+                        state.value =
+                            TextFieldValue("")
+                    },
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .size(25.dp)
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        colors = TextFieldDefaults.textFieldColors(
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            containerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+    )
+
+//    val messages: List<String> = listOf("HAI", "Hello", "AAA")
+//    var messages: List<RouteListResponse> = loginViewModel?.listResponse ?: emptyList()
+    var selectedIndex by remember { mutableStateOf(-1) }
+    val listState = rememberLazyListState()
+    var messages:List<RouteListResponse>?=null
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreData(context)
+    val storedRouteId = dataStore.getrouteId.collectAsState(initial = "")
+
+    LaunchedEffect(lifecycleOwner) {
+        loginViewModel?.getRouteList("")
+        Log.e("DriverSelectRouteScreen",loginViewModel?.listResponse.toString())
+    }
+    Log.e("RouteID", storedRouteId.value)
+    if( loginViewModel?.getRouteList("")!=null){
+        messages = loginViewModel.getRouteList("")
+    }
+
+    Log.e("DDDDD",loginViewModel?.listResponse.toString())
+    Log.e("DDDDDFFFF message",messages.toString())
+
+    if (messages==null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(104.dp)
+                    .padding(20.dp),
+                color = colorResource(id = R.color.purple_200),
+                strokeWidth = Dp(value = 6F)
+            )
+        }
+
+    }
+
+if(messages!=null){
+    LazyColumn(state = listState) {
+        items<RouteListResponse>(items = messages ?: emptyList()) {message ->
+            Log.e("DriverselectRoute", messages.size.toString())
+            Text(
+                text = message.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+//                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color.White)
+                    .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.LightGray,
+                        shape = RectangleShape
+                    )
+                    .padding(16.dp)
+                    .selectable(
+                        selected = true,
+                        onClick = {
+                            scope.launch {
+                                dataStore.saverouteId(message.id)
+                            }
+                            Log.e("RouteID", storedRouteId.value)
+//                            CoroutineScope(Dispatchers.IO).launch {
+//                                store.saveToken(tokenValue.value.text)
+//                            }
+//                            loginViewModel?.updateRouteSelection(selectedIndex, "isChecked")
+//                            loginViewModel?.getDriverDetailsVM()
+
+                        },
+                    ),
+            )
+        }
+    }
+}
+
+
+}
+
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel: DriverLoginViewModel,) {
@@ -53,9 +227,11 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
         Context.MODE_PRIVATE)
 //    loginViewModel?.getRouteList("")
 //    loginViewModel?.listResponse
+*/
 /*    Handler().postDelayed({
         Log.e("DriverselectRoute", loginViewModel?.listResponse.toString())
-    }, 40000)*/
+    }, 40000)*//*
+
     val editor: SharedPreferences.Editor =  sharedPreferences.edit()
 //    editor.putInt("id_key",22)
 //    editor.putString("name_key","name")
@@ -63,16 +239,16 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
 //    Log.e("TAGG","name+id.toString()")
     val routeListState = remember { mutableStateOf<List<RouteListResponse>>(emptyList()) }
 
-    /*LaunchedEffect(Unit) {
+    */
+/*LaunchedEffect(Unit) {
         loginViewModel?.getRouteList("")
         Log.e("DriverselectRouteeeee", loginViewModel?.listResponse.toString())
-    }*/
+    }*//*
+
 //    loginViewModel?.routeList?.observeAsState()?.value?.let { routeList ->
 //        routeListState.value = routeList
 //    }
     var listResponse11: List<RouteListResponse>? = null
-    val dataStore = StoreData(context)
-    val savedEmail = dataStore.getEmail.collectAsState(initial = "Token Not Stored")
     LaunchedEffect(Unit) {
 
         editor.putInt("id_key",22)
@@ -86,9 +262,9 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
         listResponse11= loginViewModel.listResponse
 
         Log.e("BBBBBB", listResponse11.toString())
-        Log.e("TOKEN", savedEmail.toString())
-        Log.e("TOKENAAA", savedEmail.value.toString())
-        Log.e("TOKENAAADDD", savedEmail.value!!)
+//        Log.e("TOKEN", savedEmail.toString())
+//        Log.e("TOKENAAA", savedEmail.value.toString())
+//        Log.e("TOKENAAADDD", savedEmail.value!!)
 
     }
     Column {
@@ -111,7 +287,8 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
                 containerColor = MaterialTheme.colorScheme.onSecondary,
             )
         )
-     /*   if (listResponse11==null) {
+     */
+/*   if (listResponse11==null) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -125,7 +302,8 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
                 )
             }
 
-        }*/
+        }*//*
+
         val textState = remember { mutableStateOf(TextFieldValue("")) }
         SearchView(textState,navController,loginViewModel,listResponse11)
     }
@@ -222,20 +400,7 @@ fun SearchView(
     Log.e("DDDDDFFFF message",messages.toString())
     Log.e("DDDDDFFFFEEEEE",listResponse11.toString())
 //    if (isLoading) {
-    if(messages==null){
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(40.dp),
-                color = colorResource(id = R.color.black),
-                strokeWidth = Dp(value = 6F)
-            )
-        }
-    }
+
     if (messages==null) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -284,54 +449,5 @@ fun SearchView(
 
 }
 
-
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun SearchViewPreview() {
-    val textState = remember { mutableStateOf(TextFieldValue("")) }
-    SearchView(textState)
-}
 */
-/*
-    TextField(
-        value = state.value,
-        onValueChange = { value ->
-            state.value = value
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Black) // Add border to the TextField
-            .padding(4.dp), // Add padding to the TextField
-        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
-        leadingIcon = {
-            if (state.value != TextFieldValue("")) {
-                IconButton(
-                    onClick = {
-                        state.value =
-                            TextFieldValue("") // Remove text from TextField when you press the 'X' icon
-                    }
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .size(24.dp)
-                    )
-                }
-            }
-        },
-        trailingIcon = {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(15.dp)
-                    .size(24.dp)
-            )
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(12.dp),
-    )*/
+
