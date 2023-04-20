@@ -3,13 +3,17 @@ package com.tws.composebusalert.viewmodel
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
+import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
@@ -30,7 +34,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import kotlinx.coroutines.flow.first
+import java.time.Instant
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
@@ -46,38 +54,43 @@ class DriverLoginViewModel @Inject constructor(
     }
     private val _routeList = MutableLiveData<List<RouteListResponse>>()
     val routeList: LiveData<List<RouteListResponse>> = _routeList
-    fun getRouteList() {
-        viewModelScope.launch {
-            val response = apiService.getRouteList(
-                "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
-            )
-            _routeList.value = response
-        }
-    }
+    /*   fun getRouteList() {
+           viewModelScope.launch {
+               val response = apiService.getRouteList(
+                   "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
+               )
+               _routeList.value = response
+           }
+       }*/
 
     //    var listResponse = MutableLiveData<List<RouteListResponse>>()
     var listResponse: List<RouteListResponse>? = null
+    val token =
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
+
+//    val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
             val newRequest = chain.request().newBuilder().addHeader(
                 "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxOTczNTM5LCJleHAiOjE2ODIwNTk5Mzl9.LK9BN6JgEALs7G2jqkgbW9yKzN5QeS1b-m7pru-98dk"
             ).build()
             chain.proceed(newRequest)
         }.build()
+    var service = ""
+    lateinit var BASE_URL: String
 
-    val retrofit =
-        Retrofit.Builder().baseUrl("http://206.189.137.65/api/v1/profile/").client(client)
-            .addConverterFactory(GsonConverterFactory.create()).build()
-    val apiService = retrofit.create(UserDataSource::class.java)
+    //    Profile   Route
+    val retrofit = Retrofit.Builder()
+        .baseUrl(if (service == "Profile") "http://206.189.137.65/api/v1/profile/" else "http://206.189.137.65/api/v1/route/")
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
-    val retrofit1: Retrofit =
-        Retrofit.Builder().baseUrl("http://206.189.137.65/api/v1/route/").client(client)
-            .addConverterFactory(GsonConverterFactory.create()).build()
-    val apiService1 = retrofit1.create(UserDataSource::class.java)
-
-    private val _routeListResponse = ArrayList<RouteListResponse>()
+    private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
     private var previouSelectedRouteName: String = ""
     val isFrom = savedStateHandle.get<String>("DriverDashBoard")
     private var previouSelectedRoutePostion: Int? = null
@@ -127,6 +140,23 @@ class DriverLoginViewModel @Inject constructor(
     private val _listData = MutableLiveData<String>()
     val listData: LiveData<String> = _listData
 
+
+
+
+
+    /*  @RequiresApi(Build.VERSION_CODES.O)
+      fun isTokenExpired(token: String): Boolean {
+          return try {
+              val jwt = Jwts.parser().parseClaimsJwt(token)
+              val claims: Claims = jwt.body
+              val expiration: Instant = claims["exp"] as Instant
+              expiration.isBefore(Instant.now())
+          } catch (e: MalformedJwtException) {
+              // handle the exception here
+              true // or false, depending on how you want to handle the exception
+          }
+      }
+  */
     fun firebaseAuth(
         navController: NavController? = null, context: Context, number: String
     ) {
@@ -151,6 +181,7 @@ class DriverLoginViewModel @Inject constructor(
                 verificationID = verificationId
             }
         }
+
         sendVerificationCode(number, mAuth, context as Activity, callbacks)
         navController?.navigate(Routes.OTP.name)
 
@@ -196,8 +227,7 @@ class DriverLoginViewModel @Inject constructor(
         flavor: String? = null,
         number: String
     ): MutableLiveData<FirebaseUser>? {
-
-
+        val dataStore = StoreData(context)
         auth.signInWithCredential(credential).addOnCompleteListener(activity) { task ->
             if (task.isSuccessful) {
                 message = "Verification successful"
@@ -209,13 +239,31 @@ class DriverLoginViewModel @Inject constructor(
                             mAuthUser, LoginType.PHONE_NUMBER, number, context
                         ).apply {
                             if (this != null) {
-
                                 handleRegisterSuccess(mAuthUser)
+                                Log.e("VM", "Register User")
+                                Log.e("VM", this.token)
+                                val storedToken = dataStore.getToken.first()
+                                val storedProfileId= dataStore.getProfileId.first()
+                                val storedBranchId= dataStore.getBranchId.first()
+
+                                dataStore.saveToken(this.token)
+                                dataStore.saveProfileId(this.user.profile?.id.toString())
+                                dataStore.saveBranchId(this.user.profile?.branch.toString())
+                                Log.d("VMstoredToken", "Stored token is $storedToken")
+                                Log.d("VMstoredProfileId", "Stored saveProfileId is $storedProfileId")
+                                Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
+                                /*  if(this.token=="TokenExpiredError"){
+                                      authUseCase.registerUserToServer(
+                                          mAuthUser, LoginType.PHONE_NUMBER, number, context
+                                      )
+                                      Log.e("VM",this.token)
+                                  }*/
+                                Log.e("VM", this.user.profile?.id.toString())
+
                                 Toast.makeText(
                                     context, "Verification successful..", Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-
                                 _validationError.value = "Test not found"
                                 handleFailue()
                             }
@@ -281,10 +329,9 @@ class DriverLoginViewModel @Inject constructor(
 
 
     fun getDriverDetailsVM() {
-
+        service = "Profile"
         viewModelScope.launch(Dispatchers.Main.immediate) {
             try {
-
                 val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
                 Log.e("ResponsesDLVM", " responses.createdAt " + responses.createdAt.toString())
                 Log.e("DLVM 11111 Responses", listResponse.toString())
@@ -300,11 +347,15 @@ class DriverLoginViewModel @Inject constructor(
 
     fun getRouteList(from: String): List<RouteListResponse>? {
         var responses: List<RouteListResponse>? = null
+        service = "Route"
         try {
             viewModelScope.launch {
                 withContext(Dispatchers.Main) {
-                    responses = apiService1.getRouteList("524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type")
-//                    list.value = responses
+                    responses = apiService.getRouteList(
+                        "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b",
+                        false,
+                        "id,name,type"
+                    )
                     listResponse = responses
                     Log.e(
                         "Responses",
@@ -338,6 +389,7 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
+    //    @RequiresApi(Build.VERSION_CODES.O)
     fun signIn(
         ctryCode: String,
         phone: String,
@@ -348,15 +400,27 @@ class DriverLoginViewModel @Inject constructor(
         navController?.navigate(Routes.OTP.name)
         getDriverDetailsVM()
         viewModelScope.launch(Dispatchers.IO) {
+            /* if (isTokenExpired(token)) {
+                 println("Token has expired.")
+             } else {
+                 println("Token is still valid.")
+             }*/
             authUseCase.checkRegisterMobileNumber(
                 ctryCode, phone, type, navController, context
             ).collect {
                 withContext(Dispatchers.Main) {
                     if (it.data?.name != null) {
-                        Log.e("VVVMMWW", "uiuiuiui" + it.data.name.toString())
+                        Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
+//                        navController?.navigate(Routes.OTP.name)
                         firebaseAuth(navController, context, phone)
                     } else {
-                        Log.e("VVVMMWW", "uiuiuiui${it.apiError?.message}")
+                        Log.e("VVVMMWW2", "uiuiuiui error ${it.apiError?.message}")
+                        Toast.makeText(
+                            context,
+                            "This Phone Number is not Verified..",
+                            Toast.LENGTH_LONG
+                        ).show()
+//                              navController?.navigate(Routes.Phone.name)
 //                            Log.e("VVVMMWW", "uiuiuiui${it.status}")
 //                            Log.e("VVVMMWW", "uiuiuiui${it.data}")
                     }

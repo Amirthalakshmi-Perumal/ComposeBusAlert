@@ -82,6 +82,12 @@ android {
     }
 }
 dependencies {
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2' // for JSON serialization/deserialization support
+
+
+
 //    Be aware of liveData versions (Duplicate class may found)
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
 

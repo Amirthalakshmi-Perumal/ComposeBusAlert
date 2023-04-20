@@ -1,5 +1,6 @@
 package com.tws.composebusalert.screens
 
+import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
+import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
@@ -59,9 +62,17 @@ fun DriverDashboard(
     driverLoginViewModel: DriverLoginViewModel?
 ) {
 //    driverLoginViewModel?.getDriverDetailsVM()
-
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreData(context)
+    val storedScreen = dataStore.screen.collectAsState(initial = "")
+    LaunchedEffect(Unit) {
+        dataStore.screen("DashBoard Screen")
+        Log.e("Screen", storedScreen.value)
+    }
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed))
+        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
+    )
 
     var bottomSheetText by remember { mutableStateOf("Initial bottom sheet text") }
     val coroutineScope = rememberCoroutineScope()
@@ -351,7 +362,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?) {
     ) {
 
 //        val name=  driverLoginViewModel?.firstName?.value.toString()
-        val name=  driverLoginViewModel?.firstName?.value.toString()
+        val name = driverLoginViewModel?.firstName?.value.toString()
 //        val address=  driverLoginViewModel?.address?.value.toString()
         Surface(
 //            contentColor = colors.contentColor(enabled = true).value,
@@ -384,7 +395,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?) {
                         fontWeight = FontWeight.Normal,
                         fontSize = 15.sp,
                         color = Color.Black,
-                        )
+                    )
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Column(Modifier.padding(2.dp)) {

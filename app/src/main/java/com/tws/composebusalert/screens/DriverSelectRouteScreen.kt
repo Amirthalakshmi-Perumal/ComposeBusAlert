@@ -1,10 +1,10 @@
 package com.tws.composebusalert.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -40,12 +41,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel: DriverLoginViewModel,lifecycleOwner: LifecycleOwner) {
+fun DriverSelectRouteScreen(
+    navController: NavController? = null,
+    loginViewModel: DriverLoginViewModel,
+    lifecycleOwner: LifecycleOwner
+) {
 
-//    var listResponse11: List<RouteListResponse>? = null
-//    loginViewModel.getRouteList(navController)
     Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
-//  }
+
     Column {
 
         Text(
@@ -61,9 +64,8 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
 
 
         val textState = remember { mutableStateOf(TextFieldValue("")) }
-        SearchView(textState,loginViewModel,lifecycleOwner=lifecycleOwner)
+        SearchView(textState, loginViewModel, lifecycleOwner = lifecycleOwner)
     }
-
 
 
 }
@@ -73,12 +75,13 @@ fun DriverSelectRouteScreen(navController: NavController? = null, loginViewModel
 fun SearchView(
     state: MutableState<TextFieldValue>,
     loginViewModel: DriverLoginViewModel? = null,
-    navController: NavController? = null,
     lifecycleOwner: LifecycleOwner
 ) {
     val context = LocalContext.current
 
-
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreData(context)
+    val storedRouteId = dataStore.getrouteId.collectAsState(initial = "")
     TextField(
         value = state.value,
         onValueChange = { value ->
@@ -89,9 +92,7 @@ fun SearchView(
             .padding(16.dp, 18.dp, 16.dp, 18.dp)
             .background(Color.White)
             .border(
-                width = 1.dp,
-                color = Color.DarkGray,
-                shape = RoundedCornerShape(12.dp)
+                width = 1.dp, color = Color.DarkGray, shape = RoundedCornerShape(12.dp)
             ),
 
         textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
@@ -109,12 +110,14 @@ fun SearchView(
             if (state.value != TextFieldValue("")) {
                 IconButton(
                     onClick = {
+                        /* scope.launch {
+                             dataStore.screen("DashBoard Screen")
+                         }*/
                         CoroutineScope(Dispatchers.IO).launch {
-//                            store.saveToken(tokenValue.value.text)
                             loginViewModel?.getRouteList("")
+                            dataStore.screen("DashBoard Screen")
                         }
-                        state.value =
-                            TextFieldValue("")
+                        state.value = TextFieldValue("")
                     },
                 ) {
                     Icon(
@@ -139,31 +142,28 @@ fun SearchView(
         ),
     )
 
-//    val messages: List<String> = listOf("HAI", "Hello", "AAA")
-//    var messages: List<RouteListResponse> = loginViewModel?.listResponse ?: emptyList()
-    var selectedIndex by remember { mutableStateOf(-1) }
     val listState = rememberLazyListState()
-    var messages:List<RouteListResponse>?=null
-    val scope = rememberCoroutineScope()
-    val dataStore = StoreData(context)
-    val storedRouteId = dataStore.getrouteId.collectAsState(initial = "")
+    var messages: List<RouteListResponse>? = null
+
 
     LaunchedEffect(lifecycleOwner) {
         loginViewModel?.getRouteList("")
-        Log.e("DriverSelectRouteScreen",loginViewModel?.listResponse.toString())
+        Log.e("DriverSelectRouteScreen", loginViewModel?.listResponse.toString())
+
+        dataStore.screen("DashBoard Screen")
+
     }
     Log.e("RouteID", storedRouteId.value)
-    if( loginViewModel?.getRouteList("")!=null){
+    if (loginViewModel?.getRouteList("") != null) {
         messages = loginViewModel.getRouteList("")
     }
 
-    Log.e("DDDDD",loginViewModel?.listResponse.toString())
-    Log.e("DDDDDFFFF message",messages.toString())
+    Log.e("DDDDD", loginViewModel?.listResponse.toString())
+    Log.e("DDDDDFFFF message", messages.toString())
 
-    if (messages==null) {
+    if (messages == null) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -176,44 +176,116 @@ fun SearchView(
 
     }
 
-if(messages!=null){
-    LazyColumn(state = listState) {
-        items<RouteListResponse>(items = messages ?: emptyList()) {message ->
-            Log.e("DriverselectRoute", messages.size.toString())
-            Text(
-                text = message.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-//                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color.White)
-                    .padding(16.dp, 0.dp, 16.dp, 0.dp)
-                    .border(
-                        width = 1.dp,
-                        color = Color.LightGray,
-                        shape = RectangleShape
-                    )
-                    .padding(16.dp)
-                    .selectable(
-                        selected = true,
-                        onClick = {
-                            scope.launch {
-                                dataStore.saverouteId(message.id)
-                            }
-                            Log.e("RouteID", storedRouteId.value)
-//                            CoroutineScope(Dispatchers.IO).launch {
-//                                store.saveToken(tokenValue.value.text)
-//                            }
-//                            loginViewModel?.updateRouteSelection(selectedIndex, "isChecked")
-//                            loginViewModel?.getDriverDetailsVM()
+    if (messages != null) {
+        SimpleRadioButtonComponent(messages)
+        /*  LazyColumn(state = listState) {
+              items<RouteListResponse>(items = messages ?: emptyList()) { message ->
+                  Log.e("DriverselectRoute", messages.size.toString())
+                  Text(
+                      text = message.name,
+                      modifier = Modifier
+                          .fillMaxWidth()
+  //                    .clip(RoundedCornerShape(18.dp))
+                          .background(Color.White)
+                          .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                          .border(
+                              width = 1.dp,
+                              color = Color.LightGray,
+                              shape = RectangleShape
+                          )
+                          .padding(16.dp)
+                          .selectable(
+                              selected = true,
+                              onClick = {
+                                  scope.launch {
+                                      dataStore.saverouteId(message.id)
+                                      dataStore.screen("DashBoard Screen")
+                                  }
+  //                            Log.e("RouteID", storedRouteId.value)
 
-                        },
-                    ),
-            )
-        }
+  //                            loginViewModel?.updateRouteSelection(selectedIndex, "isChecked")
+  //                            loginViewModel?.getDriverDetailsVM()
+
+                              },
+                          ),
+                  )
+
+              }
+          }*/
     }
+
+
 }
 
+@Composable
+fun SimpleRadioButtonComponent(radio: List<RouteListResponse>) {
+    val radioOptions = radio
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[2]) }
+    val context = LocalContext.current
+    val listState = rememberLazyListState()
+    var messages: List<RouteListResponse>? = null
+    LazyColumn(state = listState) {
+        items<RouteListResponse>(items = messages ?: emptyList()) { message ->
+            if (messages != null) {
+                Log.e("DriverselectRoute", messages.size.toString())
+                Column {
+                    radioOptions.forEach { text ->
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(selected = (text == selectedOption),
+                                    onClick = { onOptionSelected(text) })
+                                .padding(horizontal = 16.dp)
 
+                        ) {
+                            Text(
+                                text = message.name, modifier = Modifier.weight(1f)
+                            )
+                            RadioButton(selected = (text == selectedOption), onClick = {
+                                onOptionSelected(text)
+                                Toast.makeText(context, message.name, Toast.LENGTH_LONG).show()
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        /*   Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column {
+            radioOptions.forEach { text ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = (text == selectedOption),
+                            onClick = { onOptionSelected(text) }
+                        )
+                        .padding(horizontal = 16.dp)
+
+                ) {
+                    Text(
+                        text = text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = {
+                            onOptionSelected(text)
+                            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            }
+        }
+    }*/
+    }
 }
 
 /*

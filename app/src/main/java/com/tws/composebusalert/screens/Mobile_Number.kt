@@ -1,9 +1,11 @@
 package com.tws.composebusalert.screens
 
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -144,8 +146,9 @@ fun Mobile_Number(
                         scope.launch {
                             dataStore.saveNo(number)
                         }
-                        Log.e("TOKEN", savedNo.value!!)
+                        Log.e("PHONE NO", savedNo.value!!)
                     } else {
+                        showErrorMessage("Snack Bar", view)
                         Toast.makeText(context, "Invalid Phone Number..", Toast.LENGTH_SHORT).show()
                     }
 
@@ -179,7 +182,7 @@ fun Mobile_Number(
 
 fun showErrorMessage(message: String, view: View) {
     val snack = com.google.android.material.snackbar.Snackbar.make(
-        view, message, com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE
+        view, message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
     )
     snack.setAction("OK") {
         snack.dismiss()

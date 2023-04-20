@@ -1,12 +1,14 @@
 package com.tws.composebusalert.di
 
 
+import android.app.Application
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.tws.composebusalert.BuildConfig
 import com.tws.composebusalert.network.HttpInterceptor
 import com.tws.composebusalert.network.NetworkAuthenticator
 import com.tws.composebusalert.preference.PreferenceManager
+import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import com.tws.composebusalert.webservice.AppSettingDataSource
 import com.tws.composebusalert.webservice.BusDataSource
 import com.tws.composebusalert.webservice.UserDataSource
@@ -28,7 +30,15 @@ import javax.inject.Singleton
 object BussModule {
 
     private val client = OkHttpClient.Builder().build()
-
+   /* @Provides
+    fun provideDriverLoginViewModel(
+        aaa: Aaaa,
+        daaaa: Addd,
+        aaImpl: AaImpl,
+        application: Application
+    ): DriverLoginViewModel {
+        return DriverLoginViewModel(aaa, daaaa, aaImpl, application)
+    }*/
   /*  private val client1 = OkHttpClient.Builder().addInterceptor { chain ->
         val newRequest = chain.request().newBuilder().addHeader(
             "Authorization",

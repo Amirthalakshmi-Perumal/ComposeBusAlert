@@ -20,16 +20,9 @@ interface UserDataSource {
     ): Response<CheckMobileNumberResponse>
 //    ): Call<CheckMobileNumberResponse>
 
-    /**
-     * This method is used to get the Profile details
-     * */
     @POST("/api/v1/register")
     suspend fun registerUser(@Body userData: UserData): UserRegisterResponse
 
-    /**
-     * This function is used to get the Particular user profile
-     * @param [id] is the user id to get
-     * */
     @GET("/api/v1/profile/{id}")
     suspend fun getProfile(@Path("id") id: String): Profile
     @GET("/api/v1/route")

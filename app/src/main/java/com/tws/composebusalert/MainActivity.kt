@@ -1,5 +1,6 @@
 package com.tws.composebusalert
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -14,8 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tws.composebusalert.data.UserStore
 import com.tws.composebusalert.datastore.StoreData
@@ -25,121 +30,80 @@ import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import androidx.datastore.preferences.preferencesDataStore
+import com.tws.composebusalert.screens.SimpleRadioButtonComponent
+import kotlinx.coroutines.flow.first
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
     lateinit var storeData: StoreData
     var phNo = ""
+    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "my_data_store")
 
+    //lateinit var
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+//        driverLoginViewModel.context=this
         storeData = StoreData(this)
-        //        val storedRouteId = dataStore.getrouteId.collectAsState(initial = "")
-//        val dataStore = StoreData(this)
-//        val storedRouteId = dataStore.getrouteId
-//        Log.e("RouteID", storedRouteId.toString())
-        this.storeData.getNo.asLiveData().observe(this) {
-            phNo = it
-            Log.e("Main", it)
-            if (phNo == "") {
-                Log.e("Main phno", phNo)
-                setContent {
-                    ComposeBusAlertTheme {
-                        // A surface container using the 'background' color from the theme
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.background
-                        ) {
+        var check = ""
+        lifecycleScope.launch {
+//            val token = storeData.getrouteId.first()
+            check = storeData.screen.first()
+//            Log.d("MainActivity", "Stored token is $token")
+            Log.d("MainActivity", "Stored screen is $check")
+        }
+        setContent {
+            ComposeBusAlertTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
 //                            Mobile_Number()
-                            MyScreen(driverLoginViewModel,this)
-                        }
-                    }
-                }
 
-            } else {
-//                driverLoginViewModel.getRouteList("")
-                var listResponse: List<RouteListResponse>? = null
-                Log.e("MainRess", driverLoginViewModel.listResponse?.size.toString())
-                setContent {
-                    ComposeBusAlertTheme {
-                        // A surface container using the 'background' color from the theme
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.background
-                        ) {
-//                            driverLoginViewModel.getRouteList(null)
-//                            listResponse = driverLoginViewModel.getRouteList("")
-//                            Log.e("MainList", listResponse.toString())
-//                            DriverSelectRouteScreen(loginViewModel=driverLoginViewModel)
-                            Navigation(
-                                flavor = "driver",
-                                startDestination = Routes.DriverSelectRouteScreen.name,
-                                driverLoginViewModel = driverLoginViewModel,
-                                lifecycleOwner=this
-                            )
-                        }
+                    if (check == "") {
+                        Log.e("Main phno", phNo)
+                        MyScreen(driverLoginViewModel, this)
+
+                    }
+                    else {
+                        Navigation(
+                            flavor = "driver",
+                            startDestination = Routes.DriverSelectRouteScreen.name,
+                            driverLoginViewModel = driverLoginViewModel,
+                            lifecycleOwner = this
+                        )
+                        /*Navigation(
+                            flavor = "driver",
+                            startDestination = Routes.DriverDashboard.name,
+                            driverLoginViewModel = driverLoginViewModel,
+                            lifecycleOwner = this
+                        )*/
                     }
                 }
             }
         }
 
 
-         /* setContent {
-  //            val sharedPreferences: SharedPreferences =
-  //                this.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE)
-              val loginViewModel = viewModel(modelClass = DriverLoginViewModel::class.java)
-              ComposeBusAlertTheme {
-                  Surface(
-                      modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
-                  ) {
-                      val context = LocalContext.current
-                      val store = UserStore(context)
-                      val tokenText = store.getAccessToken.collectAsState(initial = "")
-
-                      var isAuthSuccessful by remember { mutableStateOf(false) }
-  //                    val sharedIdValue = sharedPreferences.getInt("id_key", 0)
-  //                    val sharedNameValue = sharedPreferences.getString("name_key", "defaultname")
-
-
-                    if (sharedIdValue == 0 && sharedNameValue.equals("defaultname")) {
-                         MyScreen(loginViewModel)
-
-                    } else {
-                        Navigation(
-                            flavor = "driver",
-                            startDestination = Routes.DriverSelectRouteScreen.name,
-                            driverLoginViewModel = driverLoginViewModel
-                        )
-//                        MyScreen(loginViewModel)
-                    }
-
-
-                }
-            }
-        }*/
     }
 
-    override fun onResume() {
+   /* override fun onResume() {
         super.onResume()
         driverLoginViewModel.getDriverDetailsVM()
-//        Log.e("ResumeMain", driverLoginViewModel.listResponse?.size.toString())
         Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
 
         Handler().postDelayed({
-//            Log.e("ResumeHandleMain", driverLoginViewModel.listResponse?.size.toString())
             Log.e("ResumeHandleMain", driverLoginViewModel.listResponse.toString())
 
             driverLoginViewModel.a.value = true
         }, 30000)
-//        driverLoginViewModel.getRouteList("")
-//      Log.e("Resume",driverLoginViewModel.listResponse?.size.toString())
-    }
+    }*/
 }
 
 @Composable
-fun MyScreen(loginViewModel: DriverLoginViewModel,lifecycleOwner: LifecycleOwner) {
+fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner) {
     var showDialog by remember { mutableStateOf(false) }
     val onBackPressedCallback = remember {
         object : OnBackPressedCallback(true) {
@@ -156,7 +120,10 @@ fun MyScreen(loginViewModel: DriverLoginViewModel,lifecycleOwner: LifecycleOwner
         onDispose { onBackPressedCallback.remove() }
     }
     Navigation(
-        "driver", driverLoginViewModel = loginViewModel, startDestination = Routes.Dashboard.name, lifecycleOwner = lifecycleOwner
+        "driver",
+        driverLoginViewModel = loginViewModel,
+        startDestination = Routes.Dashboard.name,
+        lifecycleOwner = lifecycleOwner
     )
 }
 

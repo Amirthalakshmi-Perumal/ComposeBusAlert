@@ -17,12 +17,25 @@ class StoreData(private val context: Context) {
         val TOKEN = stringPreferencesKey("token")
         val NO = stringPreferencesKey("no")
         val ROUTEID = stringPreferencesKey("routeId")
+        val SCREEN = stringPreferencesKey("screen")
+        val PROFILEID = stringPreferencesKey("ProfileId")
+        val BRANCHID = stringPreferencesKey("BranchId")
 
     }
     val getToken: Flow<String?> = context.dataStore.data
         .map { preferences ->
             preferences[TOKEN] ?: ""
         }
+    val getProfileId: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[PROFILEID] ?: ""
+        }
+
+    val getBranchId: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[BRANCHID] ?: ""
+        }
+
     val getNo: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[NO] ?: ""
@@ -31,7 +44,10 @@ class StoreData(private val context: Context) {
         .map { preferences ->
             preferences[ROUTEID] ?: ""
         }
-
+    val screen: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[SCREEN] ?: ""
+        }
     suspend fun saveToken(token: String) {
         try {
             context.dataStore.edit { preferences ->
@@ -41,6 +57,27 @@ class StoreData(private val context: Context) {
             Log.e("Storedata","Token Exception")
         }
     }
+     suspend fun saveProfileId(profileId: String) {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences[PROFILEID] = profileId
+            }
+        } catch (e: Exception) {
+            Log.e("Storedata","profileId Exception")
+        }
+    }
+
+  suspend fun saveBranchId(branchId: String) {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences[BRANCHID] = branchId
+            }
+        } catch (e: Exception) {
+            Log.e("Storedata","BRANCHID Exception")
+        }
+    }
+
+
     suspend fun saveNo(no: String) {
         try {
             context.dataStore.edit { preferences ->
@@ -54,6 +91,15 @@ class StoreData(private val context: Context) {
         try {
             context.dataStore.edit { preferences ->
                 preferences[ROUTEID] = routeId
+            }
+        } catch (e: Exception) {
+            Log.e("Storedata","NO Exception")
+        }
+    }
+ suspend fun screen(screen: String) {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences[SCREEN] = screen
             }
         } catch (e: Exception) {
             Log.e("Storedata","NO Exception")
