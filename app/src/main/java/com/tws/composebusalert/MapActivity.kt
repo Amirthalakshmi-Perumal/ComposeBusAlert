@@ -74,23 +74,20 @@ import javax.inject.Inject
 const val TAG = "MainActivityMap"
 
 @AndroidEntryPoint
-class MapActivity  : ComponentActivity(), OnMapReadyCallback {
-    private val  driverLoginViewModel by viewModels<DriverLoginViewModel>()
+class MapActivity : ComponentActivity(), OnMapReadyCallback {
+    private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
     private var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
     private var locationRequired = false
     private var counter = 0
     private lateinit var a: LatLng
-val lifeCycleOwner=this
+    val lifeCycleOwner = this
     private val locationFlow = callbackFlow {
-
         while (true) {
             ++counter
-
             val location = newLocation(a)
             Log.d(TAG, "Location $counter: $location")
             trySend(location)
-
             delay(2_000)
         }
 
@@ -114,7 +111,8 @@ val lifeCycleOwner=this
                 val glaces: GooglePlacesInfoViewModel = hiltViewModel()
                 val permissions = arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION )
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {

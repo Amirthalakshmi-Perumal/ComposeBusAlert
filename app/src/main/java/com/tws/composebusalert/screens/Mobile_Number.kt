@@ -141,14 +141,14 @@ fun Mobile_Number(
                         loginViewModel?.signIn(
                             "+91", number, "driver", navController, context
                         )
-                        navController?.navigate(Routes.OTP.name)
+//                        navController?.navigate(Routes.OTP.name)
 
                         scope.launch {
                             dataStore.saveNo(number)
+                            Log.e("PHONE NO", savedNo.value)
                         }
-                        Log.e("PHONE NO", savedNo.value!!)
+
                     } else {
-                        showErrorMessage("Snack Bar", view)
                         Toast.makeText(context, "Invalid Phone Number..", Toast.LENGTH_SHORT).show()
                     }
 

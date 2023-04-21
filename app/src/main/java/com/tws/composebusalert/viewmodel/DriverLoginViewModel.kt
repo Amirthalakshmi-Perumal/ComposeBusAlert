@@ -13,6 +13,7 @@ import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
+import com.tws.composebusalert.MainActivity
 import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
@@ -52,6 +53,7 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
+
     private val _routeList = MutableLiveData<List<RouteListResponse>>()
     val routeList: LiveData<List<RouteListResponse>> = _routeList
     /*   fun getRouteList() {
@@ -346,6 +348,7 @@ class DriverLoginViewModel @Inject constructor(
     }
 
     fun getRouteList(from: String): List<RouteListResponse>? {
+//        obj.check="DashBoard Screen"
         var responses: List<RouteListResponse>? = null
         service = "Route"
         try {
@@ -429,6 +432,15 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
+
+    suspend fun signOut(navController: NavController? = null){
+        val dataStore = StoreData(context)
+        val storedToken = dataStore.getToken.first()
+        FirebaseAuth.getInstance().signOut()
+        dataStore.clearData()
+        Log.d("VMstoredToken After Clear", "Cleared token is $storedToken")
+        navController?.navigate(Routes.Dashboard.name)
+    }
     fun updateRouteSelection(postion: Int, selectedRouteName: String) {
         val roulteList: MutableList<RouteSelectionResponseModel> = _filteredRoute
         if (!TextUtils.isEmpty(previouSelectedRouteName)) {

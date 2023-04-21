@@ -9,6 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import androidx.datastore.preferences.core.Preferences
+import com.tws.composebusalert.datastore.StoreData.Companion.TOKEN
 
 class StoreData(private val context: Context) {
     companion object{
@@ -44,7 +45,7 @@ class StoreData(private val context: Context) {
         .map { preferences ->
             preferences[ROUTEID] ?: ""
         }
-    val screen: Flow<String> = context.dataStore.data
+    val getScreen: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[SCREEN] ?: ""
         }
@@ -106,4 +107,13 @@ class StoreData(private val context: Context) {
         }
     }
 
+    suspend fun clearData() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }
+
+
+
+

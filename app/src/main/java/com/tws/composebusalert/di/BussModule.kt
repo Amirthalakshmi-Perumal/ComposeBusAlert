@@ -72,7 +72,6 @@ object BussModule {
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL).client(okHttpClient)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create()).build()
-
         return retrofit.create(AppSettingDataSource::class.java)
     }
 
