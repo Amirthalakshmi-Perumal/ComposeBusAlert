@@ -1,9 +1,13 @@
 package com.tws.composebusalert
 
 import android.content.Context
+import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -26,23 +30,53 @@ import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.LocationSource
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
 import com.tws.composebusalert.screens.DriverSelectRouteScreen
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), OnMapReadyCallback {
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
     lateinit var storeData: StoreData
     var phNo = ""
     val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "my_data_store")
     var check = ""
-    //lateinit var
+     var locationRequired = false
+    var locationCallback: LocationCallback? = null
+    var fusedLocationClient: FusedLocationProviderClient? = null
+    var counter = 0
+ /*   lateinit var a: LatLng
+
+    val locationFlow = callbackFlow {
+        while (true) {
+            ++counter
+            val location = driverLoginViewModel?.newLocation(a)
+            Log.d("TAG", "Location $counter: $location")
+            trySend(location)
+            delay(2_000)
+        }
+    }.shareIn(
+        lifecycleScope, replay = 0, started = SharingStarted.WhileSubscribed()
+    )*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        driverLoginViewModel.context=this
-        storeData = StoreData(this)
 
+   /*  window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+     actionBar?.hide()*/
+//        driverLoginViewModel.context=this
+        driverLoginViewModel.fusedLocationClient =
+            LocationServices.getFusedLocationProviderClient(this@MainActivity)
+        storeData = StoreData(this)
+         locationCallback=driverLoginViewModel.locationCallback
+         fusedLocationClient=driverLoginViewModel.fusedLocationClient
 
         lifecycleScope.launch {
             val no = storeData.getNo.first()
@@ -56,22 +90,25 @@ class MainActivity : ComponentActivity() {
             check = storeData.getScreen.first()
         }
         setContent {
+
             ComposeBusAlertTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     if (check == "") {
                         Log.e("Main phno", phNo)
-                        MyScreen(driverLoginViewModel, this)
+                        MyScreen(driverLoginViewModel, this,this)
                     }
                     else {
                         Navigation(
                             flavor = "driver",
                             startDestination = Routes.DriverDashboard.name,
                             driverLoginViewModel = driverLoginViewModel,
-                            lifecycleOwner = this
+                            lifecycleOwner = this, context = this,
+//                            locationFlow=locationFlow
                         )
                     }
                 }
@@ -85,17 +122,50 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         driverLoginViewModel.getDriverDetailsVM()
         Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
+        if (locationRequired) {
+            driverLoginViewModel.startLocationUpdates()
+        }
+    }
 
-        Handler().postDelayed({
-            Log.e("ResumeHandleMain", driverLoginViewModel.listResponse.toString())
+    override fun onPause() {
+        super.onPause()
+        locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
+    }
 
-            driverLoginViewModel.a.value = true
-        }, 30000)
+    private fun newLocation(a: LatLng): Location {
+        val location = Location("MyLocationProvider")
+        location.apply {
+            latitude = a.latitude
+            longitude = a.longitude
+        }
+        return location
+    }
+
+    override fun onMapReady(p0: GoogleMap) {
+        Log.e("Map", "------------>Maaaap")
+    }
+
+}
+ class MyLocationSource : LocationSource {
+
+    private var listener: LocationSource.OnLocationChangedListener? = null
+
+    override fun activate(listener: LocationSource.OnLocationChangedListener) {
+        this.listener = listener
+    }
+
+    override fun deactivate() {
+        listener = null
+    }
+
+    fun onLocationChanged(location: Location) {
+        listener?.onLocationChanged(location)
     }
 }
-
 @Composable
-fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner) {
+fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner,context: Context,
+//             locationFlow: SharedFlow<Location?>
+) {
     var showDialog by remember { mutableStateOf(false) }
     val onBackPressedCallback = remember {
         object : OnBackPressedCallback(true) {
@@ -115,7 +185,9 @@ fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwne
         "driver",
         driverLoginViewModel = loginViewModel,
         startDestination = Routes.Dashboard.name,
-        lifecycleOwner = lifecycleOwner
+        lifecycleOwner = lifecycleOwner,
+        context = context,
+//        locationFlow=locationFlow
     )
 }
 

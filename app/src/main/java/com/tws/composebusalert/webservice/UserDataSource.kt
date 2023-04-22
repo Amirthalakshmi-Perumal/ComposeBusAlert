@@ -2,10 +2,7 @@ package com.tws.composebusalert.webservice
 
 import com.tws.composebusalert.request.CheckMobileNumberRequest
 import com.tws.composebusalert.request.UserData
-import com.tws.composebusalert.responses.CheckMobileNumberResponse
-import com.tws.composebusalert.responses.Profile
-import com.tws.composebusalert.responses.RouteListResponse
-import com.tws.composebusalert.responses.UserRegisterResponse
+import com.tws.composebusalert.responses.*
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -31,6 +28,10 @@ interface UserDataSource {
         @Query("isDeleted") deleteItem: Boolean,
         @Query("fields") value: String
     ): List<RouteListResponse>
-
+    @GET("/api/v1/route")
+    suspend fun getVehicleList(
+        @Query("id") routeId: String?,
+        @Query("populate") value: String
+    ): VehicleRouteListResponse
 
 }

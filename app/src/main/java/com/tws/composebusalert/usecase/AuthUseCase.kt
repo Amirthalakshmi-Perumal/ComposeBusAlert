@@ -76,7 +76,21 @@ class AuthUseCase @Inject constructor(
             }
         }
     }
-
+    suspend fun getVehicleList(routeId: String): VehicleRouteListResponse? {
+        authorizationRepo.getVehicleList(routeId).apply {
+            return when (this.status) {
+                Status.SUCCESS -> {
+                    this.data
+                }
+                Status.ERROR -> {
+                    throw ApiFailureException(this.message)
+                }
+                else -> {
+                    null
+                }
+            }
+        }
+    }
     fun getGroupedList(
         routeListResponse: List<RouteListResponse>
     ): List<RouteSelectionResponseModel> {

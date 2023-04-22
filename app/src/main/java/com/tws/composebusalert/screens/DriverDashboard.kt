@@ -1,6 +1,12 @@
 package com.tws.composebusalert.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,6 +35,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -44,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.tws.composebusalert.R
@@ -94,10 +102,37 @@ fun DriverDashboard(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
+                        val settingResultRequest = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.StartIntentSenderForResult()
+                        ) { activityResult ->
+                            if (activityResult.resultCode == ComponentActivity.RESULT_OK) Log.d(
+                                "appDebug", "Accepted"
+                            )
+                            else {
+                                Log.d("appDebug", "Denied")
+                            }
+                        }
                         val number = 18
                         val messages: List<String> = listOf("List1", "List2", "List3")
                         val listState = rememberLazyListState()
+                        val permissions = arrayOf(
+                            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                        val launcherMultiplePermissions = rememberLauncherForActivityResult(
+                            ActivityResultContracts.RequestMultiplePermissions()
+                        ) { permissionsMap ->
+                            val areGranted = permissionsMap.values.reduce { acc, next -> acc && next }
+                            if (areGranted) {
+                                driverLoginViewModel?.locationRequired = true
+                                driverLoginViewModel?.startLocationUpdates()
+                                Toast.makeText(
+                                    context, "Permission Granted", Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
                         var selectedIndex by remember { mutableStateOf(-1) }
                         LazyColumn(state = listState) {
                             items(items = messages) { message ->
@@ -113,11 +148,25 @@ fun DriverDashboard(
                                         .selectable(
                                             selected = true,
                                             onClick = {
-
-
                                                 navController?.navigate(Routes.MapScreen.name) {
                                                     launchSingleTop = true
                                                 }
+                                                driverLoginViewModel?.checkLocationSetting(context = context,
+                                                    onDisabled = { intentSenderRequest ->
+                                                        settingResultRequest.launch(intentSenderRequest)
+                                                    },
+                                                    onEnabled = {
+                                                        if (permissions.all {
+                                                                ContextCompat.checkSelfPermission(
+                                                                    context, it
+                                                                ) == PackageManager.PERMISSION_GRANTED
+                                                            }) {
+                                                            driverLoginViewModel.startLocationUpdates()
+                                                        } else {
+                                                            launcherMultiplePermissions.launch(permissions)
+                                                        }
+                                                    })
+
                                             },
                                         ),
                                 )
@@ -142,46 +191,52 @@ fun DriverDashboard(
                             Row(
                                 Modifier
                                     .fillMaxWidth()
-                                    .padding(105.dp, 0.dp, 0.dp, 0.dp)
+//                                    .padding(105.dp, 0.dp, 0.dp, 0.dp)
                             ) {
-                                Text(
-                                    text = "DASHBOARD",
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                        .align(CenterVertically)
-                                )
-                                IconButton(
-                                    onClick = {
-                                              navController?.navigate(Routes.DriverSelectRouteScreen.name)
-                                    },
-                                    modifier = Modifier.padding(70.dp, 0.dp, 2.dp, 0.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Settings,
-                                        contentDescription = null,
-                                        tint = Color.White
+                                Box(Modifier
+                                    .fillMaxWidth()){
+                                    Text(
+                                        text = "DASHBOARD",
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .padding(10.dp)
+                                            .align(Center)
                                     )
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        scope.launch {
-                                            driverLoginViewModel?.signOut(navController)
-                                        }
-                                    },
-                                    modifier = Modifier.padding(0.dp, 0.dp, 2.dp, 0.dp)
-                                ) {
-                                    Icon(
-//                                        imageVector =  R.drawable.logout as ImageVector,
-                                        painter = painterResource(id = R.drawable.logout),
-                                        contentDescription = null,
-                                        tint = Color.White,
-
+                                    IconButton(
+                                        onClick = {
+                                            navController?.navigate(Routes.DriverSelectRouteScreen.name)
+                                        },
+                                        modifier = Modifier.padding(end=35.dp).align(TopEnd)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Settings,
+                                            contentDescription = null,
+                                            tint = Color.White
                                         )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            scope.launch {
+                                                driverLoginViewModel?.signOut(navController)
+                                            }
+                                        },
+                                        modifier = Modifier.align(TopEnd)
+                                    ) {
+                                        Icon(
+//                                        imageVector =  R.drawable.logout as ImageVector,
+                                            painter = painterResource(id = R.drawable.logout),
+                                            contentDescription = null,
+                                            tint = Color.White,
+
+                                            )
+                                    }
                                 }
+
+
+
+
                             }
                         },
                         modifier = Modifier.height(50.dp),

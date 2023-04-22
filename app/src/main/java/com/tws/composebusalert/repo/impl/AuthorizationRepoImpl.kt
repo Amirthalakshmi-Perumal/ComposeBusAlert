@@ -13,16 +13,13 @@ import com.tws.composebusalert.exception.ErrorHandler.handleException
 import com.tws.composebusalert.repo.AuthorizationRepo
 import com.tws.composebusalert.request.CheckMobileNumberRequest
 import com.tws.composebusalert.request.UserData
-import com.tws.composebusalert.responses.CheckMobileNumberResponse
-import com.tws.composebusalert.responses.Profile
-import com.tws.composebusalert.responses.UserRegisterResponse
 import com.tws.composebusalert.services.ApiFailureException
 import com.tws.composebusalert.services.BusAlertException
 import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.services.ResourceBus
 import com.tws.composebusalert.webservice.UserDataSource
 import com.tws.composebusalert.network.ResponseHandler
-import com.tws.composebusalert.responses.RouteListResponse
+import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -90,6 +87,18 @@ class AuthorizationRepoImpl @Inject constructor(
     }.applyCommonSideEffects().catch {
         emit(handleException(it as Exception))
     }
+
+    override suspend fun getVehicleList(
+        routeId: String?
+    ): ResourceBus<VehicleRouteListResponse> {
+        return try {
+            val response = userDataSource.getVehicleList(routeId, "vehicle")
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }
+
 
     override suspend fun registerUser(userData: UserData): ResourceBus<UserRegisterResponse> {
         return try {

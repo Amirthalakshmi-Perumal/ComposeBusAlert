@@ -24,3 +24,6 @@ enum class Status {
     ERROR,
     LOADING
 }
+object NavigationKeys {
+    val MY_DATA = "my_data"
+}

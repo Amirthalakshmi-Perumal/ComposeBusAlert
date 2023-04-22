@@ -3,7 +3,7 @@
 
     <style name="Theme.ComposeBusAlert" parent="android:Theme.Material.Light.NoActionBar" />
     <style name="SplashTheme" parent="Theme.SplashScreen">
-
+        <item name="android:windowActionBar">false</item>
         <item name="android:windowBackground">@drawable/splash</item>
 
     </style>

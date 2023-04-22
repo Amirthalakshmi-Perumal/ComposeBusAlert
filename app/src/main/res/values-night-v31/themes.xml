@@ -9,6 +9,7 @@
         <!--        <item name="splashScreenIconSize">500dp</item>-->
         <!--        <item name="windowSplashScreenAnimationDuration">500</item>-->
         <!--        <item name="android:windowSplashScreenBrandingImage">@drawable/img</item>-->
+        <item name="android:windowActionBar">false</item>
 
     </style>
 </resources>

@@ -1,19 +1,31 @@
 package com.tws.composebusalert.viewmodel
 
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
+import android.graphics.Bitmap
+import android.location.Location
 import android.os.Build
+import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.collectAsState
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
-import com.tws.composebusalert.MainActivity
 import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
@@ -25,8 +37,6 @@ import com.tws.composebusalert.usecase.AuthUseCase
 import com.tws.composebusalert.webservice.UserDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -38,7 +48,9 @@ import javax.inject.Inject
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import java.time.Instant
 
 @HiltViewModel
@@ -53,9 +65,26 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
-
+     var locationCallback: LocationCallback? = null
+    var fusedLocationClient: FusedLocationProviderClient? = null
     private val _routeList = MutableLiveData<List<RouteListResponse>>()
     val routeList: LiveData<List<RouteListResponse>> = _routeList
+    var locationRequired = false
+
+    var counter = 0
+//    lateinit var a: LatLng
+
+    /*var locationFlow = callbackFlow {
+        while (true) {
+            ++counter
+            val location = newLocation(a)
+            Log.d(TAG, "Location $counter: $location")
+            trySend(location)
+            delay(2_000)
+        }
+    }.shareIn(
+        lifecycleScope, replay = 0, started = SharingStarted.WhileSubscribed()
+    )*/
     /*   fun getRouteList() {
            viewModelScope.launch {
                val response = apiService.getRouteList(
@@ -67,18 +96,17 @@ class DriverLoginViewModel @Inject constructor(
 
     //    var listResponse = MutableLiveData<List<RouteListResponse>>()
     var listResponse: List<RouteListResponse>? = null
-    val token =
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
+//    val token =
+//        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
 
 //    val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-
 
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
             val newRequest = chain.request().newBuilder().addHeader(
                 "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxOTczNTM5LCJleHAiOjE2ODIwNTk5Mzl9.LK9BN6JgEALs7G2jqkgbW9yKzN5QeS1b-m7pru-98dk"
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyMTQyMzAwLCJleHAiOjE2ODIyMjg3MDB9.WnA6M_7hgGm28vPQgxOKra5UEv17VFYN68dEomYDtDo"
             ).build()
             chain.proceed(newRequest)
         }.build()
@@ -138,7 +166,7 @@ class DriverLoginViewModel @Inject constructor(
 
     private val _progress = MutableLiveData<Boolean>()
     val progress: LiveData<Boolean> = _progress
-    val a = MutableLiveData<Boolean>()
+//    val a = MutableLiveData<Boolean>()
     private val _listData = MutableLiveData<String>()
     val listData: LiveData<String> = _listData
 
@@ -418,11 +446,11 @@ class DriverLoginViewModel @Inject constructor(
                         firebaseAuth(navController, context, phone)
                     } else {
                         Log.e("VVVMMWW2", "uiuiuiui error ${it.apiError?.message}")
-                        Toast.makeText(
+                       /* Toast.makeText(
                             context,
                             "This Phone Number is not Verified..",
                             Toast.LENGTH_LONG
-                        ).show()
+                        ).show()*/
 //                              navController?.navigate(Routes.Phone.name)
 //                            Log.e("VVVMMWW", "uiuiuiui${it.status}")
 //                            Log.e("VVVMMWW", "uiuiuiui${it.data}")
@@ -455,6 +483,75 @@ class DriverLoginViewModel @Inject constructor(
         previouSelectedRouteName = selectedRouteName
         filteredRoute.value = roulteList
     }
+
+//    MapActivity Starts here
+ fun checkLocationSetting(
+    context: Context, onDisabled: (IntentSenderRequest) -> Unit, onEnabled: () -> Unit
+) {
+    val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
+        .setWaitForAccurateLocation(true).setMinUpdateIntervalMillis(50)
+        .setMaxUpdateDelayMillis(100).build()
+
+    val client: SettingsClient = LocationServices.getSettingsClient(context)
+    val builder: LocationSettingsRequest.Builder =
+        LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+
+    val gpsSettingTask: Task<LocationSettingsResponse> =
+        client.checkLocationSettings(builder.build())
+
+    gpsSettingTask.addOnSuccessListener { onEnabled() }
+    gpsSettingTask.addOnFailureListener { exception ->
+        if (exception is ResolvableApiException) {
+            try {
+                val intentSenderRequest =
+                    IntentSenderRequest.Builder(exception.resolution).build()
+                onDisabled(intentSenderRequest)
+            } catch (sendEx: IntentSender.SendIntentException) {
+                // ignore here
+            }
+        }
+    }
+}
+
+     fun newLocation(a: LatLng): Location {
+        val location = Location("MyLocationProvider")
+        location.apply {
+            latitude = a.latitude
+            longitude = a.longitude
+        }
+        return location
+    }
+     fun bitmapDescriptorFromVector(
+        context: Context, vectorResId: Int
+    ): BitmapDescriptor? {
+
+        // retrieve the actual drawable
+        val drawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
+        drawable.setBounds(0, 0, 120, 120)
+        val bm = Bitmap.createBitmap(
+            120, 120, Bitmap.Config.ARGB_8888
+        )
+
+        // draw it onto the bitmap
+        val canvas = android.graphics.Canvas(bm)
+        drawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bm)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        locationCallback?.let {
+            val locationRequest = LocationRequest.create().apply {
+                interval = 10000
+                fastestInterval = 5000
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+            fusedLocationClient?.requestLocationUpdates(
+                locationRequest, it, Looper.getMainLooper()
+            )
+        }
+    }
+
 }
 
 
