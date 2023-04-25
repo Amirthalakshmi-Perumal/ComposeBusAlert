@@ -7,14 +7,11 @@ import android.content.Context
 import android.content.IntentSender
 import android.graphics.Bitmap
 import android.location.Location
-import android.os.Build
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.collectAsState
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -30,28 +27,19 @@ import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
-import com.tws.composebusalert.responses.Profile
-import com.tws.composebusalert.responses.RouteListResponse
-import com.tws.composebusalert.responses.RouteSelectionResponseModel
+import com.tws.composebusalert.responses.*
+import com.tws.composebusalert.screens.vehicleList
 import com.tws.composebusalert.usecase.AuthUseCase
 import com.tws.composebusalert.webservice.UserDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.MalformedJwtException
-import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
-import java.time.Instant
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
@@ -65,12 +53,13 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
-     var locationCallback: LocationCallback? = null
+    var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
     private val _routeList = MutableLiveData<List<RouteListResponse>>()
     val routeList: LiveData<List<RouteListResponse>> = _routeList
     var locationRequired = false
-
+    var stop1: LatLng? = null
+    var stop2: LatLng? = null
     var counter = 0
 //    lateinit var a: LatLng
 
@@ -96,23 +85,25 @@ class DriverLoginViewModel @Inject constructor(
 
     //    var listResponse = MutableLiveData<List<RouteListResponse>>()
     var listResponse: List<RouteListResponse>? = null
+    var listResponseVehicle: VehicleRouteListResponse? = null
+    var vehicleList: ArrayList<VehicleRouteItem>? = null
+
+//    var listResponseVehicle11: ArrayList<VehicleRouteItem> = null
 //    val token =
 //        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
 
 //    val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-
+var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyMzk4MjczLCJleHAiOjE2ODI0ODQ2NzN9.o1s0as41tdGpXJL_Fde-urOsmS5nT4-dqa_DbakK1c8"
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
             val newRequest = chain.request().newBuilder().addHeader(
                 "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyMTQyMzAwLCJleHAiOjE2ODIyMjg3MDB9.WnA6M_7hgGm28vPQgxOKra5UEv17VFYN68dEomYDtDo"
+                "Bearer $bearToken"
             ).build()
             chain.proceed(newRequest)
         }.build()
     var service = ""
-    lateinit var BASE_URL: String
-
     //    Profile   Route
     val retrofit = Retrofit.Builder()
         .baseUrl(if (service == "Profile") "http://206.189.137.65/api/v1/profile/" else "http://206.189.137.65/api/v1/route/")
@@ -121,6 +112,7 @@ class DriverLoginViewModel @Inject constructor(
         .build()
 
     private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
+
     private var previouSelectedRouteName: String = ""
     val isFrom = savedStateHandle.get<String>("DriverDashBoard")
     private var previouSelectedRoutePostion: Int? = null
@@ -166,12 +158,10 @@ class DriverLoginViewModel @Inject constructor(
 
     private val _progress = MutableLiveData<Boolean>()
     val progress: LiveData<Boolean> = _progress
-//    val a = MutableLiveData<Boolean>()
+
+    //    val a = MutableLiveData<Boolean>()
     private val _listData = MutableLiveData<String>()
     val listData: LiveData<String> = _listData
-
-
-
 
 
     /*  @RequiresApi(Build.VERSION_CODES.O)
@@ -273,15 +263,26 @@ class DriverLoginViewModel @Inject constructor(
                                 Log.e("VM", "Register User")
                                 Log.e("VM", this.token)
                                 val storedToken = dataStore.getToken.first()
-                                val storedProfileId= dataStore.getProfileId.first()
-                                val storedBranchId= dataStore.getBranchId.first()
+                                val storedProfileId = dataStore.getProfileId.first()
+                                val storedBranchId = dataStore.getBranchId.first()
 
                                 dataStore.saveToken(this.token)
                                 dataStore.saveProfileId(this.user.profile?.id.toString())
+                                dataStore.saveDriverName(this.user.profile?.name.toString())
+                                dataStore.saveImageUrl(this.user.profile?.profilePicURL.toString())
+                                dataStore.saveAddress(this.user.profile?.address?.country.toString())
+
                                 dataStore.saveBranchId(this.user.profile?.branch.toString())
                                 Log.d("VMstoredToken", "Stored token is $storedToken")
-                                Log.d("VMstoredProfileId", "Stored saveProfileId is $storedProfileId")
+                                Log.d(
+                                    "VMstoredProfileId",
+                                    "Stored saveProfileId is $storedProfileId"
+                                )
                                 Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
+                                if (storedToken != null) {
+                                    bearToken=storedToken
+                                }
+
                                 /*  if(this.token=="TokenExpiredError"){
                                       authUseCase.registerUserToServer(
                                           mAuthUser, LoginType.PHONE_NUMBER, number, context
@@ -403,6 +404,63 @@ class DriverLoginViewModel @Inject constructor(
         return listResponse
     }
 
+    fun getVehicleList(from: String): VehicleRouteListResponse? {
+//        obj.check="DashBoard Screen"
+        var responses: VehicleRouteListResponse? = null
+        try {
+//            viewModelScope.launch(Dispatchers.IO) {
+                /* val a = withContext(Dispatchers.Default) {
+                     apiService.getVehicleList(
+                         "7465a78b-817a-4af8-8524-da4485f98b24", "vehicle"
+                     )
+                 }
+                 Log.e("", "With Context $a")
+                 listResponseVehicle = a*/
+            viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    responses = apiService.getVehicleList(
+                        "7465a78b-817a-4af8-8524-da4485f98b24", "vehicle"
+                    )
+                    listResponseVehicle = responses
+
+                    vehicleList = responses
+                    stop1 =
+                        vehicleList?.get(0)?.startPoint?.latitude?.let {
+                            vehicleList?.get(0)?.startPoint?.longitude?.let { it1 ->
+                                LatLng(
+                                    it,
+                                    it1
+                                )
+                            }
+                        }
+                    stop2 =
+                        vehicleList?.get(0)?.endPoint?.latitude?.let {
+                            vehicleList?.get(0)?.endPoint?.longitude?.let { it1 ->
+                                LatLng(
+                                    it,
+                                    it1
+                                )
+                            }
+                        }
+                }
+
+                Log.e(
+                    "Responses",
+                    " Vehicle responses DLVM  Responses" + this@DriverLoginViewModel.listResponseVehicle?.size
+                )
+            }
+//            Log.e("Responses", "New Responses  ${this.listResponseVehicle}")
+        } catch (e: Exception) {
+            Log.e("VMgetVehicleRouteList", "localizedMessage")
+//            setNetworkError(e.localizedMessage)
+        }
+        Log.e(
+            "ResponsesResult",
+            " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
+        )
+        return listResponseVehicle
+    }
+
     private fun search(query: String) {
 
         if (!TextUtils.isEmpty(query)) {
@@ -446,11 +504,11 @@ class DriverLoginViewModel @Inject constructor(
                         firebaseAuth(navController, context, phone)
                     } else {
                         Log.e("VVVMMWW2", "uiuiuiui error ${it.apiError?.message}")
-                       /* Toast.makeText(
-                            context,
-                            "This Phone Number is not Verified..",
-                            Toast.LENGTH_LONG
-                        ).show()*/
+                        /* Toast.makeText(
+                             context,
+                             "This Phone Number is not Verified..",
+                             Toast.LENGTH_LONG
+                         ).show()*/
 //                              navController?.navigate(Routes.Phone.name)
 //                            Log.e("VVVMMWW", "uiuiuiui${it.status}")
 //                            Log.e("VVVMMWW", "uiuiuiui${it.data}")
@@ -461,7 +519,7 @@ class DriverLoginViewModel @Inject constructor(
     }
 
 
-    suspend fun signOut(navController: NavController? = null){
+    suspend fun signOut(navController: NavController? = null, context: Context,) {
         val dataStore = StoreData(context)
         val storedToken = dataStore.getToken.first()
         FirebaseAuth.getInstance().signOut()
@@ -469,6 +527,7 @@ class DriverLoginViewModel @Inject constructor(
         Log.d("VMstoredToken After Clear", "Cleared token is $storedToken")
         navController?.navigate(Routes.Dashboard.name)
     }
+
     fun updateRouteSelection(postion: Int, selectedRouteName: String) {
         val roulteList: MutableList<RouteSelectionResponseModel> = _filteredRoute
         if (!TextUtils.isEmpty(previouSelectedRouteName)) {
@@ -484,36 +543,36 @@ class DriverLoginViewModel @Inject constructor(
         filteredRoute.value = roulteList
     }
 
-//    MapActivity Starts here
- fun checkLocationSetting(
-    context: Context, onDisabled: (IntentSenderRequest) -> Unit, onEnabled: () -> Unit
-) {
-    val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
-        .setWaitForAccurateLocation(true).setMinUpdateIntervalMillis(50)
-        .setMaxUpdateDelayMillis(100).build()
+    //    MapActivity Starts here
+    fun checkLocationSetting(
+        context: Context, onDisabled: (IntentSenderRequest) -> Unit, onEnabled: () -> Unit
+    ) {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
+            .setWaitForAccurateLocation(true).setMinUpdateIntervalMillis(50)
+            .setMaxUpdateDelayMillis(100).build()
 
-    val client: SettingsClient = LocationServices.getSettingsClient(context)
-    val builder: LocationSettingsRequest.Builder =
-        LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        val client: SettingsClient = LocationServices.getSettingsClient(context)
+        val builder: LocationSettingsRequest.Builder =
+            LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
-    val gpsSettingTask: Task<LocationSettingsResponse> =
-        client.checkLocationSettings(builder.build())
+        val gpsSettingTask: Task<LocationSettingsResponse> =
+            client.checkLocationSettings(builder.build())
 
-    gpsSettingTask.addOnSuccessListener { onEnabled() }
-    gpsSettingTask.addOnFailureListener { exception ->
-        if (exception is ResolvableApiException) {
-            try {
-                val intentSenderRequest =
-                    IntentSenderRequest.Builder(exception.resolution).build()
-                onDisabled(intentSenderRequest)
-            } catch (sendEx: IntentSender.SendIntentException) {
-                // ignore here
+        gpsSettingTask.addOnSuccessListener { onEnabled() }
+        gpsSettingTask.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    val intentSenderRequest =
+                        IntentSenderRequest.Builder(exception.resolution).build()
+                    onDisabled(intentSenderRequest)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // ignore here
+                }
             }
         }
     }
-}
 
-     fun newLocation(a: LatLng): Location {
+    fun newLocation(a: LatLng): Location {
         val location = Location("MyLocationProvider")
         location.apply {
             latitude = a.latitude
@@ -521,7 +580,8 @@ class DriverLoginViewModel @Inject constructor(
         }
         return location
     }
-     fun bitmapDescriptorFromVector(
+
+    fun bitmapDescriptorFromVector(
         context: Context, vectorResId: Int
     ): BitmapDescriptor? {
 

@@ -1,8 +1,10 @@
 package com.tws.composebusalert.screens
 
+import android.app.Activity
 import android.inputmethodservice.Keyboard.Row
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.tws.composebusalert.R
 import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.Routes
@@ -56,11 +59,24 @@ private var route: String? = null
 fun DriverSelectRouteScreen(
     navController: NavController,
     loginViewModel: DriverLoginViewModel,
-    lifecycleOwner: LifecycleOwner
+    lifecycleOwner: LifecycleOwner,
+    argValue:String
 ) {
+    val activity = (LocalContext.current as Activity)
+
+    BackHandler(true) {
+        if(argValue=="OTP"){
+            activity.finish()
+        }else{
+            navController.navigate(Routes.DriverDashboard.name)
+        }
+    }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
     val dataStore = StoreData(context)
+    val storedScreen = dataStore.getrouteId.collectAsState(initial = "")
+
     Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
     LaunchedEffect(Unit) {
         loginViewModel.getRouteList("")
@@ -126,7 +142,6 @@ fun DriverSelectRouteScreen(
                         Box(modifier = Modifier.fillMaxWidth()) {
                             ClickableText(
                                 text = AnnotatedString("Save"),
-
                                 modifier = Modifier
                                     .align(TopEnd)
                                     .padding(
@@ -136,11 +151,19 @@ fun DriverSelectRouteScreen(
                                     scope.launch {
                                         if (route != null) {
                                             dataStore.saverouteId(route!!)
-                                            navController.navigate(Routes.DriverDashboard.name)
+                                            navController.navigate(Routes.DriverDashboard.name){
+                                                navController.popBackStack()
+                                            }
                                         } else {
-                                            Toast.makeText(context, "Please Select Route", Toast.LENGTH_SHORT)
-                                                .show()
+                                            route=storedScreen.value
+                                            navController.navigate(Routes.DriverDashboard.name){
+                                                navController.popBackStack()
+                                            }
                                         }
+//                                        else{
+//                                            Toast.makeText(context, "Please Select Route", Toast.LENGTH_SHORT)
+//                                                .show()
+//                                        }
                                     }
                                 })
                         }

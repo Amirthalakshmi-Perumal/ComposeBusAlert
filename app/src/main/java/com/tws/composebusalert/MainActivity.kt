@@ -8,11 +8,13 @@ import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -44,6 +46,8 @@ import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), OnMapReadyCallback {
+    @RequiresApi(Build.VERSION_CODES.M)
+    private var pressedTime: Long = 0
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
     lateinit var storeData: StoreData
     var phNo = ""
@@ -66,9 +70,12 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
     }.shareIn(
         lifecycleScope, replay = 0, started = SharingStarted.WhileSubscribed()
     )*/
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //        window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        actionBar?.hide()
+//     driverLoginViewModel.getVehicleList("")
    /*  window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
      actionBar?.hide()*/
 //        driverLoginViewModel.context=this
@@ -121,12 +128,26 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         driverLoginViewModel.getDriverDetailsVM()
+//        driverLoginViewModel.getVehicleList("")
         Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
         if (locationRequired) {
             driverLoginViewModel.startLocationUpdates()
         }
     }
-
+   /* @RequiresApi(Build.VERSION_CODES.M)
+    override fun onBackPressed() {
+        // on below line we are checking if the press time is greater than 2 sec
+        if (pressedTime + 2000 > System.currentTimeMillis()) {
+            // if time is greater than 2 sec we are closing the application.
+            super.onBackPressed()
+            finish()
+        } else {
+            // in else condition displaying a toast message.
+            Toast.makeText(getBaseContext(), "Press back again to exit", Toast.LENGTH_SHORT).show();
+        }
+        // on below line initializing our press time variable
+        pressedTime = System.currentTimeMillis();
+    }*/
     override fun onPause() {
         super.onPause()
         locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
@@ -166,7 +187,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
 fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner,context: Context,
 //             locationFlow: SharedFlow<Location?>
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    /*var showDialog by remember { mutableStateOf(false) }
     val onBackPressedCallback = remember {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -180,7 +201,7 @@ fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwne
         onBackPressedCallback.isEnabled = true
         backDispatcher?.addCallback(onBackPressedCallback)
         onDispose { onBackPressedCallback.remove() }
-    }
+    }*/
     Navigation(
         "driver",
         driverLoginViewModel = loginViewModel,

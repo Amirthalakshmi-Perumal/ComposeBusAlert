@@ -8,9 +8,16 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -50,11 +57,37 @@ fun Navigation(
         composable(route = Routes.OTP.name) {
             OTPScreen(navController, driverLoginViewModel)
         }
-        composable(route = Routes.DriverSelectRouteScreen.name) {
-           DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner)
+
+
+       /* composable(
+            route = "A/{arg}",
+            arguments = listOf(navArgument("arg") { type = NavType.StringType })
+        ) { navBackStackEntry ->
+            val argValue = navBackStackEntry.arguments?.getString("arg")
+            if (argValue != null) {
+                AddScreen(argValue)
+            }else{
+                Text(text = "Argument value: $argValue")
+            }
+        }*/
+
+        composable(
+            route = "A/{arg}",
+            arguments = listOf(navArgument("arg") { type = NavType.StringType })
+        ) { navBackStackEntry ->
+            val argValue = navBackStackEntry.arguments?.getString("arg")
+            if (argValue != null) {
+                DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner,argValue)
+            }else{
+                Text(text = "Argument value: $argValue")
+            }
         }
+
+//        composable(route = Routes.DriverSelectRouteScreen.name) {
+//           DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner)
+//        }
         composable(route = Routes.DriverDashboard.name) {
-            DriverDashboard(navController, driverLoginViewModel)
+            DriverDashboard(navController, driverLoginViewModel,lifecycleOwner)
         }
         composable(route = Routes.MapScreen.name ) {
             MapScreen(navController,driverLoginViewModel)
@@ -64,5 +97,12 @@ fun Navigation(
         }
         */
     }
+}
+
+@Composable
+fun AddScreen(s: String) {
+Box(Modifier.fillMaxSize()){
+    Text(text = s, fontSize = 55.sp, modifier = Modifier.align(Alignment.Center).fillMaxSize())
+}
 }
 

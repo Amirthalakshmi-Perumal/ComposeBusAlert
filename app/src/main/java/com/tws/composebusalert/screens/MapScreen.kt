@@ -2,10 +2,12 @@ package com.tws.composebusalert.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -69,13 +71,18 @@ fun MapScreen(
 //    locationFlow: SharedFlow<Location?>,
 
 ) {
+    val context = LocalContext.current
+
+    val activity = (LocalContext.current as Activity)
+    BackHandler(true) {
+        activity.finish()
+    }
     lateinit var a: LatLng
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
     val name = driverLoginViewModel?.firstName?.value.toString()
-    val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {}
@@ -235,7 +242,6 @@ fun MapScreen(
                 }
 
 
-                val context = LocalContext.current
                 val settingResultRequest = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartIntentSenderForResult()
                 ) { activityResult ->
@@ -406,13 +412,20 @@ fun GoogleMapView(
 
 //    val myLoation = LatLng(11.930390, 79.807510)
     val myLoation = LatLng(a.latitude, a.longitude)
-    val stop1 = LatLng(11.930390, 79.807510)
-    val stop2 = LatLng(11.940837, 79.763548)
+//    val stop1 = LatLng(11.930390, 79.807510)
+//    val stop2 = LatLng(11.940837, 79.763548)
+val stop1 = driverLoginViewModel?.stop1
+    val stop2 = driverLoginViewModel?.stop2
+
     Log.d("LATLONG", "${myLoation.latitude}${myLoation.longitude} was clicked")
     val _makerList: MutableList<LatLng> = mutableListOf<LatLng>()
 
-    _makerList.add(stop1)
-    _makerList.add(stop2)
+    if (stop1 != null) {
+        _makerList.add(stop1)
+    }
+    if (stop2 != null) {
+        _makerList.add(stop2)
+    }
     val context = LocalContext.current
     val pos2 by remember {
         mutableStateOf(_makerList)
@@ -492,11 +505,15 @@ Box{
             Log.d("TAG", "${it.title} was clicked")
             false
         }
-        googlePlacesInfoViewModel.getDirection(
-            origin = "${stop1.latitude}, ${stop1.longitude}",
-            destination = "${stop2.latitude}, ${stop2.longitude}",
-            key = MapKey.KEY
-        )
+        if (stop1 != null) {
+            if (stop2 != null) {
+                googlePlacesInfoViewModel.getDirection(
+                    origin = "${stop1.latitude}, ${stop1.longitude}",
+                    destination = "${stop2.latitude}, ${stop2.longitude}",
+                    key = MapKey.KEY
+                )
+            }
+        }
 
         Marker(
             state = MarkerState(position = myLoation),

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.ComposeBusAlert" parent="android:Theme.Material.NoActionBar" />
 
-    <style name="Theme.ComposeFriend" parent="android:Theme.Material.NoActionBar" />
+<!--    <style name="Theme.ComposeFriend" parent="android:Theme.Material.NoActionBar" />-->
     <style name="SplashTheme" parent="Theme.SplashScreen">
         <item name="android:windowBackground">@drawable/splash</item>
-        <item name="android:windowActionBar">false</item>
+<!--        <item name="android:windowActionBar">false</item>-->
 
     </style>
 </resources>

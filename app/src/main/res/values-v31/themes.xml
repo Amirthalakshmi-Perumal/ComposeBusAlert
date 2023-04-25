@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="SplashTheme" parent="Theme.SplashScreen">
-        <item name="windowActionBar">false</item>
-        <item name="windowSplashScreenBackground">#FFffb44a</item>
+<!--        <item name="windowActionBar">false</item>-->
+<!--        <item name="windowSplashScreenBackground">#FFffb44a</item>-->
+
+
+        <item name="windowSplashScreenBackground">#036591</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
+        <item name="splashScreenIconSize">500dp</item>
+        <item name="windowSplashScreenAnimationDuration">500</item>
+<!--        <item name="android:windowSplashScreenBrandingImage">@drawable/dash</item>-->
+
         <!--        <item name="windowSplashScreenAnimatedIcon">@drawable/img</item>-->
         <!--        <item name="splashScreenIconSize">5000dp</item>-->
-        <item name="windowSplashScreenAnimationDuration">500</item>
+<!--        <item name="windowSplashScreenAnimationDuration">500</item>-->
         <!--        <item name="android:windowSplashScreenBrandingImage">@drawable/img</item>-->
         <!--        <item name="android:windowBackground" targetApi="s">@drawable/splash</item>-->
-        <item name="android:windowBackground">@drawable/img</item>
-        <item name="android:windowActionBar">false</item>
+<!--        <item name="android:windowBackground">@drawable/img</item>-->
+<!--        <item name="android:windowActionBar">false</item>-->
+        <item name="android:windowBackground" targetApi="s">@drawable/splash</item>
 
         <!--  <item name="android:statusBarColor">@color/white</item>
           <item name="android:navigationBarColor">@color/white</item>

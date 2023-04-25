@@ -51,7 +51,8 @@ fun OTPScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             IconButton(
                 onClick = {
-                    navController?.navigate(Routes.Phone.name)
+//                    navController?.navigate(Routes.Phone.name)
+                    navController?.navigate("A/OTP")
                 }, modifier = Modifier.size(48.dp)
             ) {
                 Icon(

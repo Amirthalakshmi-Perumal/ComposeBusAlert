@@ -10,8 +10,8 @@ enum class Routes {
     AlertScreen,
     MapScreen,
     PassengerList,
-    BottomSheet
-
+    BottomSheet,
+    Summa
 }
 enum class LoginType {
     GOOGLE,
