@@ -1,5 +1,8 @@
 package com.tws.composebusalert.screens
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -9,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -21,19 +25,15 @@ import com.tws.composebusalert.R
 
 @Composable
 fun DashBoard(flavor: String, navController: NavController? = null) {
-
+    val activity = LocalContext.current as Activity
+    BackHandler(enabled = true) {
+            activity.finish()
+    }
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         if (flavor == "user") {
-          /*  Image(
-                painter = painterResource(id = R.drawable.img_2),
-                contentDescription = "My Image",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillWidth
-            )*/
             PassengerDashBoard(navController)
-//            DriverLogin(navController)
         } else {
             DriverLogin(navController)
         }
@@ -59,7 +59,6 @@ fun DriverLogin(navController: NavController? = null) {
                 contentDescription = null,
                 modifier = Modifier
                     .size(300.dp)
-//                    .fillMaxWidth()
                     .constrainAs(img) {
                         start.linkTo(parent.start)
                         top.linkTo(parent.top)
@@ -73,13 +72,11 @@ fun DriverLogin(navController: NavController? = null) {
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-//                    .fillMaxWidth()
                     .constrainAs(text) {
                         start.linkTo(parent.start)
                         top.linkTo(img.bottom, margin = 16.dp)
                         bottom.linkTo(btn.top)
                         end.linkTo(parent.end)
-//                        height(height = 48.dp)
                     }
             )
             Button(
@@ -87,7 +84,6 @@ fun DriverLogin(navController: NavController? = null) {
                           navController?.navigate(Routes.Phone.name)
                 },
                 modifier = Modifier
-//                    .fillMaxWidth()
                     .constrainAs(btn) {
                         start.linkTo(parent.start)
                         top.linkTo(text.bottom)

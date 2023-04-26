@@ -3,25 +3,33 @@ package com.tws.composebusalert.repo.impl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.*
 import com.tws.composebusalert.applyCommonSideEffects
 import com.tws.composebusalert.exception.ErrorHandler
 import com.tws.composebusalert.exception.ErrorHandler.handleException
 import com.tws.composebusalert.repo.AuthorizationRepo
-import com.tws.composebusalert.request.CheckMobileNumberRequest
-import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.services.ApiFailureException
 import com.tws.composebusalert.services.BusAlertException
 import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.services.ResourceBus
 import com.tws.composebusalert.webservice.UserDataSource
 import com.tws.composebusalert.network.ResponseHandler
+import com.tws.composebusalert.request.*
 import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import java.lang.Exception
 
@@ -53,13 +61,16 @@ class AuthorizationRepoImpl @Inject constructor(
         navController: NavController?,
         context: Context
     ): Flow<Resource<CheckMobileNumberResponse>> = flow<Resource<CheckMobileNumberResponse>> {
+
         try {
             val obj = CheckMobileNumberRequest(countryCode, mobNum, userType)
             userDataSource.checkMobileNumber(obj).run {
                 if (!this.isSuccessful) {
                     Log.e("AuthRepoImpl", "isNNNNotSuccessful")
                     Log.e("AuthRepoImpl", message)
-//                    Toast.makeText(this,"dsadasasa",Toast.LENGTH_SHORT).show()
+
+//                    Toast.makeText(context," Wrong Number ",Toast.LENGTH_LONG).show()
+//                    showWebView.value = true
 
                     emit(
                         Resource.error(
@@ -70,6 +81,7 @@ class AuthorizationRepoImpl @Inject constructor(
                     )
 
                 }
+
                 if (this.isSuccessful) {
                     Log.e("AuthRepoImpl", "isSuccessful " + this.body())
 
@@ -108,6 +120,7 @@ class AuthorizationRepoImpl @Inject constructor(
             responseHandler.handleException(e)
         }
     }
+
     override suspend fun getDriveDetails(id: String): ResourceBus<Profile> {
         return try {
             val response = userDataSource.getProfile(id)
@@ -119,13 +132,44 @@ class AuthorizationRepoImpl @Inject constructor(
 
     override suspend fun getRouteList(branchId: String?): ResourceBus<List<RouteListResponse>> {
         return try {
-            val response = userDataSource.getRouteList(branchId, false,"id,name,type")
+            val response = userDataSource.getRouteList(branchId, false, "id,name,type")
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }
+
+    override suspend fun stopLocationUpdate(stopLocationServiceRequest: StopLocationUpdateRequest):
+            ResourceBus<StartLocationServiceResponse> {
+        return try {
+            val response = userDataSource.stopLocationService(stopLocationServiceRequest)
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }
+    override suspend fun updateGeoLocation(geoPositionRequest: GeoPositionRequest):
+            ResourceBus<GeoPositionResponse> {
+        return try {
+            val response = userDataSource.updateGeoLocation(geoPositionRequest)
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }
+    override suspend fun startLocationService(
+        startLocationServiceRequest: StartLocationServiceRequest
+    ):
+            ResourceBus<StartLocationServiceResponse> {
+        return try {
+            val response = userDataSource.startLocationService(startLocationServiceRequest)
             responseHandler.handleSuccess(response)
         } catch (e: Exception) {
             responseHandler.handleException(e)
         }
     }
 }
+
 
 
 

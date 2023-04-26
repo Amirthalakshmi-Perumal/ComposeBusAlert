@@ -1,5 +1,7 @@
 package com.tws.composebusalert.screens
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Build
 import android.text.TextUtils
 import android.util.Log
@@ -35,9 +37,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
 import com.tws.composebusalert.datastore.StoreData
+import com.tws.composebusalert.isInternetAvailable
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -50,8 +54,8 @@ fun Mobile_Number(
     navController: NavController? = null,
     loginViewModel: DriverLoginViewModel? = null,
 ) {
-
     val context = LocalContext.current
+
     val scope = rememberCoroutineScope()
     val dataStore = StoreData(context)
     val savedNo = dataStore.getNo.collectAsState(initial = "")
@@ -61,7 +65,10 @@ fun Mobile_Number(
     loginViewModel?.validationError?.observeAsState {
         showErrorMessage("Failed Registry", view)
     }
-
+//    var internet = isInternetAvailable(context)
+//    if (!internet) {
+//        Toast.makeText(context, "No Internet Connection", Toast.LENGTH_SHORT).show()
+//    }
 
     val msg = loginViewModel?.onSuccess?.collectAsState()
     var bar = true
@@ -133,16 +140,11 @@ fun Mobile_Number(
                             .show()
 
                     } else if (number.length == 10) {
-                        Toast.makeText(context, "Verifying..", Toast.LENGTH_SHORT).show()
-//                        loginViewModel?.signIn(
-//                            "+91", loginViewModel.phoneNumber, "driver", navController, context
-//                        )
 
+                        Toast.makeText(context, "Verifying..", Toast.LENGTH_SHORT).show()
                         loginViewModel?.signIn(
                             "+91", number, "driver", navController, context
                         )
-//                        navController?.navigate(Routes.OTP.name)
-
                         scope.launch {
                             dataStore.saveNo(number)
                             Log.e("PHONE NO", savedNo.value)
@@ -172,12 +174,8 @@ fun Mobile_Number(
                 ShowToast(content = "Snack Bar", bar)
                 bar = false
             }
-
         }
-
     }
-
-
 }
 
 fun showErrorMessage(message: String, view: View) {

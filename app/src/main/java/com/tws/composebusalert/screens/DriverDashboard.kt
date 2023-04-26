@@ -130,7 +130,22 @@ fun DriverDashboard(
            Log.e("Routeeeeee", storedRoute.value.toString())
            Log.e("Screen", storedScreen.value)
        }*/
-    LaunchedEffect(Unit) {
+    LaunchedEffect(lifecycleOwner) {
+        dataStore.screen("DashBoard Screen")
+        vehicleList =driverLoginViewModel?.getVehicleList("")
+        driverLoginViewModel?.getVehicleList("")
+        Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
+        if (driverLoginViewModel?.getVehicleList("") != null) {
+            vehicleList =driverLoginViewModel.getVehicleList("")
+        }
+
+        Log.e("DrivergetVehicleList", driverLoginViewModel?.listResponseVehicle.toString())
+        Log.e("vehicleListDrivergetVehicleList", vehicleList.toString())
+        Log.e("Routeeeeee", storedRoute.value.toString())
+        Log.e("Screen", storedScreen.value)
+
+    }
+/*    LaunchedEffect(Unit) {
         dataStore.screen("DashBoard Screen")
 //       var a= driverLoginViewModel?.getVehicleList("")
 //        if (driverLoginViewModel?.getVehicleList("") != null) {
@@ -141,7 +156,7 @@ fun DriverDashboard(
         Log.e("vehicleListDrivergetVehicleList", vehicleList.toString())
         Log.e("Routeeeeee", storedRoute.value.toString())
         Log.e("Screen", storedScreen.value)
-    }
+    }*/
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
@@ -338,7 +353,7 @@ fun DriverDashboard(
                                 ) { vehicleLists ->
                                     // Add your composable item here
                                     Text(
-                                        text = vehicleLists.vehicle[0].name.toString(),
+                                        text = vehicleLists.name.toString(),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()

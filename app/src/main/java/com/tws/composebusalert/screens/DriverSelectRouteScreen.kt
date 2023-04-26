@@ -60,14 +60,14 @@ fun DriverSelectRouteScreen(
     navController: NavController,
     loginViewModel: DriverLoginViewModel,
     lifecycleOwner: LifecycleOwner,
-    argValue:String
+    argValue: String
 ) {
     val activity = (LocalContext.current as Activity)
 
     BackHandler(true) {
-        if(argValue=="OTP"){
+        if (argValue == "OTP") {
             activity.finish()
-        }else{
+        } else {
             navController.navigate(Routes.DriverDashboard.name)
         }
     }
@@ -75,7 +75,7 @@ fun DriverSelectRouteScreen(
     val scope = rememberCoroutineScope()
 
     val dataStore = StoreData(context)
-    val storedScreen = dataStore.getrouteId.collectAsState(initial = "")
+    val storedScreen = dataStore.getScreen.collectAsState(initial = "")
 
     Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
     LaunchedEffect(Unit) {
@@ -90,39 +90,6 @@ fun DriverSelectRouteScreen(
                 .padding(bottom = 18.dp)
 //            .padding(top = 5.dp, start = 80.dp, bottom = 1.dp, end = 5.dp)
         ) {
-         /*   Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "TITLE",
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Center)
-//                        .padding(20.dp)
-                )
-                Button(
-                    onClick = {
-                        scope.launch {
-                            if (route != null) {
-                                dataStore.saverouteId(route!!)
-                                navController.navigate(Routes.DriverDashboard.name)
-                            } else {
-                                Toast.makeText(context, "Please Select Route", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    }, shape = RoundedCornerShape(8.dp), colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    ), modifier = Modifier
-                        .align(TopEnd)
-                        .padding(
-                            15.dp
-                        )
-                ) {
-                    Text(text = "Save", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                }
-            }*/
             TopAppBar(
                 title = {
                     Row(
@@ -151,19 +118,24 @@ fun DriverSelectRouteScreen(
                                     scope.launch {
                                         if (route != null) {
                                             dataStore.saverouteId(route!!)
-                                            navController.navigate(Routes.DriverDashboard.name){
+                                            navController.navigate(Routes.DriverDashboard.name) {
                                                 navController.popBackStack()
                                             }
                                         } else {
-                                            route=storedScreen.value
-                                            navController.navigate(Routes.DriverDashboard.name){
-                                                navController.popBackStack()
+                                            if (storedScreen.value != "") {
+                                                route = storedScreen.value
+                                                navController.navigate(Routes.DriverDashboard.name) {
+                                                    navController.popBackStack()
+                                                }
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Please Select Route",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                    .show()
                                             }
                                         }
-//                                        else{
-//                                            Toast.makeText(context, "Please Select Route", Toast.LENGTH_SHORT)
-//                                                .show()
-//                                        }
                                     }
                                 })
                         }

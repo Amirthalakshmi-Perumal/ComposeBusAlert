@@ -4,6 +4,9 @@ import android.content.Context
 import android.provider.ContactsContract
 
 import androidx.navigation.NavController
+import com.tws.composebusalert.request.GeoPositionRequest
+import com.tws.composebusalert.request.StartLocationServiceRequest
+import com.tws.composebusalert.request.StopLocationUpdateRequest
 import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.services.Resource
@@ -33,4 +36,14 @@ interface AuthorizationRepo {
     suspend fun getVehicleList(
         branchId: String?
     ): ResourceBus<VehicleRouteListResponse>
+
+    suspend fun startLocationService(startLocationServiceRequest: StartLocationServiceRequest):
+            ResourceBus<StartLocationServiceResponse>
+
+    suspend fun stopLocationUpdate(stopLocationServiceRequest: StopLocationUpdateRequest):
+            ResourceBus<StartLocationServiceResponse>
+
+    suspend fun updateGeoLocation(geoPositionRequest: GeoPositionRequest):
+            ResourceBus<GeoPositionResponse>
+
 }

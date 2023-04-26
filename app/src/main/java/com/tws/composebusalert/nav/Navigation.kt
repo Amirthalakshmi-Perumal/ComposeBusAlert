@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -32,17 +33,11 @@ import kotlinx.coroutines.flow.SharedFlow
 fun Navigation(
     flavor: String,
     navController: NavHostController = rememberNavController(),
-    driverLoginViewModel: DriverLoginViewModel ,
+    driverLoginViewModel: DriverLoginViewModel,
     startDestination: String,
-    list:List<RouteListResponse>?=null,
-//    lifecycleOwner: LifecycleOwner?=null
     lifecycleOwner: LifecycleOwner,
-    context: Context,
-//    locationFlow: SharedFlow<Location?>
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {}
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -57,52 +52,33 @@ fun Navigation(
         composable(route = Routes.OTP.name) {
             OTPScreen(navController, driverLoginViewModel)
         }
-
-
-       /* composable(
-            route = "A/{arg}",
-            arguments = listOf(navArgument("arg") { type = NavType.StringType })
-        ) { navBackStackEntry ->
-            val argValue = navBackStackEntry.arguments?.getString("arg")
-            if (argValue != null) {
-                AddScreen(argValue)
-            }else{
-                Text(text = "Argument value: $argValue")
-            }
-        }*/
-
         composable(
             route = "A/{arg}",
             arguments = listOf(navArgument("arg") { type = NavType.StringType })
         ) { navBackStackEntry ->
             val argValue = navBackStackEntry.arguments?.getString("arg")
             if (argValue != null) {
-                DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner,argValue)
-            }else{
+                DriverSelectRouteScreen(
+                    navController,
+                    driverLoginViewModel,
+                    lifecycleOwner,
+                    argValue
+                )
+            } else {
+                Log.e("asdasdcascasd","Argument value: $argValue")
                 Text(text = "Argument value: $argValue")
             }
         }
-
-//        composable(route = Routes.DriverSelectRouteScreen.name) {
-//           DriverSelectRouteScreen(navController,driverLoginViewModel,lifecycleOwner)
-//        }
+      /*  composable(route = Routes.DriverDashboard.name) {
+            DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
+        }*/
         composable(route = Routes.DriverDashboard.name) {
-            DriverDashboard(navController, driverLoginViewModel,lifecycleOwner)
+            DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
         }
-        composable(route = Routes.MapScreen.name ) {
-            MapScreen(navController,driverLoginViewModel)
+        composable(route = Routes.MapScreen.name) {
+            MapScreen(navController, driverLoginViewModel)
         }
-        /* composable(route = Routes.MapScreen.name ) {
-            MapScreen(navController,driverLoginViewModel,locationFlow)
-        }
-        */
     }
 }
 
-@Composable
-fun AddScreen(s: String) {
-Box(Modifier.fillMaxSize()){
-    Text(text = s, fontSize = 55.sp, modifier = Modifier.align(Alignment.Center).fillMaxSize())
-}
-}
 

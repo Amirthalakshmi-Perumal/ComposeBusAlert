@@ -51,8 +51,7 @@ fun OTPScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             IconButton(
                 onClick = {
-//                    navController?.navigate(Routes.Phone.name)
-                    navController?.navigate("A/OTP")
+                    navController?.navigate(Routes.Phone.name)
                 }, modifier = Modifier.size(48.dp)
             ) {
                 Icon(
@@ -61,7 +60,6 @@ fun OTPScreen(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-//            Spacer(modifier = Modifier.height(111.dp))
             Text(
                 text = "My code is",
                 fontSize = 20.sp,
@@ -72,28 +70,21 @@ fun OTPScreen(
                     .padding(16.dp)
 
             )
-
-//            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Your phone number",
                 fontSize = 14.sp,
                 textAlign = TextAlign.Left,
                 modifier = Modifier
-//                    .padding(40.dp)
                     .padding(16.dp)
                     .align(Alignment.Start)
             )
-//            val no = "null"
-//            var number by remember { mutableStateOf("") }
             val number = loginViewModel?.phoneNumber.toString()
 
             Text(
-//                text = no.toString(),
                 text = loginViewModel?.phoneNumber.toString(),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Left,
                 modifier = Modifier
-//                    .padding(40.dp)
                     .padding(16.dp)
                     .align(Alignment.Start)
             )
@@ -102,7 +93,6 @@ fun OTPScreen(
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-//                    .padding(40.dp)
                     .padding(16.dp)
                     .align(Alignment.Start)
             )
@@ -113,11 +103,6 @@ fun OTPScreen(
             OtpTextField(otpText = otpValue, onOtpTextChange = { value, otpInputFilled ->
                 otpValue = value
             })
-//            loginViewModel?.oneTime=otpValue
-//            if (otpValue != "") {
-//                authorizationRepoImpl?.oneTime = otpValue
-//                authorizationRepoImpl?.checkoneTime = "checked"
-//            }
             if (otpValue != "") {
                 loginViewModel?.oneTime = otpValue
                 loginViewModel?.checkoneTime = "checked"
@@ -132,25 +117,17 @@ fun OTPScreen(
                     .padding(16.dp)
                     .align(Alignment.Start),
                 onClick = {
-//                    authorizationRepoImpl?.checkSuccess(navController,"user",context ,otpValue,"checked")
                     loginViewModel?.firebaseAuth(navController,context, number)
-//                    loginViewModel?.firebaseAuth(navController, context, number)
                 })
 
             Button(
                 onClick = {
-//                    if (otpValue.isEmpty() || otpValue.length!=5) {
                     if (otpValue.isEmpty()|| otpValue.length!=6) {
                         Toast.makeText(context, "Please enter OTP ..", Toast.LENGTH_SHORT)
                             .show()
                     } else {
-//                        authorizationRepoImpl?.checkoneTime = "checked"
                         Log.e("OTP",otpValue)
-//                        authorizationRepoImpl?.checkSuccess(navController,"user",context ,otpValue,"checked")
-//                        loginViewModel?.checkSuccess(navController,"driver",context,otpValue,"checked" )
                         loginViewModel?.checkSuccess(navController,"driver" ,number,context)
-//                        navController?.navigate(Routes.DriverSelectRouteScreen.name)
-
                     }
                 },
                 modifier = Modifier

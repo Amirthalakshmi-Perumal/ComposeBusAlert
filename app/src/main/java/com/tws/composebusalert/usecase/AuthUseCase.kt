@@ -3,20 +3,28 @@ package com.tws.composebusalert.usecase
 import Status
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.tws.composebusalert.di.Settings
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.repo.AuthorizationRepo
+import com.tws.composebusalert.request.GeoPositionRequest
+import com.tws.composebusalert.request.StartLocationServiceRequest
+import com.tws.composebusalert.request.StopLocationUpdateRequest
 import com.tws.composebusalert.request.UserData
 import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.services.ApiFailureException
 import com.tws.composebusalert.services.Resource
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
+import dagger.hilt.android.migration.CustomInjection.inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-
+import com.google.maps.android.PolyUtil
 private const val TYPE_CARE_TAKER = "careTaker"
 private const val TYPE_DRIVER = "driver"
 
@@ -24,7 +32,9 @@ class AuthUseCase @Inject constructor(
     private val authorizationRepo: AuthorizationRepo,
 //    private val preferenceManager: PreferenceManager
 ) {
+    private val previousUpdatedLocation = MutableLiveData<LatLng>()
 
+    fun decodePoly(encode: String): MutableList<LatLng> = PolyUtil.decode(encode)
 
     private fun logout() {
 //   LoginManager.getInstance().logOut()
@@ -205,6 +215,102 @@ class AuthUseCase @Inject constructor(
           authToken?.let { preferenceManager.storeAndUpdateAccessToken(it) }
       }
   */
+
+
+    @Throws(ApiFailureException::class)
+    suspend fun startLocationUpdateService(
+        rideType: String,
+        routeId: String,
+        vehicleId: String,
+        latitude: Double,
+        longitude: Double
+    ): StartLocationServiceResponse? {
+
+        authorizationRepo.startLocationService(
+            StartLocationServiceRequest(
+                rideType,
+                routeId,
+                vehicleId,
+                latitude,
+                longitude
+            )
+        ).apply {
+            return when (this.status) {
+                Status.SUCCESS -> {
+                    this.data
+                }
+
+                Status.ERROR -> {
+                    throw ApiFailureException(this.message)
+                }
+
+                else -> {
+                    null
+                }
+            }
+        }
+    }
+
+    @Throws(ApiFailureException::class)
+    suspend fun stopLocationUpdate(relationshipId: String): StartLocationServiceResponse? {
+
+        authorizationRepo.stopLocationUpdate(StopLocationUpdateRequest(relationshipId)).apply {
+            return when (this.status) {
+                Status.SUCCESS -> {
+                    this.data
+                }
+
+                Status.ERROR -> {
+                    throw ApiFailureException(this.message)
+                }
+
+                else -> {
+                    null
+                }
+            }
+        }
+    }
+
+    @Throws(ApiFailureException::class)
+    suspend fun updateGeoPosition(geoPositionRequest: GeoPositionRequest) {
+
+        val latLng = LatLng(geoPositionRequest.latitude, geoPositionRequest.longitude)
+
+        return withContext(Dispatchers.Main) {
+            previousUpdatedLocation.value = latLng
+            updateCurrentLocation(geoPositionRequest)
+        }
+
+        /*return withContext(Dispatchers.Main) {
+            if (previousUpdatedLocation.value == null ||
+                previousUpdatedLocation.value != latLng
+            ) {
+
+            } else {
+                null
+            }
+        }*/
+    }
+
+    private suspend fun updateCurrentLocation(geoPositionRequest: GeoPositionRequest):
+            GeoPositionResponse? {
+
+        authorizationRepo.updateGeoLocation(geoPositionRequest).apply {
+            return when (this.status) {
+                Status.SUCCESS -> {
+                    this.data
+                }
+
+                Status.ERROR -> {
+                    throw ApiFailureException(this.message)
+                }
+
+                else -> {
+                    null
+                }
+            }
+        }
+    }
 
 }
 

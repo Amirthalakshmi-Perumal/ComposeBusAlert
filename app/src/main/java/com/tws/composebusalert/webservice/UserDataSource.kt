@@ -1,8 +1,8 @@
 package com.tws.composebusalert.webservice
 
-import com.tws.composebusalert.request.CheckMobileNumberRequest
-import com.tws.composebusalert.request.UserData
+import com.tws.composebusalert.request.*
 import com.tws.composebusalert.responses.*
+import com.tws.composebusalert.services.ResourceBus
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -33,5 +33,22 @@ interface UserDataSource {
         @Query("id") routeId: String?,
         @Query("populate") value: String
     ): VehicleRouteListResponse
+
+    @POST("/api/v1/relation/start")
+    suspend fun startLocationService(
+        @Body startLocationServiceRequest: StartLocationServiceRequest
+    ): StartLocationServiceResponse
+
+    /**
+     * This function is used to stop the location update service if driver press stop
+     * */
+    @POST("/api/v1/relation/end")
+    suspend fun stopLocationService(
+        @Body stopLocationUpdateRequest: StopLocationUpdateRequest
+    ): StartLocationServiceResponse
+    @POST("/api/v1/geoposition")
+    suspend fun updateGeoLocation(@Body geoPositionRequest: GeoPositionRequest): GeoPositionResponse
+
+
 
 }

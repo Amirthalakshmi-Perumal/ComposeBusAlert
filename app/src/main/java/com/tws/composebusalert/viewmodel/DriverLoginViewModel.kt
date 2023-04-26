@@ -12,6 +12,13 @@ import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -23,15 +30,22 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
+import com.tws.composebusalert.R
 import com.tws.composebusalert.datastore.StoreData
+import com.tws.composebusalert.di.Settings
+import com.tws.composebusalert.gpstracker.LocationUpdatesService
 import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
+import com.tws.composebusalert.request.GeoPositionRequest
+import com.tws.composebusalert.request.StartWayPoint
 import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.screens.vehicleList
 import com.tws.composebusalert.usecase.AuthUseCase
+import com.tws.composebusalert.util.livedata.toSingleEvent
 import com.tws.composebusalert.webservice.UserDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.migration.CustomInjection.inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
@@ -40,6 +54,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
+private const val MINIMUM_DISTANCE = 50
+private const val NUMBER_ZERO = 0
+private const val ALTERNATE_ROUTE_RANGE = 300
+private const val GEOFENCE_RADIUS = 500f
+private const val NUMBER_FIFTY = 50
+private const val NUMBER_TWENTY = 20
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
@@ -53,6 +74,33 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
+    private val settings= Settings()
+    private var startId: String? = null
+    private var routePointsList: MutableList<Point> = mutableListOf()
+    private val _polyLineLatLng = MutableLiveData<List<LatLng>>()
+    val polyLineLatLng: LiveData<List<LatLng>> = _polyLineLatLng
+    private val _stoppingMarkers = MutableLiveData<List<Stoppings>>()
+    val stoppingMarkers: LiveData<List<Stoppings>> = _stoppingMarkers
+    private val _routeListResponse = ArrayList<RouteListResponse>()
+    private val _isStarted = MediatorLiveData<Boolean>()
+    val isStarted: LiveData<Boolean> = _isStarted
+
+    private val _startLocationListener = MediatorLiveData<Boolean>()
+    private var startLocationServiceResponse: StartLocationServiceResponse? = null
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading.toSingleEvent()
+    private var previouSelectedRoutePostion: Int? = null
+    private var previouSelectedRouteName: String = ""
+    private var smallestDistance: Float = -1f
+    private var startWayPoint: Location? = null
+    private var endWayPoint: Location? = null
+    private var isGeofenceWorking: Boolean = false
+    private var count = NUMBER_ZERO
+    private var mService: LocationUpdatesService? = null
+
+
+
+
     var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
     private val _routeList = MutableLiveData<List<RouteListResponse>>()
@@ -60,40 +108,10 @@ class DriverLoginViewModel @Inject constructor(
     var locationRequired = false
     var stop1: LatLng? = null
     var stop2: LatLng? = null
-    var counter = 0
-//    lateinit var a: LatLng
-
-    /*var locationFlow = callbackFlow {
-        while (true) {
-            ++counter
-            val location = newLocation(a)
-            Log.d(TAG, "Location $counter: $location")
-            trySend(location)
-            delay(2_000)
-        }
-    }.shareIn(
-        lifecycleScope, replay = 0, started = SharingStarted.WhileSubscribed()
-    )*/
-    /*   fun getRouteList() {
-           viewModelScope.launch {
-               val response = apiService.getRouteList(
-                   "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b", false, "id,name,type"
-               )
-               _routeList.value = response
-           }
-       }*/
-
-    //    var listResponse = MutableLiveData<List<RouteListResponse>>()
     var listResponse: List<RouteListResponse>? = null
     var listResponseVehicle: VehicleRouteListResponse? = null
     var vehicleList: ArrayList<VehicleRouteItem>? = null
-
-//    var listResponseVehicle11: ArrayList<VehicleRouteItem> = null
-//    val token =
-//        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgxODg2OTYzLCJleHAiOjE2ODE5NzMzNjN9.9RjU70fZNbKH6v7av8PIP2BBPsEiks8A0XMKQzFlM9E"
-
-//    val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyMzk4MjczLCJleHAiOjE2ODI0ODQ2NzN9.o1s0as41tdGpXJL_Fde-urOsmS5nT4-dqa_DbakK1c8"
+    var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNDg1MDYxLCJleHAiOjE2ODI1NzE0NjF9.4ozlVZTnTxlsOk33XSE3vEDuOf24Xqt_72ZqcDPa9lw"
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
@@ -113,30 +131,22 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
 
     private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
 
-    private var previouSelectedRouteName: String = ""
-    val isFrom = savedStateHandle.get<String>("DriverDashBoard")
-    private var previouSelectedRoutePostion: Int? = null
+
 
     private val _onSuccess = MutableStateFlow("")
     val onSuccess get() = _onSuccess as StateFlow<String>
     val check = authorizationRepoImpl.onSuccess
 
-    //    private val _isLoading = MutableLiveData<Boolean>()
     private val _driverUserResponse = MediatorLiveData<Profile>()
     val driverUserResponse: LiveData<Profile?> = _driverUserResponse
     private val _groupedRoutesList = ArrayList<RouteSelectionResponseModel>()
     private val _filteredRoute = ArrayList<RouteSelectionResponseModel>()
     val filteredRoute = MutableLiveData<List<RouteSelectionResponseModel>?>()
 
-    //    val isLoading: LiveData<Boolean> = _isLoading.toSingleEvent()
-    private val auth: FirebaseAuth by lazy {
-        FirebaseAuth.getInstance()
-    }
+
     private val _appName = MutableLiveData<String>()
-    val appName: LiveData<String> = _appName
 
     private val _loggedIn = MutableLiveData<Boolean>()
-    val loggedIn: LiveData<Boolean> = _loggedIn
 
     private var currentUser: FirebaseUser? = null
 
@@ -144,8 +154,9 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
     val validationError: LiveData<String> = _validationError
 
     private val _stPhoneNo = MutableLiveData<String>()
-    val stPhoneNo: LiveData<String> = _stPhoneNo
-
+    private var currentLocation: Location? = null
+    private var rideType: String? = null
+    private var vehicleId: String? = null
     lateinit var phoneNumber: String
     lateinit var oneTime: String
     var checkoneTime: String = "notChecked"
@@ -157,26 +168,10 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
     lateinit var context: Context
 
     private val _progress = MutableLiveData<Boolean>()
-    val progress: LiveData<Boolean> = _progress
 
-    //    val a = MutableLiveData<Boolean>()
     private val _listData = MutableLiveData<String>()
     val listData: LiveData<String> = _listData
 
-
-    /*  @RequiresApi(Build.VERSION_CODES.O)
-      fun isTokenExpired(token: String): Boolean {
-          return try {
-              val jwt = Jwts.parser().parseClaimsJwt(token)
-              val claims: Claims = jwt.body
-              val expiration: Instant = claims["exp"] as Instant
-              expiration.isBefore(Instant.now())
-          } catch (e: MalformedJwtException) {
-              // handle the exception here
-              true // or false, depending on how you want to handle the exception
-          }
-      }
-  */
     fun firebaseAuth(
         navController: NavController? = null, context: Context, number: String
     ) {
@@ -282,7 +277,6 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
                                 if (storedToken != null) {
                                     bearToken=storedToken
                                 }
-
                                 /*  if(this.token=="TokenExpiredError"){
                                       authUseCase.registerUserToServer(
                                           mAuthUser, LoginType.PHONE_NUMBER, number, context
@@ -299,12 +293,12 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
                                 handleFailue()
                             }
                         }
-//                        val response = apiService.getProfile("d2b5eed8-96a1-4003-8e7b-6571767e969c")
-//                        Log.e("Responses", response.createdAt.toString())
                     }
                 }
                 if (flavor == "driver") {
-                    navController?.navigate(Routes.DriverSelectRouteScreen.name)
+                    Log.e("NAVVVVVV","NAJHKGJYTUYTGUYGYHG")
+                    navController?.navigate("A/OTP")
+//                    navController?.navigate(Routes.DriverSelectRouteScreen.name)
                 } else {
                     navController?.navigate(Routes.PassengerList.name)
                 }
@@ -377,14 +371,13 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
     }
 
     fun getRouteList(from: String): List<RouteListResponse>? {
-//        obj.check="DashBoard Screen"
         var responses: List<RouteListResponse>? = null
         service = "Route"
         try {
             viewModelScope.launch {
                 withContext(Dispatchers.Main) {
                     responses = apiService.getRouteList(
-                        "524ec4dd-4450-4b6f-8e30-2cfd0ea89e1b",
+                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
                         false,
                         "id,name,type"
                     )
@@ -403,23 +396,214 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
         Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
         return listResponse
     }
+  /*  fun startService(from: String): List<RouteListResponse>? {
+        var responses: List<RouteListResponse>? = null
+        service = "Route"
+        try {
+            viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    responses = apiService.getRouteList(
+                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+                        false,
+                        "id,name,type"
+                    )
+                    listResponse = responses
+                    Log.e(
+                        "Responses",
+                        "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
+                    )
+                }
+            }
+            Log.e("Responses", "New Responses  ${this.listResponse}")
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
+        }
+        Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
+        return listResponse
+    }
+    fun stopService(from: String): List<RouteListResponse>? {
+        var responses: List<RouteListResponse>? = null
+        service = "Route"
+        try {
+            viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    responses = apiService.getRouteList(
+                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+                        false,
+                        "id,name,type"
+                    )
+                    listResponse = responses
+                    Log.e(
+                        "Responses",
+                        "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
+                    )
+                }
+            }
+            Log.e("Responses", "New Responses  ${this.listResponse}")
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
+        }
+        Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
+        return listResponse
+    }
+*/
+    @Suppress("ComplexMethod")
+    fun startLocationService(rideType: String, vehicleId: String, currentLocation: Location) {
+        val routeId: String? = if (rideType == "Pickup") {
+            settings.pickupId
+        } else {
+            settings.dropId
+        }
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            try {
+                routeId?.let { id ->
+                    currentLocation.let { location ->
+                        driverDashBoardUseCase.startLocationUpdateService(
+                            rideType,
+                            id,
+                            vehicleId,
+                            location.latitude,
+                            location.longitude
+                        )?.let { response ->
+                            startId = response.id
+                            response.mapDetail?.points?.let { pointlist ->
+                                routePointsList.addAll(pointlist)
+                            }
+                            _startLocationListener.value = true
+                            _polyLineLatLng.value =
+                                response.mapDetail?.mapData?.routes?.get(0)
+                                    ?.overviewPolyline?.points?.let {
+                                        driverDashBoardUseCase.decodePoly(
+                                            it
+                                        )
+                                    }
+                            _stoppingMarkers.value = response.mapDetail?.stoppings
+//                            appLogger.error { startId }
 
+                            response.latitude = location.latitude
+                            response.longitude = location.longitude
+                            updateLocationToApi(location, null, 0.0,true)
+                            startLocationServiceResponse = response
+                            _isStarted.value = true
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+//                appLogger.error(e) {
+//                    e.localizedMessage
+//                }
+                startId = null
+                _isStarted.value = false
+                setNetworkError(e.localizedMessage)
+            }
+        }
+    }
+    private suspend fun updateLocationToApi(
+        location: Location,
+        startPoint: Location?,
+        movementLength: Double,
+        showProgress: Boolean
+    ) {
+        try {
+            startId?.let {
+//                _showProgress.value = showProgress
+                _isLoading.value = true
+                driverDashBoardUseCase.updateGeoPosition(
+                    GeoPositionRequest(
+                        location.latitude,
+                        location.longitude,
+                        it,
+                        StartWayPoint(startPoint?.latitude, startPoint?.longitude),
+                        movementLength
+                    )
+                )
+                _isLoading.value = false
+//                _showProgress.value = false
+            }
+        } catch (e: Exception) {
+            _isLoading.value = false
+            e.printStackTrace()
+        }
+    }
+    private fun startTrackerService(isFor: String) {
+
+        if (isFor == "forStart") {
+            currentLocation = mService?.lastLocation
+            updateDriverRideType(rideType, vehicleId)
+            stopService()
+        } else {
+            mService?.requestLocationUpdates()
+        }
+    }
+    private fun stopService() {
+        mService?.removeLocationUpdates()
+    }
+
+    private fun updateDriverRideType(it: String?, vehicleId: String?) {
+        if (it == "Pickup") {
+            currentLocation?.let { it1 ->
+                startLocationService(
+                  "Pickup", vehicleId!!,
+                    it1
+                )
+            }
+        } else {
+            currentLocation?.let { it1 ->
+               startLocationService(
+                    "Drop", vehicleId!!,
+                    it1
+                )
+            }
+        }
+    }
+    fun stopLocationUpdate(activityId: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                driverDashBoardUseCase.stopLocationUpdate(activityId).let {
+                    startId = null
+                    startWayPoint = null
+                    endWayPoint = null
+                    smallestDistance = -1f
+                    isGeofenceWorking = false
+                    count = 0
+                    routePointsList.clear()
+                    _startLocationListener.value = false
+                    _isStarted.value = false
+                }
+            } catch (e: Exception) {
+//                appLogger.error(e) {
+//                    e.localizedMessage
+//                }
+                setNetworkError(e.localizedMessage)
+            }
+        }
+    }
+
+
+
+/*    fun storeRouteDetails() {
+        var selectedRoute: String? = null
+        _filteredRoute.forEach {
+            if (it.isChecked) {
+                selectedRoute = it.name
+            }
+        }
+
+        for (routeDetails in _routeListResponse) {
+            if (routeDetails.name == selectedRoute) {
+                driverDashBoardUseCase.storeRouteDetails(routeDetails.type, routeDetails)
+            }
+        }
+    }*/
     fun getVehicleList(from: String): VehicleRouteListResponse? {
-//        obj.check="DashBoard Screen"
         var responses: VehicleRouteListResponse? = null
         try {
-//            viewModelScope.launch(Dispatchers.IO) {
-                /* val a = withContext(Dispatchers.Default) {
-                     apiService.getVehicleList(
-                         "7465a78b-817a-4af8-8524-da4485f98b24", "vehicle"
-                     )
-                 }
-                 Log.e("", "With Context $a")
-                 listResponseVehicle = a*/
             viewModelScope.launch {
                 withContext(Dispatchers.Main) {
                     responses = apiService.getVehicleList(
-                        "7465a78b-817a-4af8-8524-da4485f98b24", "vehicle"
+                        "2835693b-736d-4275-a21f-628c3e5f7208", "vehicle"
                     )
                     listResponseVehicle = responses
 
@@ -449,10 +633,9 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
                     " Vehicle responses DLVM  Responses" + this@DriverLoginViewModel.listResponseVehicle?.size
                 )
             }
-//            Log.e("Responses", "New Responses  ${this.listResponseVehicle}")
         } catch (e: Exception) {
             Log.e("VMgetVehicleRouteList", "localizedMessage")
-//            setNetworkError(e.localizedMessage)
+            setNetworkError(e.localizedMessage)
         }
         Log.e(
             "ResponsesResult",
@@ -461,24 +644,6 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
         return listResponseVehicle
     }
 
-    private fun search(query: String) {
-
-        if (!TextUtils.isEmpty(query)) {
-            val wanted = _groupedRoutesList.filter {
-                it.name.lowercase(Locale.getDefault())
-                    .contains(query.lowercase(Locale.getDefault()))
-            }.toList()
-            _filteredRoute.clear()
-            _filteredRoute.addAll(wanted)
-            filteredRoute.value = _filteredRoute
-        } else {
-            _filteredRoute.clear()
-            _filteredRoute.addAll(_groupedRoutesList)
-            filteredRoute.value = _filteredRoute
-        }
-    }
-
-    //    @RequiresApi(Build.VERSION_CODES.O)
     fun signIn(
         ctryCode: String,
         phone: String,
@@ -500,24 +665,32 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
                 withContext(Dispatchers.Main) {
                     if (it.data?.name != null) {
                         Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
-//                        navController?.navigate(Routes.OTP.name)
                         firebaseAuth(navController, context, phone)
-                    } else {
-                        Log.e("VVVMMWW2", "uiuiuiui error ${it.apiError?.message}")
-                        /* Toast.makeText(
-                             context,
-                             "This Phone Number is not Verified..",
-                             Toast.LENGTH_LONG
-                         ).show()*/
-//                              navController?.navigate(Routes.Phone.name)
-//                            Log.e("VVVMMWW", "uiuiuiui${it.status}")
-//                            Log.e("VVVMMWW", "uiuiuiui${it.data}")
+                    } else{
+//                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                        Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
+//                        navController?.navigate(Routes.Phone.name)
                     }
+                   /* else if( it.data?.name == " "){
+                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                        Log.e("VVVMMWW2", "uiuiuiui 222error ${it.apiError?.message}")
+                        navController?.navigate(Routes.Phone.name)
+                    }else{
+                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                        Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
+                        navController?.navigate(Routes.Phone.name)
+                    }*/
                 }
             }
         }
     }
 
+    @Composable
+    fun Snackbars() {
+        Snackbar(modifier = Modifier.padding(4.dp)) {
+            Text(text = "Not Registered Number")
+        }
+    }
 
     suspend fun signOut(navController: NavController? = null, context: Context,) {
         val dataStore = StoreData(context)
@@ -528,20 +701,6 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
         navController?.navigate(Routes.Dashboard.name)
     }
 
-    fun updateRouteSelection(postion: Int, selectedRouteName: String) {
-        val roulteList: MutableList<RouteSelectionResponseModel> = _filteredRoute
-        if (!TextUtils.isEmpty(previouSelectedRouteName)) {
-            _groupedRoutesList.forEach { routeResponse ->
-                if (routeResponse.name == previouSelectedRouteName) {
-                    routeResponse.isChecked = false
-                }
-            }
-        }
-        roulteList[postion].isChecked = !roulteList[postion].isChecked
-        previouSelectedRoutePostion = postion
-        previouSelectedRouteName = selectedRouteName
-        filteredRoute.value = roulteList
-    }
 
     //    MapActivity Starts here
     fun checkLocationSetting(
@@ -591,7 +750,6 @@ var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2Ut
         val bm = Bitmap.createBitmap(
             120, 120, Bitmap.Config.ARGB_8888
         )
-
         // draw it onto the bitmap
         val canvas = android.graphics.Canvas(bm)
         drawable.draw(canvas)
