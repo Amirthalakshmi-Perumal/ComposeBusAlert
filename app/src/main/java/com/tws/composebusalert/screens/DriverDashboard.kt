@@ -244,7 +244,8 @@ var listtt: VehicleRouteListResponse? = null
                                                     scope.launch {
                                                         dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
                                                         Log.e("storedVehicleId", storedVehicleId.value.toString())
-                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+//                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+                                                        driverLoginViewModel?.startService("Pickup",context,navController)
 
                                                     }
 

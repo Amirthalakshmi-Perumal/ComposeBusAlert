@@ -11,7 +11,6 @@ import android.graphics.Bitmap
 import android.location.Location
 import android.os.IBinder
 import android.os.Looper
-import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
@@ -19,10 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -41,14 +38,14 @@ import com.tws.composebusalert.nav.LoginType
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
 import com.tws.composebusalert.request.GeoPositionRequest
+import com.tws.composebusalert.request.StartLocationServiceRequest
 import com.tws.composebusalert.request.StartWayPoint
+import com.tws.composebusalert.request.StopLocationUpdateRequest
 import com.tws.composebusalert.responses.*
-import com.tws.composebusalert.screens.vehicleList
 import com.tws.composebusalert.usecase.AuthUseCase
 import com.tws.composebusalert.util.livedata.toSingleEvent
 import com.tws.composebusalert.webservice.UserDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.migration.CustomInjection.inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
@@ -141,7 +138,10 @@ class DriverLoginViewModel @Inject constructor(
 
     //    Profile   Route
     val retrofit = Retrofit.Builder()
-        .baseUrl(if (service == "Profile") "http://206.189.137.65/api/v1/profile/" else "http://206.189.137.65/api/v1/route/")
+        .baseUrl(if (service == "Profile")
+            "http://206.189.137.65/api/v1/profile/" else if(service=="startService") "http://206.189.137.65/api/v1/relation/start"
+        else if(service=="endService")  "http://206.189.137.65/api/v1/relation/end"
+        else "http://206.189.137.65/api/v1/route/")
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -415,59 +415,81 @@ class DriverLoginViewModel @Inject constructor(
         return listResponse
     }
 
-    /*  fun startService(from: String): List<RouteListResponse>? {
-          var responses: List<RouteListResponse>? = null
-          service = "Route"
+    suspend fun startTrackerService(isFor: String, context: Context) {
+        val dataStore = StoreData(context)
+        var storedVehicleId:String?=null
+        viewModelScope.launch {
+            storedVehicleId=dataStore.getVehicleId.first()
+        }
+
+        if (isFor == "forStart") {
+//            currentLocation = mService?.lastLocation
+//            currentLocation = LatLng(11.930390, 79.807510)
+//            updateDriverRideType(rideType, vehicleId,context)
+            updateDriverRideType("Pickup", storedVehicleId, context)
+            stopService()
+        } else {
+            mService?.requestLocationUpdates()
+        }
+    }
+
+      fun startService(rideType: String,context: Context,navController: NavController?){
+          var responses: StartLocationServiceResponse
+          service = "startService"
+          val dataStore = StoreData(context)
+          currentLocation.latitude=11.930390
+          currentLocation.longitude=79.807510
           try {
               viewModelScope.launch {
+                  val routeId: String = if (rideType == "Pickup") {
+                      dataStore.getPickUpId.first()
+                  } else {
+                      dataStore.getDropId.first()
+                  }
+                  val vehicleId=dataStore.getVehicleId.first()
                   withContext(Dispatchers.Main) {
-                      responses = apiService.getRouteList(
-                          "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
-                          false,
-                          "id,name,type"
+                      val obj=StartLocationServiceRequest(rideType,routeId,
+                          vehicleId!!, currentLocation.latitude,currentLocation.longitude
                       )
-                      listResponse = responses
-                      Log.e(
-                          "Responses",
-                          "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
-                      )
+                      responses = apiService.startLocationService(obj)
+                      responses.id?.let {
+                          dataStore.saveStartService(it)
+                          Log.d("rrrr", "responses $it")
+                          navController?.navigate(Routes.MapScreen.name)
+                      } ?: Log.d("rrrr","startService")
                   }
               }
-              Log.e("Responses", "New Responses  ${this.listResponse}")
+
           } catch (e: Exception) {
               Log.e("VMgetRouteList", "localizedMessage")
               setNetworkError(e.localizedMessage)
           }
           Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
-          return listResponse
+
       }
-      fun stopService(from: String): List<RouteListResponse>? {
-          var responses: List<RouteListResponse>? = null
-          service = "Route"
-          try {
-              viewModelScope.launch {
-                  withContext(Dispatchers.Main) {
-                      responses = apiService.getRouteList(
-                          "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
-                          false,
-                          "id,name,type"
-                      )
-                      listResponse = responses
-                      Log.e(
-                          "Responses",
-                          "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
-                      )
-                  }
-              }
-              Log.e("Responses", "New Responses  ${this.listResponse}")
-          } catch (e: Exception) {
-              Log.e("VMgetRouteList", "localizedMessage")
-              setNetworkError(e.localizedMessage)
-          }
-          Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
-          return listResponse
-      }
-  */
+
+    fun endService(context: Context){
+        service = "endService"
+        var responses:StartLocationServiceResponse?=null
+        val dataStore = StoreData(context)
+        try {
+            viewModelScope.launch {
+
+                val activity=dataStore.getStartServiceId.first()
+
+                withContext(Dispatchers.Main) {
+                    val obj= StopLocationUpdateRequest(activity)
+//                    responses = apiService.stopLocationService(obj)
+                    apiService.stopLocationService(obj)
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
+        }
+    }
+
     @Suppress("ComplexMethod")
     suspend fun startLocationService(
         rideType: String,
@@ -566,23 +588,7 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun startTrackerService(isFor: String, context: Context) {
-        val dataStore = StoreData(context)
-        var storedVehicleId:String?=null
-        viewModelScope.launch {
-            storedVehicleId=dataStore.getVehicleId.first()
-        }
 
-        if (isFor == "forStart") {
-//            currentLocation = mService?.lastLocation
-//            currentLocation = LatLng(11.930390, 79.807510)
-//            updateDriverRideType(rideType, vehicleId,context)
-            updateDriverRideType("Pickup", storedVehicleId, context)
-            stopService()
-        } else {
-            mService?.requestLocationUpdates()
-        }
-    }
 
     fun placeMarkersOnMap(it: List<Stoppings>?) {
         it?.let { stoppingList ->
@@ -665,88 +671,6 @@ class DriverLoginViewModel @Inject constructor(
     }
 
 
-    /*    fun storeRouteDetails() {
-            var selectedRoute: String? = null
-            _filteredRoute.forEach {
-                if (it.isChecked) {
-                    selectedRoute = it.name
-                }
-            }
-
-            for (routeDetails in _routeListResponse) {
-                if (routeDetails.name == selectedRoute) {
-                    driverDashBoardUseCase.storeRouteDetails(routeDetails.type, routeDetails)
-                }
-            }
-        }*/
-    /* fun getVehicleList(from: String, context: Context): VehicleRouteListResponse? {
-         var responses: VehicleRouteListResponse? = null
- //    var routeId:String?="2835693b-736d-4275-a21f-628c3e5f7208"
-         var routeId: String? = null
-         val dataStore = StoreData(context)
-         viewModelScope.launch {
-             val pickUpId = dataStore.getPickUpId.first()
-             val dropId = dataStore.getDropId.first()
-             Log.d("BBBB", "Stored pickUpId is $pickUpId")
-             Log.d("BBBB", "Stored dropId is $dropId")
-             if (from == "PICKUP") {
-                 routeId = pickUpId
-             }
-             if (from == "DROP") {
-                 routeId = dropId
-             }
-         }
-         if (routeId != null) {
-             Log.d("BBBB", "Stored routeId  which is by if  is $routeId")
-             try {
-                 viewModelScope.launch {
-                     withContext(Dispatchers.Main) {
-                         responses = apiService.getVehicleList(
-                             routeId, "vehicle"
-                         )
-                         listResponseVehicle = responses
-
-                         vehicleList = responses
-                         stop1 =
-                             vehicleList?.get(0)?.startPoint?.latitude?.let {
-                                 vehicleList?.get(0)?.startPoint?.longitude?.let { it1 ->
-                                     LatLng(
-                                         it,
-                                         it1
-                                     )
-                                 }
-                             }
-                         stop2 =
-                             vehicleList?.get(0)?.endPoint?.latitude?.let {
-                                 vehicleList?.get(0)?.endPoint?.longitude?.let { it1 ->
-                                     LatLng(
-                                         it,
-                                         it1
-                                     )
-                                 }
-                             }
-                     }
-
-                     Log.e(
-                         "Responses",
-                         " Vehicle responses DLVM  Responses" + this@DriverLoginViewModel.listResponseVehicle?.size
-                     )
-                 }
-             } catch (e: Exception) {
-                 Log.e("VMgetVehicleRouteList", "localizedMessage")
-                 setNetworkError(e.localizedMessage)
-             }
-         } else {
- //            Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
-             Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
-         }
-         Log.e(
-             "ResponsesResult",
-             " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
-         )
-         return listResponseVehicle
-     }
-  */
     suspend fun getVehicleList(from: String, context: Context): VehicleRouteListResponse? {
         var responses: VehicleRouteListResponse? = null
 //    var routeId:String?="2835693b-736d-4275-a21f-628c3e5f7208"

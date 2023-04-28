@@ -2,17 +2,10 @@ package com.tws.composebusalert.repo.impl
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.*
 import com.tws.composebusalert.applyCommonSideEffects
 import com.tws.composebusalert.exception.ErrorHandler
@@ -27,9 +20,7 @@ import com.tws.composebusalert.network.ResponseHandler
 import com.tws.composebusalert.request.*
 import com.tws.composebusalert.responses.*
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import java.lang.Exception
 
@@ -157,6 +148,7 @@ class AuthorizationRepoImpl @Inject constructor(
             responseHandler.handleException(e)
         }
     }
+
     override suspend fun startLocationService(
         startLocationServiceRequest: StartLocationServiceRequest
     ):

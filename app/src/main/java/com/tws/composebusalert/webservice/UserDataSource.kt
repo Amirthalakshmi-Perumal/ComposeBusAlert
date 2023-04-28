@@ -2,7 +2,6 @@ package com.tws.composebusalert.webservice
 
 import com.tws.composebusalert.request.*
 import com.tws.composebusalert.responses.*
-import com.tws.composebusalert.services.ResourceBus
 import retrofit2.Response
 import retrofit2.http.*
 
