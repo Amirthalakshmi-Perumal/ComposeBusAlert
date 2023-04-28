@@ -237,14 +237,17 @@ class AuthUseCase @Inject constructor(
         ).apply {
             return when (this.status) {
                 Status.SUCCESS -> {
+                    Log.d("as","asa  Status.SUCCESS")
                     this.data
                 }
 
                 Status.ERROR -> {
+                    Log.d("as","asa  Status.ERROR")
                     throw ApiFailureException(this.message)
                 }
 
                 else -> {
+                    Log.d("as","asa  Status.null")
                     null
                 }
             }

@@ -2,7 +2,6 @@ package com.tws.composebusalert.screens
 
 import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -14,6 +13,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
@@ -41,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -52,14 +52,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.tws.composebusalert.R
 import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.nav.Routes
-import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.responses.VehicleRouteItem
 import com.tws.composebusalert.responses.VehicleRouteListResponse
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
@@ -67,18 +64,8 @@ import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
-import androidx.core.os.bundleOf
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavOptions
-import androidx.navigation.Navigation.findNavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 
 var vehicleList: ArrayList<VehicleRouteItem>? = null
 var listtt: VehicleRouteListResponse? = null
@@ -87,19 +74,21 @@ var listtt: VehicleRouteListResponse? = null
     ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
 )
 @Composable
-fun DriverDashboard(
+ fun DriverDashboard(
     navController: NavController? = null,
     driverLoginViewModel: DriverLoginViewModel?,
     lifecycleOwner: LifecycleOwner
 ) {
-
-    vehicleList =driverLoginViewModel?.getVehicleList("")
-    Log.e("TTT", "TTT  "+vehicleList.toString())
     val context = LocalContext.current
+
+
+//    Log.e("TTT", "TTT  " + vehicleList.toString())
     val scope = rememberCoroutineScope()
     val dataStore = StoreData(context)
     val storedScreen = dataStore.getScreen.collectAsState(initial = "")
-    val storedRoute = dataStore.getrouteId.collectAsState(initial = "")
+    val storedPickUpId = dataStore.getPickUpId.collectAsState(initial = "")
+    val storedVehicleId = dataStore.getVehicleId.collectAsState(initial = "")
+
 //    BackHandler(true) {
 //
 //        Log.d("TAG", "OnBackPressed")
@@ -131,18 +120,19 @@ fun DriverDashboard(
            Log.e("Screen", storedScreen.value)
        }*/
     LaunchedEffect(lifecycleOwner) {
-        dataStore.screen("DashBoard Screen")
-        vehicleList =driverLoginViewModel?.getVehicleList("")
-        driverLoginViewModel?.getVehicleList("")
-        Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
-        if (driverLoginViewModel?.getVehicleList("") != null) {
-            vehicleList =driverLoginViewModel.getVehicleList("")
-        }
+        dataStore.saveScreen("DashBoard Screen")
+//        vehicleList = driverLoginViewModel?.getVehicleList("",context)
+//        driverLoginViewModel?.getVehicleList("",context)
+//        Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
+//        if (driverLoginViewModel?.getVehicleList("",context) != null) {
+//            vehicleList = driverLoginViewModel.getVehicleList("",context)
+//        }
 
-        Log.e("DrivergetVehicleList", driverLoginViewModel?.listResponseVehicle.toString())
-        Log.e("vehicleListDrivergetVehicleList", vehicleList.toString())
-        Log.e("Routeeeeee", storedRoute.value.toString())
-        Log.e("Screen", storedScreen.value)
+//        Log.e("DrivergetVehicleList", driverLoginViewModel?.listResponseVehicle.toString())
+//        Log.e("vehicleListDrivergetVehicleList", vehicleList.toString())
+//        Log.e("Routeeeeee", storedRoute.value.toString())
+//        Log.e("storedVehicleId", storedVehicleId.value.toString())
+//        Log.e("Screen", storedScreen.value)
 
     }
 /*    LaunchedEffect(Unit) {
@@ -231,134 +221,18 @@ fun DriverDashboard(
                                     .show()
                             }
                         }
-
-                        var selectedIndex by remember { mutableStateOf(-1) }
-//                        VehicleRouteItem
-                        /*      if (messages != null) {
-                                  Log.e("VehicleRouteItem messages.toString()", messages.toString())
-
-                                  var selectedIndex by remember { mutableStateOf(-1) }
-                                  LazyColumn(state = listState) {
-                                      items<VehicleRouteListResponse>(items = messages!!) { message ->
-                                          Log.e("VehicleRouteItem messages.size.toString()", messages!!.size.toString())
-                                          Log.e("VehicleRouteItem messages.toString()", messages.toString())
-                                          Log.e("VehicleRouteItem message.toString()", message.toString())
-                                          Log.e("VehicleRouteItem message.vehicle.toString()", message.vehicle.toString())
-
-                                          *//* Text(
-                                         text = message,
-                                         textAlign = TextAlign.Center,
-                                         modifier = Modifier
-                                             .fillMaxWidth()
-                                             .padding(15.dp, 1.dp, 15.dp, 1.dp)
- //                    .clip(RoundedCornerShape(18.dp))
-                                             .border(1.dp, Color.White, RectangleShape)
-                                             .background(Color(0xFF03A9F4))
-                                             .selectable(
-                                                 selected = true,
-                                                 onClick = {
-                                                     navController?.navigate(Routes.MapScreen.name) {
-                                                         launchSingleTop = true
-                                                     }
-                                                     driverLoginViewModel?.checkLocationSetting(
-                                                         context = context,
-                                                         onDisabled = { intentSenderRequest ->
-                                                             settingResultRequest.launch(
-                                                                 intentSenderRequest
-                                                             )
-                                                         },
-                                                         onEnabled = {
-                                                             if (permissions.all {
-                                                                     ContextCompat.checkSelfPermission(
-                                                                         context, it
-                                                                     ) == PackageManager.PERMISSION_GRANTED
-                                                                 }) {
-                                                                 driverLoginViewModel.startLocationUpdates()
-                                                             } else {
-                                                                 launcherMultiplePermissions.launch(
-                                                                     permissions
-                                                                 )
-                                                             }
-                                                         })
-
-                                                 },
-                                             ),
-                                     )*//*
-
-                                }
-                            }
-                        }
-                        if (vehicleList != null) {
-                            Log.e("VehicleRouteItem messages.toString()", vehicleList.toString())
-
-                            var selectedIndex by remember { mutableStateOf(-1) }
-                            LazyColumn(state = listState) {
-                                items<VehicleRouteListResponse>(items = vehicleList!!) { message ->
-                                    Log.e("VehicleRouteItem messages.size.toString()", vehicleList!!.size.toString())
-                                    Log.e("VehicleRouteItem messages.toString()", vehicleList.toString())
-                                    Log.e("VehicleRouteItem message.toString()", vehicleList.toString())
-                                    Log.e("VehicleRouteItem message.vehicle.toString()", vehicleList.toString())
-
-                                    *//* Text(
-                                         text = message.,
-                                         textAlign = TextAlign.Center,
-                                         modifier = Modifier
-                                             .fillMaxWidth()
-                                             .padding(15.dp, 1.dp, 15.dp, 1.dp)
- //                    .clip(RoundedCornerShape(18.dp))
-                                             .border(1.dp, Color.White, RectangleShape)
-                                             .background(Color(0xFF03A9F4))
-                                             .selectable(
-                                                 selected = true,
-                                                 onClick = {
-                                                     navController?.navigate(Routes.MapScreen.name) {
-                                                         launchSingleTop = true
-                                                     }
-                                                     driverLoginViewModel?.checkLocationSetting(
-                                                         context = context,
-                                                         onDisabled = { intentSenderRequest ->
-                                                             settingResultRequest.launch(
-                                                                 intentSenderRequest
-                                                             )
-                                                         },
-                                                         onEnabled = {
-                                                             if (permissions.all {
-                                                                     ContextCompat.checkSelfPermission(
-                                                                         context, it
-                                                                     ) == PackageManager.PERMISSION_GRANTED
-                                                                 }) {
-                                                                 driverLoginViewModel.startLocationUpdates()
-                                                             } else {
-                                                                 launcherMultiplePermissions.launch(
-                                                                     permissions
-                                                                 )
-                                                             }
-                                                         })
-
-                                                 },
-                                             ),
-                                     )*//*
-
-                                }
-                            }
-                        }*/
-
                         if (vehicleList != null) {
                             var selectedIndex by remember { mutableStateOf(-1) }
-
-                            Log.e("VehicleRouteItem messages.toString()", "VehicleRouteItem messages.toString()"+vehicleList.toString())
                             LazyColumn {
-                                items(
+                                itemsIndexed(
                                     vehicleList?.toList() ?: emptyList()
-                                ) { vehicleLists ->
-                                    // Add your composable item here
+                                ) { index,vehicleLists ->
                                     Text(
-                                        text = vehicleLists.name.toString(),
+                                        text = vehicleLists.vehicle[index].vehicleNumber.toString(),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(15.dp, 1.dp, 15.dp, 1.dp)
-                                            //                    .clip(RoundedCornerShape(18.dp))
                                             .border(1.dp, Color.White, RectangleShape)
                                             .background(Color(0xFF03A9F4))
                                             .selectable(
@@ -367,32 +241,45 @@ fun DriverDashboard(
                                                     selectedIndex =
                                                         vehicleList!!.indexOf(vehicleLists)
 
-                                                    navController?.navigate(Routes.MapScreen.name) {
+                                                    scope.launch {
+                                                        dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
+                                                        Log.e("storedVehicleId", storedVehicleId.value.toString())
+                                                        driverLoginViewModel?.startTrackerService("forStart",context)
 
-                                                        launchSingleTop = true
                                                     }
-                                                    driverLoginViewModel?.checkLocationSetting(
-                                                        context = context,
-                                                        onDisabled = { intentSenderRequest ->
-                                                            settingResultRequest.launch(
-                                                                intentSenderRequest
-                                                            )
-                                                        },
-                                                        onEnabled = {
-                                                            if (permissions.all {
-                                                                    ContextCompat.checkSelfPermission(
-                                                                        context, it
-                                                                    ) == PackageManager.PERMISSION_GRANTED
-                                                                }) {
-                                                                driverLoginViewModel.startLocationUpdates()
-                                                            } else {
-                                                                launcherMultiplePermissions.launch(
-                                                                    permissions
-                                                                )
-                                                            }
-                                                        })
 
+//                                                    driverLoginViewModel?.startTrackerService("forStart")
                                                 },
+                                                /* onClick = {
+                                                     selectedIndex =
+                                                         vehicleList!!.indexOf(vehicleLists)
+
+                                                     navController?.navigate(Routes.MapScreen.name) {
+
+                                                         launchSingleTop = true
+                                                     }
+                                                     driverLoginViewModel?.checkLocationSetting(
+                                                         context = context,
+                                                         onDisabled = { intentSenderRequest ->
+                                                             settingResultRequest.launch(
+                                                                 intentSenderRequest
+                                                             )
+                                                         },
+                                                         onEnabled = {
+                                                             if (permissions.all {
+                                                                     ContextCompat.checkSelfPermission(
+                                                                         context, it
+                                                                     ) == PackageManager.PERMISSION_GRANTED
+                                                                 }) {
+                                                                 driverLoginViewModel.startLocationUpdates()
+                                                             } else {
+                                                                 launcherMultiplePermissions.launch(
+                                                                     permissions
+                                                                 )
+                                                             }
+                                                         })
+
+                                                 },*/
                                             ),
                                     )
 
@@ -565,9 +452,9 @@ fun DriverDashboard(
                             showDialog.value = true
                             CoroutineScope(Dispatchers.IO).launch {
 //                                vehicleList =driverLoginViewModel?.getVehicleList("")
-                                listtt = driverLoginViewModel?.getVehicleList("")
-                                Log.e("AMIRTHA RippleButton ", vehicleList.toString())
-                                Log.e("AMIRTHA RippleButton listtt ", listtt.toString())
+//                                listtt = driverLoginViewModel?.getVehicleList("",context)
+//                                Log.e("AMIRTHA RippleButton ", vehicleList.toString())
+//                                Log.e("AMIRTHA RippleButton listtt ", listtt.toString())
                             }
                             /* coroutineScope.launch {
                                  vehicleList = driverLoginViewModel?.getVehicleList("")
@@ -583,13 +470,15 @@ fun DriverDashboard(
                             text = { Text(text = "Are you going to pickup or drop the students?") },
                             confirmButton = {
                                 Button(onClick = {
+
                                     coroutineScope.launch {
+                                        vehicleList = driverLoginViewModel?.getVehicleList("PICKUP",context)
 //                                        bottomSheetText="Confirm"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
 //                                            CoroutineScope(Dispatchers.IO).launch {
 //                                                driverLoginViewModel?.getVehicleList("")
 //                                                vehicleList=driverLoginViewModel?.getVehicleList("")
-                                            Log.e("Vehicle ", vehicleList.toString())
+//                                            Log.e("Vehicle ", vehicleList.toString())
 //                                            }
 //                                            if (driverLoginViewModel?.getVehicleList("") != null) {
 //                                                messages = driverLoginViewModel.getVehicleList("")
@@ -618,7 +507,10 @@ fun DriverDashboard(
                             },
                             dismissButton = {
                                 Button(onClick = {
+
                                     coroutineScope.launch {
+                                        vehicleList =driverLoginViewModel?.getVehicleList("DROP",context)
+
                                         bottomSheetText = "Dismiss"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                                             bottomSheetScaffoldState.bottomSheetState.expand()
@@ -772,6 +664,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
         val context = LocalContext.current
         val dataStore = StoreData(context)
         val storedDriverName = dataStore.getDriverName.collectAsState(initial = "")
+        val storedToken = dataStore.getToken.collectAsState(initial = "")
         val storedImage = dataStore.getImageUrl.collectAsState(initial = "")
         val storedAddress = dataStore.getAddress.collectAsState(initial = "")
 
@@ -813,6 +706,9 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Column(Modifier.padding(2.dp)) {
+                    Log.e("SSSS","storedDriverName.value"+storedDriverName.value.toString())
+                    Log.e("SSSS","storedDriverName.value"+storedToken.value.toString())
+
                     Text(
                         storedDriverName.value.toString(),
                         fontWeight = FontWeight.Normal,
@@ -837,56 +733,56 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                     CoroutineScope(Dispatchers.IO).launch {
 //                        driverLoginViewModel?.getVehicleList("")
 //                        vehicleList=driverLoginViewModel?.getVehicleList("")
-                        Log.e("AMIRTHA", vehicleList.toString())
-                        Log.e("AMIRTHA LL", vehicleList?.get(0)?.startPoint?.latitude.toString())
+//                        Log.e("AMIRTHA", vehicleList.toString())
+//                        Log.e("AMIRTHA LL", vehicleList?.get(0)?.startPoint?.latitude.toString())
                     }
 
                 }, modifier = Modifier.align(CenterVertically)) {
-                    Log.e("LAK",storedImage.value.toString())
-                    Log.e("LAK",storedDriverName.value.toString())
-                    Log.e("LAK",storedAddress.value.toString())
+//                    Log.e("LAK", storedImage.value.toString())
+//                    Log.e("LAK", storedDriverName.value.toString())
+//                    Log.e("LAK", storedAddress.value.toString())
 
 //                    if(storedImage.value==null || storedImage.value.toString()==" "){
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                "https://picsum.photos/id/237/200/300"),
-                            contentDescription = "Driver image",contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(60.dp)
-                        )
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            "https://picsum.photos/id/237/200/300"
+                        ),
+                        contentDescription = "Driver image", contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(60.dp)
+                    )
 
 //                    }else{
-                      /*  Image(
-                            painter = rememberAsyncImagePainter(
-                                storedImage.value),
-                            contentDescription = "Driver image",contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(60.dp)
-                        )*/
+                    /*  Image(
+                          painter = rememberAsyncImagePainter(
+                              storedImage.value),
+                          contentDescription = "Driver image",contentScale = ContentScale.Crop,
+                          modifier = Modifier.size(60.dp)
+                      )*/
 //                        Image(
 //                  painter = painterResource(id = R.drawable.img_5),
 //                  contentDescription = "My Image",
 //                  contentScale = ContentScale.Crop
 //              )
-                    }
-                      }
-
-
-                /*   CoroutineScope(Dispatchers.IO).launch {
-                       driverLoginViewModel?.getRouteList("")
-                   }*/
-//            }
-            LaunchedEffect(lifecycleOwner) {
-                driverLoginViewModel?.getVehicleList("")
-                Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
-                if (driverLoginViewModel?.getVehicleList("") != null) {
-                    vehicleList =driverLoginViewModel.getVehicleList("")
                 }
             }
+
+
+            /*   CoroutineScope(Dispatchers.IO).launch {
+                   driverLoginViewModel?.getRouteList("")
+               }*/
+//            }
+//            LaunchedEffect(lifecycleOwner) {
+//                driverLoginViewModel?.getVehicleList("",context)
+//                Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
+//                if (driverLoginViewModel?.getVehicleList("",context) != null) {
+//                    vehicleList = driverLoginViewModel.getVehicleList("",context)
+//                }
+//            }
 
         }
 
     }
 }
-
 
 
 /*LazyColumn(state = listState) {

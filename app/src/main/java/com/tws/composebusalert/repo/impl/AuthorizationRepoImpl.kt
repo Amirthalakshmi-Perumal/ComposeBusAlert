@@ -165,6 +165,7 @@ class AuthorizationRepoImpl @Inject constructor(
             val response = userDataSource.startLocationService(startLocationServiceRequest)
             responseHandler.handleSuccess(response)
         } catch (e: Exception) {
+            Log.d("EEEE","EException")
             responseHandler.handleException(e)
         }
     }

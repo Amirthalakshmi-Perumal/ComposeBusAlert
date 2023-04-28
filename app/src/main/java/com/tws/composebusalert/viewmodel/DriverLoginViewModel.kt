@@ -3,10 +3,13 @@ package com.tws.composebusalert.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
 import android.content.IntentSender
+import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.location.Location
+import android.os.IBinder
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -24,9 +28,8 @@ import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
@@ -61,6 +64,15 @@ private const val ALTERNATE_ROUTE_RANGE = 300
 private const val GEOFENCE_RADIUS = 500f
 private const val NUMBER_FIFTY = 50
 private const val NUMBER_TWENTY = 20
+private const val LOCATION_PERMISSIONS_REQUEST = 1000
+private const val MAP_ZOOM_LEVEL = 14f
+private const val TWO_THOUSAND = 2000
+private const val LAT = -34
+private const val LNG = 151.0
+private const val BOUND_PADDING = 50
+private const val POLY_LINE_WIDTH = 15f
+private const val NAVIGATE_LEVEL_ZOOM = 20f
+private const val ANCHORING_VALUE: Float = 0.5f
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
@@ -74,7 +86,7 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
-    private val settings= Settings()
+    private val settings = Settings()
     private var startId: String? = null
     private var routePointsList: MutableList<Point> = mutableListOf()
     private val _polyLineLatLng = MutableLiveData<List<LatLng>>()
@@ -97,8 +109,11 @@ class DriverLoginViewModel @Inject constructor(
     private var isGeofenceWorking: Boolean = false
     private var count = NUMBER_ZERO
     private var mService: LocationUpdatesService? = null
-
-
+    private var mBound = false
+    private var mMap: GoogleMap? = null
+    private var marker: Marker? = null
+    private var previousLatLng: LatLng? = null
+    private var isDriverStarted: Boolean = false
 
 
     var locationCallback: LocationCallback? = null
@@ -111,7 +126,8 @@ class DriverLoginViewModel @Inject constructor(
     var listResponse: List<RouteListResponse>? = null
     var listResponseVehicle: VehicleRouteListResponse? = null
     var vehicleList: ArrayList<VehicleRouteItem>? = null
-    var bearToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNDg1MDYxLCJleHAiOjE2ODI1NzE0NjF9.4ozlVZTnTxlsOk33XSE3vEDuOf24Xqt_72ZqcDPa9lw"
+    var bearToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNjU4NDc0LCJleHAiOjE2ODI3NDQ4NzR9.rFqUC0RLmBxVinqt4JGPerS8mC0A97a-XF2XzM67jW4"
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
@@ -122,6 +138,7 @@ class DriverLoginViewModel @Inject constructor(
             chain.proceed(newRequest)
         }.build()
     var service = ""
+
     //    Profile   Route
     val retrofit = Retrofit.Builder()
         .baseUrl(if (service == "Profile") "http://206.189.137.65/api/v1/profile/" else "http://206.189.137.65/api/v1/route/")
@@ -130,7 +147,6 @@ class DriverLoginViewModel @Inject constructor(
         .build()
 
     private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
-
 
 
     private val _onSuccess = MutableStateFlow("")
@@ -154,7 +170,9 @@ class DriverLoginViewModel @Inject constructor(
     val validationError: LiveData<String> = _validationError
 
     private val _stPhoneNo = MutableLiveData<String>()
-    private var currentLocation: Location? = null
+//    private var currentLocation: Location? = null
+    private var currentLocation = Location("dummyProvider")
+//    private var currentLocation = Location(LatLng(11.930390, 79.807510))
     private var rideType: String? = null
     private var vehicleId: String? = null
     lateinit var phoneNumber: String
@@ -275,7 +293,7 @@ class DriverLoginViewModel @Inject constructor(
                                 )
                                 Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
                                 if (storedToken != null) {
-                                    bearToken=storedToken
+                                    bearToken = storedToken
                                 }
                                 /*  if(this.token=="TokenExpiredError"){
                                       authUseCase.registerUserToServer(
@@ -296,7 +314,7 @@ class DriverLoginViewModel @Inject constructor(
                     }
                 }
                 if (flavor == "driver") {
-                    Log.e("NAVVVVVV","NAJHKGJYTUYTGUYGYHG")
+                    Log.e("NAVVVVVV", "NAJHKGJYTUYTGUYGYHG")
                     navController?.navigate("A/OTP")
 //                    navController?.navigate(Routes.DriverSelectRouteScreen.name)
                 } else {
@@ -396,67 +414,82 @@ class DriverLoginViewModel @Inject constructor(
         Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
         return listResponse
     }
-  /*  fun startService(from: String): List<RouteListResponse>? {
-        var responses: List<RouteListResponse>? = null
-        service = "Route"
-        try {
-            viewModelScope.launch {
-                withContext(Dispatchers.Main) {
-                    responses = apiService.getRouteList(
-                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
-                        false,
-                        "id,name,type"
-                    )
-                    listResponse = responses
-                    Log.e(
-                        "Responses",
-                        "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
-                    )
-                }
-            }
-            Log.e("Responses", "New Responses  ${this.listResponse}")
-        } catch (e: Exception) {
-            Log.e("VMgetRouteList", "localizedMessage")
-            setNetworkError(e.localizedMessage)
-        }
-        Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
-        return listResponse
-    }
-    fun stopService(from: String): List<RouteListResponse>? {
-        var responses: List<RouteListResponse>? = null
-        service = "Route"
-        try {
-            viewModelScope.launch {
-                withContext(Dispatchers.Main) {
-                    responses = apiService.getRouteList(
-                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
-                        false,
-                        "id,name,type"
-                    )
-                    listResponse = responses
-                    Log.e(
-                        "Responses",
-                        "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
-                    )
-                }
-            }
-            Log.e("Responses", "New Responses  ${this.listResponse}")
-        } catch (e: Exception) {
-            Log.e("VMgetRouteList", "localizedMessage")
-            setNetworkError(e.localizedMessage)
-        }
-        Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
-        return listResponse
-    }
-*/
+
+    /*  fun startService(from: String): List<RouteListResponse>? {
+          var responses: List<RouteListResponse>? = null
+          service = "Route"
+          try {
+              viewModelScope.launch {
+                  withContext(Dispatchers.Main) {
+                      responses = apiService.getRouteList(
+                          "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+                          false,
+                          "id,name,type"
+                      )
+                      listResponse = responses
+                      Log.e(
+                          "Responses",
+                          "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
+                      )
+                  }
+              }
+              Log.e("Responses", "New Responses  ${this.listResponse}")
+          } catch (e: Exception) {
+              Log.e("VMgetRouteList", "localizedMessage")
+              setNetworkError(e.localizedMessage)
+          }
+          Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
+          return listResponse
+      }
+      fun stopService(from: String): List<RouteListResponse>? {
+          var responses: List<RouteListResponse>? = null
+          service = "Route"
+          try {
+              viewModelScope.launch {
+                  withContext(Dispatchers.Main) {
+                      responses = apiService.getRouteList(
+                          "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+                          false,
+                          "id,name,type"
+                      )
+                      listResponse = responses
+                      Log.e(
+                          "Responses",
+                          "DLVM  Responses" + this@DriverLoginViewModel.listResponse?.size
+                      )
+                  }
+              }
+              Log.e("Responses", "New Responses  ${this.listResponse}")
+          } catch (e: Exception) {
+              Log.e("VMgetRouteList", "localizedMessage")
+              setNetworkError(e.localizedMessage)
+          }
+          Log.e("ResponsesResult", " Response ${this.listResponse.toString()}")
+          return listResponse
+      }
+  */
     @Suppress("ComplexMethod")
-    fun startLocationService(rideType: String, vehicleId: String, currentLocation: Location) {
+    suspend fun startLocationService(
+        rideType: String,
+        vehicleId: String,
+        currentLocation: Location,
+        context: Context
+    ) {
+        val dataStore = StoreData(context)
         val routeId: String? = if (rideType == "Pickup") {
-            settings.pickupId
+
+            dataStore.getPickUpId.first()
+//            settings.pickupId
         } else {
-            settings.dropId
+
+            dataStore.getDropId.first()
+//            settings.dropId
         }
         viewModelScope.launch(Dispatchers.Main.immediate) {
+
+//            currentLocation?.latitude = 0.0
+//            currentLocation?.longitude = 0.0
+
             try {
                 routeId?.let { id ->
                     currentLocation.let { location ->
@@ -468,6 +501,10 @@ class DriverLoginViewModel @Inject constructor(
                             location.longitude
                         )?.let { response ->
                             startId = response.id
+
+                            response.id?.let { dataStore.saveStartService(it) }
+                                ?: Log.d("saveStartService", "Null saveStartService")
+
                             response.mapDetail?.points?.let { pointlist ->
                                 routePointsList.addAll(pointlist)
                             }
@@ -484,7 +521,7 @@ class DriverLoginViewModel @Inject constructor(
 
                             response.latitude = location.latitude
                             response.longitude = location.longitude
-                            updateLocationToApi(location, null, 0.0,true)
+                            updateLocationToApi(location, null, 0.0, true)
                             startLocationServiceResponse = response
                             _isStarted.value = true
                         }
@@ -500,6 +537,7 @@ class DriverLoginViewModel @Inject constructor(
             }
         }
     }
+
     private suspend fun updateLocationToApi(
         location: Location,
         startPoint: Location?,
@@ -527,37 +565,82 @@ class DriverLoginViewModel @Inject constructor(
             e.printStackTrace()
         }
     }
-    private fun startTrackerService(isFor: String) {
+
+    suspend fun startTrackerService(isFor: String, context: Context) {
+        val dataStore = StoreData(context)
+        var storedVehicleId:String?=null
+        viewModelScope.launch {
+            storedVehicleId=dataStore.getVehicleId.first()
+        }
 
         if (isFor == "forStart") {
-            currentLocation = mService?.lastLocation
-            updateDriverRideType(rideType, vehicleId)
+//            currentLocation = mService?.lastLocation
+//            currentLocation = LatLng(11.930390, 79.807510)
+//            updateDriverRideType(rideType, vehicleId,context)
+            updateDriverRideType("Pickup", storedVehicleId, context)
             stopService()
         } else {
             mService?.requestLocationUpdates()
         }
     }
-    private fun stopService() {
-        mService?.removeLocationUpdates()
-    }
 
-    private fun updateDriverRideType(it: String?, vehicleId: String?) {
-        if (it == "Pickup") {
-            currentLocation?.let { it1 ->
-                startLocationService(
-                  "Pickup", vehicleId!!,
-                    it1
-                )
-            }
-        } else {
-            currentLocation?.let { it1 ->
-               startLocationService(
-                    "Drop", vehicleId!!,
-                    it1
+    fun placeMarkersOnMap(it: List<Stoppings>?) {
+        it?.let { stoppingList ->
+            stoppingList.forEach {
+                mMap?.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(it.latitude, it.longitude))
+                        .anchor(ANCHORING_VALUE, ANCHORING_VALUE)
+                        .title(it.name)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_stop))
                 )
             }
         }
     }
+
+    // Monitors the state of the connection to the service.
+    private val mServiceConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder: LocationUpdatesService.LocalBinder =
+                service as LocationUpdatesService.LocalBinder
+            mService = binder.service
+            mBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            mService = null
+            mBound = false
+        }
+    }
+
+    private fun stopService() {
+        mService?.removeLocationUpdates()
+    }
+
+    private suspend fun updateDriverRideType(it: String?, vehicleId: String?, context: Context) {
+        if (it == "Pickup" && vehicleId!=null) {
+            currentLocation.latitude=11.930390
+            currentLocation.longitude=79.807510
+
+            currentLocation.let { it1 ->
+                if (it1 != null) {
+                    startLocationService(
+                        "Pickup", vehicleId!!,
+                        it1, context
+                    )
+                }
+            }
+        } else {
+            Log.d("updateDriverRideType","Vehicle id is not added may be its null")
+           /* currentLocation?.let { it1 ->
+                startLocationService(
+                    "Drop", vehicleId!!,
+                    it1, context
+                )
+            }*/
+        }
+    }
+
     fun stopLocationUpdate(activityId: String) {
         viewModelScope.launch(Dispatchers.Main) {
             try {
@@ -582,31 +665,110 @@ class DriverLoginViewModel @Inject constructor(
     }
 
 
-
-/*    fun storeRouteDetails() {
-        var selectedRoute: String? = null
-        _filteredRoute.forEach {
-            if (it.isChecked) {
-                selectedRoute = it.name
+    /*    fun storeRouteDetails() {
+            var selectedRoute: String? = null
+            _filteredRoute.forEach {
+                if (it.isChecked) {
+                    selectedRoute = it.name
+                }
             }
-        }
 
-        for (routeDetails in _routeListResponse) {
-            if (routeDetails.name == selectedRoute) {
-                driverDashBoardUseCase.storeRouteDetails(routeDetails.type, routeDetails)
+            for (routeDetails in _routeListResponse) {
+                if (routeDetails.name == selectedRoute) {
+                    driverDashBoardUseCase.storeRouteDetails(routeDetails.type, routeDetails)
+                }
             }
-        }
-    }*/
-    fun getVehicleList(from: String): VehicleRouteListResponse? {
+        }*/
+    /* fun getVehicleList(from: String, context: Context): VehicleRouteListResponse? {
+         var responses: VehicleRouteListResponse? = null
+ //    var routeId:String?="2835693b-736d-4275-a21f-628c3e5f7208"
+         var routeId: String? = null
+         val dataStore = StoreData(context)
+         viewModelScope.launch {
+             val pickUpId = dataStore.getPickUpId.first()
+             val dropId = dataStore.getDropId.first()
+             Log.d("BBBB", "Stored pickUpId is $pickUpId")
+             Log.d("BBBB", "Stored dropId is $dropId")
+             if (from == "PICKUP") {
+                 routeId = pickUpId
+             }
+             if (from == "DROP") {
+                 routeId = dropId
+             }
+         }
+         if (routeId != null) {
+             Log.d("BBBB", "Stored routeId  which is by if  is $routeId")
+             try {
+                 viewModelScope.launch {
+                     withContext(Dispatchers.Main) {
+                         responses = apiService.getVehicleList(
+                             routeId, "vehicle"
+                         )
+                         listResponseVehicle = responses
+
+                         vehicleList = responses
+                         stop1 =
+                             vehicleList?.get(0)?.startPoint?.latitude?.let {
+                                 vehicleList?.get(0)?.startPoint?.longitude?.let { it1 ->
+                                     LatLng(
+                                         it,
+                                         it1
+                                     )
+                                 }
+                             }
+                         stop2 =
+                             vehicleList?.get(0)?.endPoint?.latitude?.let {
+                                 vehicleList?.get(0)?.endPoint?.longitude?.let { it1 ->
+                                     LatLng(
+                                         it,
+                                         it1
+                                     )
+                                 }
+                             }
+                     }
+
+                     Log.e(
+                         "Responses",
+                         " Vehicle responses DLVM  Responses" + this@DriverLoginViewModel.listResponseVehicle?.size
+                     )
+                 }
+             } catch (e: Exception) {
+                 Log.e("VMgetVehicleRouteList", "localizedMessage")
+                 setNetworkError(e.localizedMessage)
+             }
+         } else {
+ //            Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
+             Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
+         }
+         Log.e(
+             "ResponsesResult",
+             " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
+         )
+         return listResponseVehicle
+     }
+  */
+    suspend fun getVehicleList(from: String, context: Context): VehicleRouteListResponse? {
         var responses: VehicleRouteListResponse? = null
-        try {
-            viewModelScope.launch {
-                withContext(Dispatchers.Main) {
-                    responses = apiService.getVehicleList(
-                        "2835693b-736d-4275-a21f-628c3e5f7208", "vehicle"
-                    )
-                    listResponseVehicle = responses
+//    var routeId:String?="2835693b-736d-4275-a21f-628c3e5f7208"
+        var routeId: String? = null
+        val dataStore = StoreData(context)
 
+        val pickUpId = dataStore.getPickUpId.first()
+        val dropId = dataStore.getDropId.first()
+        Log.d("BBBB", "Stored pickUpId is $pickUpId")
+        Log.d("BBBB", "Stored dropId is $dropId")
+        if (from == "PICKUP") {
+            routeId = pickUpId
+        }
+        if (from == "DROP") {
+            routeId = dropId
+        }
+        if (routeId != null) {
+            Log.d("BBBB", "Stored routeId  which is by if  is $routeId")
+            try {
+                withContext(Dispatchers.Main) {
+                    responses = apiService.getVehicleList(routeId, "vehicle")
+                    listResponseVehicle = responses
                     vehicleList = responses
                     stop1 =
                         vehicleList?.get(0)?.startPoint?.latitude?.let {
@@ -628,14 +790,13 @@ class DriverLoginViewModel @Inject constructor(
                         }
                 }
 
-                Log.e(
-                    "Responses",
-                    " Vehicle responses DLVM  Responses" + this@DriverLoginViewModel.listResponseVehicle?.size
-                )
+            } catch (e: Exception) {
+                Log.e("VMgetVehicleRouteList", "localizedMessage")
+                setNetworkError(e.localizedMessage)
             }
-        } catch (e: Exception) {
-            Log.e("VMgetVehicleRouteList", "localizedMessage")
-            setNetworkError(e.localizedMessage)
+        } else {
+//            Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
+            Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
         }
         Log.e(
             "ResponsesResult",
@@ -666,20 +827,20 @@ class DriverLoginViewModel @Inject constructor(
                     if (it.data?.name != null) {
                         Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
                         firebaseAuth(navController, context, phone)
-                    } else{
+                    } else {
 //                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
                         Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
 //                        navController?.navigate(Routes.Phone.name)
                     }
-                   /* else if( it.data?.name == " "){
-                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
-                        Log.e("VVVMMWW2", "uiuiuiui 222error ${it.apiError?.message}")
-                        navController?.navigate(Routes.Phone.name)
-                    }else{
-                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
-                        Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
-                        navController?.navigate(Routes.Phone.name)
-                    }*/
+                    /* else if( it.data?.name == " "){
+                         Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                         Log.e("VVVMMWW2", "uiuiuiui 222error ${it.apiError?.message}")
+                         navController?.navigate(Routes.Phone.name)
+                     }else{
+                         Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                         Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
+                         navController?.navigate(Routes.Phone.name)
+                     }*/
                 }
             }
         }
@@ -692,7 +853,7 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun signOut(navController: NavController? = null, context: Context,) {
+    suspend fun signOut(navController: NavController? = null, context: Context) {
         val dataStore = StoreData(context)
         val storedToken = dataStore.getToken.first()
         FirebaseAuth.getInstance().signOut()

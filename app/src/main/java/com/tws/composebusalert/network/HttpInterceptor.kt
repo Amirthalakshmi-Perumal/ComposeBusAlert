@@ -32,9 +32,7 @@ class HttpInterceptor(private val context: Context) : Interceptor {
         val builder: Request.Builder = request.newBuilder()
         builder.header("Content-Type", "application/json")
 //        val token: String? = settings.token
-        val token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZDJiNWVlZDgtOTZhMS00MDAzLThlN2ItNjU3MTc2N2U5NjljIiwiaWF0IjoxNjgwODUyOTM3LCJleHAiOjE2ODA5MzkzMzd9.ntlzuhZ-AwQscIYgDVWMVs2SRM3h-ABSMcJ8vN9E3UY"
-//        val token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgwNzg4NzA2LCJleHAiOjE2ODA4NzUxMDZ9.IHwkHRcvH6SC6stn-ZuNOs899EsC4KDPYLAbyMsF1W0"
-//        val token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiZjRmMGRiYTctMTc0MS00YzRjLWI1YzUtNDBkMGJiN2QwMmNiIiwiaWF0IjoxNjgwNzc5MzU1LCJleHAiOjE2ODA4NjU3NTV9._FOsf1WVJn9WRqDKzfU8YCcyxdcDNd2n6a4NMJM07sw"
+        val token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNjU4NDc0LCJleHAiOjE2ODI3NDQ4NzR9.rFqUC0RLmBxVinqt4JGPerS8mC0A97a-XF2XzM67jW4"
 
         setAuthHeader(builder, token)
         request = builder.build()
