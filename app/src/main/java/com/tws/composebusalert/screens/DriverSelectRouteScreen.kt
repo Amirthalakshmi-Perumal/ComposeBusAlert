@@ -241,9 +241,9 @@ fun RouteListView(
             if (state.value != TextFieldValue("")) {
                 IconButton(
                     onClick = {
-                        scope.launch {
-                            dataStore.saveScreen("DashBoard Screen")
-                        }
+//                        scope.launch {
+//                            dataStore.saveScreen("DashBoard Screen")
+//                        }
                         CoroutineScope(Dispatchers.IO).launch {
                             loginViewModel?.getRouteList("")
                         }
@@ -374,11 +374,11 @@ fun RouteListView(
                                 }*/
 
 
-                                scope.launch {
-//                                    dataStore.saverouteId(message.id)
-//                                     dataStore.saveDriverName()
-                                    dataStore.saveScreen("DashBoard Screen")
-                                }
+//                                scope.launch {
+////                                    dataStore.saverouteId(message.id)
+////                                     dataStore.saveDriverName()
+//                                    dataStore.saveScreen("DashBoard Screen")
+//                                }
                                 Log.e("RouteID", storedRouteId.value)
                                 Log.e("storedScreen", storedScreen.value)
                                 Log.e("storedRouteName", "storedRouteName" + storedRouteName.value)

@@ -2,6 +2,7 @@ package com.tws.composebusalert.screens
 
 import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
@@ -120,7 +122,7 @@ var listtt: VehicleRouteListResponse? = null
            Log.e("Screen", storedScreen.value)
        }*/
     LaunchedEffect(lifecycleOwner) {
-        dataStore.saveScreen("DashBoard Screen")
+//        dataStore.saveScreen("DashBoard Screen")
 //        vehicleList = driverLoginViewModel?.getVehicleList("",context)
 //        driverLoginViewModel?.getVehicleList("",context)
 //        Log.e("DriverSelectRouteScreen", driverLoginViewModel?.vehicleList.toString())
@@ -237,7 +239,7 @@ var listtt: VehicleRouteListResponse? = null
                                             .background(Color(0xFF03A9F4))
                                             .selectable(
                                                 selected = true,
-                                                onClick = {
+                                             /*   onClick = {
                                                     selectedIndex =
                                                         vehicleList!!.indexOf(vehicleLists)
 
@@ -245,13 +247,13 @@ var listtt: VehicleRouteListResponse? = null
                                                         dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
                                                         Log.e("storedVehicleId", storedVehicleId.value.toString())
 //                                                        driverLoginViewModel?.startTrackerService("forStart",context)
-                                                        driverLoginViewModel?.startService("Pickup",context,navController)
+//                                                        driverLoginViewModel?.startService("Pickup",context,navController)
 
                                                     }
 
 //                                                    driverLoginViewModel?.startTrackerService("forStart")
-                                                },
-                                                /* onClick = {
+                                                },*/
+                                                 onClick = {
                                                      selectedIndex =
                                                          vehicleList!!.indexOf(vehicleLists)
 
@@ -259,6 +261,13 @@ var listtt: VehicleRouteListResponse? = null
 
                                                          launchSingleTop = true
                                                      }
+                                                  /*   scope.launch {
+                                                         dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
+                                                         Log.e("storedVehicleId", storedVehicleId.value.toString())
+//                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+//                                                        driverLoginViewModel?.startService("Pickup",context,navController)
+
+                                                     }*/
                                                      driverLoginViewModel?.checkLocationSetting(
                                                          context = context,
                                                          onDisabled = { intentSenderRequest ->
@@ -280,7 +289,7 @@ var listtt: VehicleRouteListResponse? = null
                                                              }
                                                          })
 
-                                                 },*/
+                                                 },
                                             ),
                                     )
 

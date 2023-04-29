@@ -189,7 +189,7 @@ fun MapScreen(
                             Text(
                                 text = "STOP",
                                 modifier = Modifier.selectable(selected = true, onClick = {
-                                   driverLoginViewModel?.endService(context)
+//                                   driverLoginViewModel?.endService(context)
                                     navController?.navigate(Routes.DriverDashboard.name)
                                 }),
                             )

@@ -124,7 +124,7 @@ class DriverLoginViewModel @Inject constructor(
     var listResponseVehicle: VehicleRouteListResponse? = null
     var vehicleList: ArrayList<VehicleRouteItem>? = null
     var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNjU4NDc0LCJleHAiOjE2ODI3NDQ4NzR9.rFqUC0RLmBxVinqt4JGPerS8mC0A97a-XF2XzM67jW4"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgyNzQ1NzM4LCJleHAiOjE2ODI4MzIxMzh9.k8Sgzwl3mbZ_YUPDhFTs2w5eEgwMzO9i3AaQktJPiFE"
     val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
         .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->

@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
 
         lifecycleScope.launch {
             val no = storeData.getNo.first()
-            check = storeData.getScreen.first()
+//            check = storeData.getScreen.first()
             Log.d("MainActivity", "Stored no is $no")
             Log.d("MainActivity", "Stored screen is $check")
         }
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var internet = isInternetAvailable(this)
+                    val internet = isInternetAvailable(this)
                     val infoDialog = remember { mutableStateOf(false) }
                     if (!internet) {
                         infoDialog.value = true
