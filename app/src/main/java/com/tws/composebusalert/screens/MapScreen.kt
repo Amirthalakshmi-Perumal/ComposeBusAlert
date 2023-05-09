@@ -3,18 +3,23 @@ package com.tws.composebusalert.screens
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PictureInPictureParams
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import android.util.Rational
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,28 +57,47 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.tws.composebusalert.*
 import com.tws.composebusalert.R
+import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.maps.GooglePlacesInfoViewModel
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.responses.LocationDetails
+import com.tws.composebusalert.responses.StoppingListDS
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
+import io.reactivex.internal.observers.ResumeSingleObserver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun MapScreen(
     navController: NavController? = null,
-    driverLoginViewModel: DriverLoginViewModel?,
+    driverLoginViewModel: DriverLoginViewModel= androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+     var isInPictureInPictureMode = remember {
+         mutableStateOf(false)
+     }
+    val pipScreen by driverLoginViewModel.w.collectAsState(initial = false)
+
+    val rational = Rational(1, 2)
+    val pip = remember { mutableStateOf(false) }
+
+    val params = PictureInPictureParams.Builder()
+        .setAspectRatio(rational)
+        .build()
     val context = LocalContext.current
     val activity = (LocalContext.current as Activity)
     BackHandler(true) {
-        activity.finish()
+        pip.value=true
+        activity.enterPictureInPictureMode(params)
+
+//        activity.finish()
     }
+
     lateinit var a: LatLng
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
@@ -81,6 +105,7 @@ fun MapScreen(
     )
     val name = driverLoginViewModel?.firstName?.value.toString()
     val showDialog = remember { mutableStateOf(false) }
+
     val coroutineScope = rememberCoroutineScope()
     val glaces: GooglePlacesInfoViewModel = hiltViewModel()
     val permissions = arrayOf(
@@ -173,9 +198,9 @@ fun MapScreen(
         ) {
             a = LatLng(currentLocation.latitude, currentLocation.longitude)
             Log.e("Lat", a.longitude.toString())
-            Box(
-                Modifier
-                    .fillMaxSize()
+            Box(Modifier.fillMaxSize()  .clickable {
+                pip.value = false
+            }
                     .background(Color.White)
             ) {
                 if (showDialog.value) {
@@ -189,7 +214,7 @@ fun MapScreen(
                             Text(
                                 text = "STOP",
                                 modifier = Modifier.selectable(selected = true, onClick = {
-//                                   driverLoginViewModel?.endService(context)
+//                                    driverLoginViewModel?.endService(context)
                                     navController?.navigate(Routes.DriverDashboard.name)
                                 }),
                             )
@@ -243,7 +268,7 @@ fun MapScreen(
                     }
                 }
                 if (currentLocation.latitude > 0.0) {
-                    Toast.makeText(context, "MAPPPPP", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "MAPPPPP", Toast.LENGTH_SHORT).show()
                     GoogleMapView(
                         modifier = Modifier.fillMaxSize(),
                         onMapLoaded = {
@@ -272,34 +297,61 @@ fun MapScreen(
                     }
 
                 }
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                            bottomSheetScaffoldState.bottomSheetState.expand()
-                        } else {
-                            bottomSheetScaffoldState.bottomSheetState.collapse()
-                        }
-                    }
-                }, modifier = Modifier.align(Alignment.TopEnd)) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img_5),
-                        contentDescription = "My Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 54.dp, end = 25.dp, bottom = 4.dp)
+//                if(!pip.value){
+                if(pipScreen){
+                    TopAppBar(
+                        title = {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(105.dp, 0.dp, 0.dp, 0.dp)
+                            ) {
+
+                                Text(
+                                    text = "DASHBOARD",
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .align(Alignment.CenterVertically)
+                                )
+                            }
+                        }, modifier = Modifier.height(50.dp), colors = TopAppBarDefaults.smallTopAppBarColors(
+                            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.onSecondary,
+                        )
                     )
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                                bottomSheetScaffoldState.bottomSheetState.expand()
+                            } else {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                            }
+                        }
+                    }, modifier = Modifier.align(Alignment.TopEnd)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.img_5),
+                            contentDescription = "My Image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 54.dp, end = 25.dp, bottom = 4.dp)
+                        )
+                    }
+                    RippleLoadingAnimation(circleColor = MaterialTheme.colorScheme.onSecondary,
+                        text = "Stop",
+                        box1 = 200.dp,
+                        box2 = 55.dp,
+                        box3 = 125.dp,
+                        fontSize = 15.sp,
+                        alignment = Alignment.BottomCenter,
+                        onClick = {
+                            showDialog.value = true
+                        })
                 }
-                RippleLoadingAnimation(circleColor = MaterialTheme.colorScheme.onSecondary,
-                    text = "Stop",
-                    box1 = 200.dp,
-                    box2 = 55.dp,
-                    box3 = 125.dp,
-                    fontSize = 15.sp,
-                    alignment = Alignment.BottomCenter,
-                    onClick = {
-                        showDialog.value = true
-                    })
+
             }
         }
     }
@@ -307,6 +359,7 @@ fun MapScreen(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -320,24 +373,51 @@ fun GoogleMapView(
     a: LatLng
 ) {
 
+    val asa= listOf(StoppingListDS(11.93702, 79.80877), StoppingListDS(11.92442, 79.80949), StoppingListDS(11.91877, 79.81569))
+
+    val context = LocalContext.current
 //    val myLoation = LatLng(11.930390, 79.807510)
     val myLoation = LatLng(a.latitude, a.longitude)
 //    val stop1 = LatLng(11.930390, 79.807510)
 //    val stop2 = LatLng(11.940837, 79.763548)
+       val stopp1 = LatLng(11.93702, 79.80877)
+    val stopp2 = LatLng(11.92442, 79.80949)
+       val stopp3 = LatLng(11.91877, 79.81569)
+
+    val scope = rememberCoroutineScope()
     val stop1 = driverLoginViewModel?.stop1
     val stop2 = driverLoginViewModel?.stop2
-
+    val dataStore = StoreData(context)
+    val storedStoppings = dataStore.getStoppingList.collectAsState(initial = "")
+    val h=storedStoppings.value
     Log.d("LATLONG", "${myLoation.latitude}${myLoation.longitude} was clicked")
     val _makerList: MutableList<LatLng> = mutableListOf<LatLng>()
+    val _makerList1: MutableList<LatLng> = mutableListOf<LatLng>()
+
+    /*LaunchedEffect(Unit) {
+        val stoppingList = dataStore.getStoppingList.collect {
+        }
+        for (stopping in stoppingList ) {
+
+        }
+    }*/
 
     if (stop1 != null) {
         _makerList.add(stop1)
     }
+
+    _makerList1.add(stopp1)
+    _makerList1.add(stopp2)
+    _makerList1.add(stopp3)
+
     if (stop2 != null) {
         _makerList.add(stop2)
     }
     val pos2 by remember {
         mutableStateOf(_makerList)
+    }
+    val pos1 by remember {
+        mutableStateOf(_makerList1)
     }
 
     val cameraPositionState = rememberCameraPositionState {
@@ -345,12 +425,12 @@ fun GoogleMapView(
     }
 
     val mapProperties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.NORMAL))
+        mutableStateOf(MapProperties(mapType = MapType.TERRAIN))
     }
 
     val uiSettings by remember {
         mutableStateOf(
-            MapUiSettings(compassEnabled = true)
+            MapUiSettings(compassEnabled = true,zoomControlsEnabled=false)
         )
     }
     val locationSource = MyLocationSource()
@@ -372,6 +452,7 @@ fun GoogleMapView(
     Box {
         GoogleMap(
             modifier = modifier,
+//            uiSettings=MapUiSettings(),
 //            modifier = Modifier.size(25.dp),
             cameraPositionState = cameraPositionState,
             properties = mapProperties,
@@ -380,7 +461,7 @@ fun GoogleMapView(
             googleMapOptionsFactory = {
                 GoogleMapOptions().camera(
                     CameraPosition.fromLatLngZoom(
-                        myLoation, 56f
+                        myLoation, 50f
                     )
                 )
             },
@@ -450,6 +531,22 @@ fun GoogleMapView(
                     "${posistion.latitude.toString()}    ${posistion.longitude.toString()}"
                 )
             }
+            pos1.forEach { posistion ->
+                Marker(
+                    state = MarkerState(position = posistion),
+                    title = "Stopping ",
+                    snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
+                    onClick = markerClick,
+                    icon = driverLoginViewModel?.bitmapDescriptorFromVector(
+                        LocalContext.current, R.drawable.bus_stop
+                    )
+                )
+
+                Log.e(
+                    "New LAT",
+                    "${posistion.latitude.toString()}    ${posistion.longitude.toString()}"
+                )
+            }
 
             Polyline(points = googlePlacesInfoViewModel.polyLinesPoints.value,
                 color = Color.Blue,
@@ -458,7 +555,7 @@ fun GoogleMapView(
 
         }
 
-        TopAppBar(
+      /*  TopAppBar(
             title = {
                 Row(
                     Modifier
@@ -476,13 +573,11 @@ fun GoogleMapView(
                             .align(Alignment.CenterVertically)
                     )
                 }
-            },
-            modifier = Modifier.height(50.dp),
-            colors = TopAppBarDefaults.smallTopAppBarColors(
+            }, modifier = Modifier.height(50.dp), colors = TopAppBarDefaults.smallTopAppBarColors(
                 titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 containerColor = MaterialTheme.colorScheme.onSecondary,
             )
-        )
+        )*/
     }
 }
 

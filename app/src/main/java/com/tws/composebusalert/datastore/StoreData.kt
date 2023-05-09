@@ -1,14 +1,18 @@
 package com.tws.composebusalert.datastore
 
 import android.content.Context
+import android.icu.text.Normalizer.NO
 import android.util.Log
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.tws.composebusalert.responses.StoppingListDS
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import androidx.datastore.preferences.core.Preferences
 
 class StoreData(private val context: Context) {
     companion object {
@@ -32,6 +36,9 @@ class StoreData(private val context: Context) {
         val VEHICLEID = stringPreferencesKey("VehicleId")
 
         val STARTSERVICEID = stringPreferencesKey("StartServiceId")
+//val STOPPINGS= listOf (stringPreferencesKey("Stoppings"))
+
+        val STOPPINGS = stringPreferencesKey("Stoppings")
 
     }
 
@@ -47,7 +54,11 @@ class StoreData(private val context: Context) {
         .map { preferences ->
             preferences[VEHICLEID] ?: ""
         }
-
+    val getStoppingList: Flow<List<StoppingListDS>> = context.dataStore.data
+        .map { preferences ->
+            val itemsJson = preferences[STOPPINGS] ?: "[]"
+            Gson().fromJson(itemsJson, Array<StoppingListDS>::class.java).toList()
+        }
 
     val getProfileId: Flow<String?> = context.dataStore.data
         .map { preferences ->
@@ -236,6 +247,18 @@ class StoreData(private val context: Context) {
             Log.e("StoreData","No Exception ")
         }
     }
+
+    suspend fun saveStoppings(items: List<StoppingListDS>) {
+        val itemsJson = Gson().toJson(items)
+        try{
+            context.dataStore.edit { preference ->
+                preference[STOPPINGS] =itemsJson
+            }
+        }catch(e:Exception){
+            Log.e("StoreData","No Exception ")
+        }
+    }
+
 
     suspend fun clearData() {
         context.dataStore.edit { preferences ->

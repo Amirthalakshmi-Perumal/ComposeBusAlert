@@ -78,7 +78,7 @@ fun DriverSelectRouteScreen(
 
     Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
     LaunchedEffect(Unit) {
-        loginViewModel.getRouteList("")
+        loginViewModel.getRouteList(context)
         Log.e("DriverSelectRouteScreen", loginViewModel.listResponse.toString())
         dataStore.saveScreen("DashBoard Screen")
     }
@@ -245,7 +245,7 @@ fun RouteListView(
 //                            dataStore.saveScreen("DashBoard Screen")
 //                        }
                         CoroutineScope(Dispatchers.IO).launch {
-                            loginViewModel?.getRouteList("")
+                            loginViewModel?.getRouteList(context)
                         }
                         state.value = TextFieldValue("")
                     },
@@ -276,7 +276,7 @@ fun RouteListView(
     var messages: List<RouteListResponse>? = null
 
     LaunchedEffect(lifecycleOwner) {
-        loginViewModel?.getRouteList("")
+        loginViewModel?.getRouteList(context)
         Log.e("DriverSelectRouteScreen", loginViewModel?.listResponse.toString())
 
     }
@@ -286,8 +286,8 @@ fun RouteListView(
     Log.e("storedPickUpId", "storedPickUpId" + storedPickUpId.value)
     Log.e("storedDropId", "storedDropId" + storedDropId.value)
 
-    if (loginViewModel?.getRouteList("") != null) {
-        messages = loginViewModel.getRouteList("")
+    if (loginViewModel?.getRouteList(context) != null) {
+        messages = loginViewModel.getRouteList(context)
     }
     val routNameList: List<String>? = messages?.map { it.name }
 

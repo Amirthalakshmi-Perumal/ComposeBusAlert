@@ -1,5 +1,7 @@
 package com.tws.composebusalert
 
+import android.app.Activity
+import android.app.PictureInPictureParams
 import android.content.Context
 import android.location.Location
 import android.net.ConnectivityManager
@@ -7,10 +9,14 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -41,10 +47,21 @@ import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), OnMapReadyCallback {
+    private var isInPictureInPictureMode = mutableStateOf(false)
+    val rational = Rational(3, 5)
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    val params = PictureInPictureParams.Builder()
+        .setAspectRatio(rational)
+        .build()
+
+
+
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
+//    private val driverLoginViewModel=DriverLoginViewModel(context = this)
     lateinit var storeData: StoreData
     var phNo = ""
-    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "my_data_store")
+    val Context.dataStore by preferencesDataStore(name = "my_data_store")
     var check = ""
      var locationRequired = false
     var locationCallback: LocationCallback? = null
@@ -112,6 +129,8 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
     }
 
     override fun onResume() {
+        driverLoginViewModel.q.value=true
+
         super.onResume()
         driverLoginViewModel.getDriverDetailsVM()
         Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
@@ -119,11 +138,20 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
             driverLoginViewModel.startLocationUpdates()
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onPause() {
-        super.onPause()
         locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
+        driverLoginViewModel.q.value=false
+//        enterPictureInPictureModes()
+        super.onPause()
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun enterPictureInPictureModes() {
+        (this as Activity).enterPictureInPictureMode(params)
+    }
     private fun newLocation(a: LatLng): Location {
         val location = Location("MyLocationProvider")
         location.apply {

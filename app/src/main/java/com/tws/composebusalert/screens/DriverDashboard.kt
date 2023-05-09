@@ -63,26 +63,24 @@ import com.tws.composebusalert.responses.VehicleRouteItem
 import com.tws.composebusalert.responses.VehicleRouteListResponse
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.*
 
 var vehicleList: ArrayList<VehicleRouteItem>? = null
 var listtt: VehicleRouteListResponse? = null
+var s = ""
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
 )
 @Composable
- fun DriverDashboard(
+fun DriverDashboard(
     navController: NavController? = null,
     driverLoginViewModel: DriverLoginViewModel?,
     lifecycleOwner: LifecycleOwner
 ) {
     val context = LocalContext.current
-
+    var listvalue = ""
 
 //    Log.e("TTT", "TTT  " + vehicleList.toString())
     val scope = rememberCoroutineScope()
@@ -91,16 +89,14 @@ var listtt: VehicleRouteListResponse? = null
     val storedPickUpId = dataStore.getPickUpId.collectAsState(initial = "")
     val storedVehicleId = dataStore.getVehicleId.collectAsState(initial = "")
 
-//    BackHandler(true) {
-//
-//        Log.d("TAG", "OnBackPressed")
-////        (context as? Activity)?.finish()
-//        (context as? Activity)?.let { activity ->
-//            activity.finish()
-//        }
-//        Log.d("TAGFFF", "sddfszdgdfzbzOnBackPressed")
-//
-//    }
+    BackHandler(true) {
+
+        Log.d("TAG", "OnBackPressed")
+//        (context as? Activity)?.finish()
+        (context as? Activity)?.finish()
+        Log.d("TAGFFF", "sddfszdgdfzbzOnBackPressed")
+
+    }
 //    val lifecycleOwner = LocalLifecycleOwner.current
 
     val onBack: () -> Unit = {
@@ -121,7 +117,7 @@ var listtt: VehicleRouteListResponse? = null
            Log.e("Routeeeeee", storedRoute.value.toString())
            Log.e("Screen", storedScreen.value)
        }*/
-    LaunchedEffect(lifecycleOwner) {
+//    LaunchedEffect(lifecycleOwner) {
 //        dataStore.saveScreen("DashBoard Screen")
 //        vehicleList = driverLoginViewModel?.getVehicleList("",context)
 //        driverLoginViewModel?.getVehicleList("",context)
@@ -136,7 +132,7 @@ var listtt: VehicleRouteListResponse? = null
 //        Log.e("storedVehicleId", storedVehicleId.value.toString())
 //        Log.e("Screen", storedScreen.value)
 
-    }
+//    }
 /*    LaunchedEffect(Unit) {
         dataStore.screen("DashBoard Screen")
 //       var a= driverLoginViewModel?.getVehicleList("")
@@ -179,6 +175,15 @@ var listtt: VehicleRouteListResponse? = null
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
+               /* LaunchedEffect(LocalContext.current as Activity ){
+                    if (listvalue == "DROP") {
+                        vehicleList = driverLoginViewModel?.getVehicleList("DROP", context)?.a
+
+                    } else {
+                        vehicleList = driverLoginViewModel?.getVehicleList("PICKUP", context)?.a
+
+                    }
+                }*/
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -223,12 +228,15 @@ var listtt: VehicleRouteListResponse? = null
                                     .show()
                             }
                         }
-                        if (vehicleList != null) {
+                        Log.d("vehicleList", "vehicleList")
+                        Log.e("AAA ", "DD B4 ")
+                        if (vehicleList != null && !vehicleList!!.isEmpty() && s!="List Not Found") {
+                            Log.e("AAA ", "DD After   not emt ${vehicleList.toString()}")
                             var selectedIndex by remember { mutableStateOf(-1) }
                             LazyColumn {
                                 itemsIndexed(
                                     vehicleList?.toList() ?: emptyList()
-                                ) { index,vehicleLists ->
+                                ) { index, vehicleLists ->
                                     Text(
                                         text = vehicleLists.vehicle[index].vehicleNumber.toString(),
                                         textAlign = TextAlign.Center,
@@ -239,65 +247,92 @@ var listtt: VehicleRouteListResponse? = null
                                             .background(Color(0xFF03A9F4))
                                             .selectable(
                                                 selected = true,
-                                             /*   onClick = {
+                                                /*   onClick = {
+                                                       selectedIndex =
+                                                           vehicleList!!.indexOf(vehicleLists)
+
+                                                       scope.launch {
+                                                           dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
+                                                           Log.e("storedVehicleId", storedVehicleId.value.toString())
+   //                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+   //                                                        driverLoginViewModel?.startService("Pickup",context,navController)
+
+                                                       }
+
+   //                                                    driverLoginViewModel?.startTrackerService("forStart")
+                                                   },*/
+                                                onClick = {
                                                     selectedIndex =
                                                         vehicleList!!.indexOf(vehicleLists)
 
-                                                    scope.launch {
-                                                        dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
-                                                        Log.e("storedVehicleId", storedVehicleId.value.toString())
-//                                                        driverLoginViewModel?.startTrackerService("forStart",context)
-//                                                        driverLoginViewModel?.startService("Pickup",context,navController)
-
+                                                    if (listvalue == "PICKUP") {
+//                                                        driverLoginViewModel?.startService(
+//                                                            "Pickup",
+//                                                            context,
+//                                                            navController
+//                                                        )
+                                                        navController?.navigate(Routes.MapScreen.name) {
+                                                            launchSingleTop = true
+                                                        }
+                                                    }
+                                                    if (listvalue == "DROP") {
+//                                                        driverLoginViewModel?.startService(
+//                                                            "Drop",
+//                                                            context,
+//                                                            navController
+//                                                        )
+                                                        navController?.navigate(Routes.MapScreen.name) {
+                                                            launchSingleTop = true
+                                                        }
                                                     }
 
-//                                                    driverLoginViewModel?.startTrackerService("forStart")
-                                                },*/
-                                                 onClick = {
-                                                     selectedIndex =
-                                                         vehicleList!!.indexOf(vehicleLists)
+                                                    /*   scope.launch {
+                                                           dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
+                                                           Log.e("storedVehicleId", storedVehicleId.value.toString())
+  //                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+  //                                                        driverLoginViewModel?.startService("Pickup",context,navController)
 
-                                                     navController?.navigate(Routes.MapScreen.name) {
+                                                       }*/
+                                                    driverLoginViewModel?.checkLocationSetting(
+                                                        context = context,
+                                                        onDisabled = { intentSenderRequest ->
+                                                            settingResultRequest.launch(
+                                                                intentSenderRequest
+                                                            )
+                                                        },
+                                                        onEnabled = {
+                                                            if (permissions.all {
+                                                                    ContextCompat.checkSelfPermission(
+                                                                        context, it
+                                                                    ) == PackageManager.PERMISSION_GRANTED
+                                                                }) {
+                                                                driverLoginViewModel.startLocationUpdates()
+                                                            } else {
+                                                                launcherMultiplePermissions.launch(
+                                                                    permissions
+                                                                )
+                                                            }
+                                                        })
 
-                                                         launchSingleTop = true
-                                                     }
-                                                  /*   scope.launch {
-                                                         dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
-                                                         Log.e("storedVehicleId", storedVehicleId.value.toString())
-//                                                        driverLoginViewModel?.startTrackerService("forStart",context)
-//                                                        driverLoginViewModel?.startService("Pickup",context,navController)
-
-                                                     }*/
-                                                     driverLoginViewModel?.checkLocationSetting(
-                                                         context = context,
-                                                         onDisabled = { intentSenderRequest ->
-                                                             settingResultRequest.launch(
-                                                                 intentSenderRequest
-                                                             )
-                                                         },
-                                                         onEnabled = {
-                                                             if (permissions.all {
-                                                                     ContextCompat.checkSelfPermission(
-                                                                         context, it
-                                                                     ) == PackageManager.PERMISSION_GRANTED
-                                                                 }) {
-                                                                 driverLoginViewModel.startLocationUpdates()
-                                                             } else {
-                                                                 launcherMultiplePermissions.launch(
-                                                                     permissions
-                                                                 )
-                                                             }
-                                                         })
-
-                                                 },
+                                                },
                                             ),
                                     )
 
                                 }
                             }
 
-                        } else {
-//                            vehicleList=driverLoginViewModel?.getVehicleList("")
+
+                        }
+                        else if (vehicleList != null && vehicleList!!.isEmpty()) {
+                            Log.e("AAA ", "DD After    emt")
+                            Text("List Not Found", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        else if (vehicleList != null && vehicleList!!.isEmpty() && s=="List Not Found") {
+                            Log.e("AAA ", "DD After    emt")
+                            Text("List Not Found", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        else {
+                            Log.e("AAA ", "DD After    Res null")
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -310,6 +345,9 @@ var listtt: VehicleRouteListResponse? = null
                                     strokeWidth = Dp(value = 6F)
                                 )
                             }
+
+//                            vehicleList=driverLoginViewModel?.getVehicleList("")
+
                         }
                         /*     LazyColumn {
                                  items(vehicleList?.toList() ?: emptyList()) { vehicleList ->
@@ -460,12 +498,12 @@ var listtt: VehicleRouteListResponse? = null
                         alignment = Center,
                         onClick = {
                             showDialog.value = true
-                            CoroutineScope(Dispatchers.IO).launch {
+//                            CoroutineScope(Dispatchers.IO).launch {
 //                                vehicleList =driverLoginViewModel?.getVehicleList("")
 //                                listtt = driverLoginViewModel?.getVehicleList("",context)
 //                                Log.e("AMIRTHA RippleButton ", vehicleList.toString())
 //                                Log.e("AMIRTHA RippleButton listtt ", listtt.toString())
-                            }
+//                            }
                             /* coroutineScope.launch {
                                  vehicleList = driverLoginViewModel?.getVehicleList("")
                                  Log.e("AMIRTHA RippleButton ", vehicleList.toString())
@@ -480,9 +518,9 @@ var listtt: VehicleRouteListResponse? = null
                             text = { Text(text = "Are you going to pickup or drop the students?") },
                             confirmButton = {
                                 Button(onClick = {
-
                                     coroutineScope.launch {
-                                        vehicleList = driverLoginViewModel?.getVehicleList("PICKUP",context)
+                                        vehicleList =driverLoginViewModel?.getVehicleList("PICKUP", context)?.a
+                                        s= driverLoginViewModel?.getVehicleList("PICKUP", context)?.b.toString()
 //                                        bottomSheetText="Confirm"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
 //                                            CoroutineScope(Dispatchers.IO).launch {
@@ -507,6 +545,7 @@ var listtt: VehicleRouteListResponse? = null
                                         }
                                     }
                                     showDialog.value = false
+                                    listvalue = "PICKUP"
                                 }) {
 
                                     Text("PICKUP")
@@ -519,7 +558,8 @@ var listtt: VehicleRouteListResponse? = null
                                 Button(onClick = {
 
                                     coroutineScope.launch {
-                                        vehicleList =driverLoginViewModel?.getVehicleList("DROP",context)
+                                        vehicleList =driverLoginViewModel?.getVehicleList("DROP", context)?.a
+                                        s= driverLoginViewModel?.getVehicleList("PICKUP", context)?.b.toString()
 
                                         bottomSheetText = "Dismiss"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
@@ -538,6 +578,8 @@ var listtt: VehicleRouteListResponse? = null
                                         }
                                     }
                                     showDialog.value = false
+                                    listvalue = "DROP"
+
                                 }) {
                                     Text("DROP")
                                 }
@@ -716,8 +758,8 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Column(Modifier.padding(2.dp)) {
-                    Log.e("SSSS","storedDriverName.value"+storedDriverName.value.toString())
-                    Log.e("SSSS","storedDriverName.value"+storedToken.value.toString())
+                    Log.e("SSSS", "storedDriverName.value" + storedDriverName.value.toString())
+                    Log.e("SSSS", "storedDriverName.value" + storedToken.value.toString())
 
                     Text(
                         storedDriverName.value.toString(),
