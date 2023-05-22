@@ -121,7 +121,7 @@ class AuthUseCase @Inject constructor(
      * */
     @Throws(ApiFailureException::class)
     suspend fun registerUserToServer(
-        user: FirebaseUser,
+        user: FirebaseUser?,
         loginType: LoginType,
         number: String,
         context: Context
@@ -140,8 +140,10 @@ class AuthUseCase @Inject constructor(
         }
         authorizationRepo.registerUser(
             UserData(
-                user.email,
-                user.displayName,
+//                user.email,
+//                user.displayName,
+                "",
+                "",
                 "",
                 TYPE_DRIVER,
 //                googleId,

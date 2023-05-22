@@ -93,7 +93,7 @@ class DriverLoginViewModel @Inject constructor(
             value = it?.createdAt.toString()
         }
     }
-     var q = MutableStateFlow(false)
+    var q = MutableStateFlow(false)
     val w: StateFlow<Boolean> = q.asStateFlow()
 
 
@@ -141,10 +141,9 @@ class DriverLoginViewModel @Inject constructor(
     var emtList = ""
 
     var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjg0NzI5NzM1LCJleHAiOjE2ODQ4MTYxMzV9.TVmkZ6gYFxHBzLx1z38GyvtBQ1ONffknIiAPoQOkXno"
-//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzMDAyOTE4LCJleHAiOjE2ODMwODkzMTh9.QL4lRM87hJgnp3E28zUQKmYFGNcgQ2ZLocqQKPOACOg"
+//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjg0NzI5NzM1LCJleHAiOjE2ODQ4MTYxMzV9.TVmkZ6gYFxHBzLx1z38GyvtBQ1ONffknIiAPoQOkXno"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzMDAyOTE4LCJleHAiOjE2ODMwODkzMTh9.QL4lRM87hJgnp3E28zUQKmYFGNcgQ2ZLocqQKPOACOg"
 //   var bearToken = myData
-
 
 
 //    val client = OkHttpClient.Builder()
@@ -216,10 +215,12 @@ class DriverLoginViewModel @Inject constructor(
 
     //    Profile   Route
     val retrofit = Retrofit.Builder()
-        .baseUrl(if (service == "Profile")
-            "http://206.189.137.65/api/v1/profile/" else if(service=="startService") "http://206.189.137.65/api/v1/relation/start"
-        else if(service=="endService")  "http://206.189.137.65/api/v1/relation/end"
-        else "http://206.189.137.65/api/v1/route/")
+        .baseUrl(
+            if (service == "Profile")
+                "http://206.189.137.65/api/v1/profile/" else if (service == "startService") "http://206.189.137.65/api/v1/relation/start"
+            else if (service == "endService") "http://206.189.137.65/api/v1/relation/end"
+            else "http://206.189.137.65/api/v1/route/"
+        )
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -248,9 +249,11 @@ class DriverLoginViewModel @Inject constructor(
     val validationError: LiveData<String> = _validationError
 
     private val _stPhoneNo = MutableLiveData<String>()
+
     //    private var currentLocation: Location? = null
     private var currentLocation = Location("dummyProvider")
-//    private var currentLocation = Location(LatLng(11.930390, 79.807510))
+
+    //    private var currentLocation = Location(LatLng(11.930390, 79.807510))
     private var rideType: String? = null
     private var vehicleId: String? = null
     lateinit var phoneNumber: String
@@ -310,6 +313,7 @@ class DriverLoginViewModel @Inject constructor(
             val credential: PhoneAuthCredential = PhoneAuthProvider.getCredential(
                 verificationID, otp
             )
+            justForToken(contexta)
             signInWithPhoneAuthCredential(
                 credential,
                 mAuth,
@@ -353,35 +357,37 @@ class DriverLoginViewModel @Inject constructor(
                                 handleRegisterSuccess(mAuthUser)
                                 Log.e("VM", "Register User")
                                 Log.e("VM", this.token)
-                                val storedToken = dataStore.getToken.first()
-                                val storedProfileId = dataStore.getProfileId.first()
-                                val storedBranchId = dataStore.getBranchId.first()
 
-                                dataStore.saveToken(this.token)
-                                dataStore.saveProfileId(this.user.profile?.id.toString())
 
-//                                dataStore.saveDriverName(this.user.profile?.name.toString())
-                                dataStore.saveImageUrl(this.user.profile?.profilePicURL.toString())
-                                dataStore.saveAddress(this.user.profile?.address?.country.toString())
+                                /* val storedToken = dataStore.getToken.first()
+                                 val storedProfileId = dataStore.getProfileId.first()
+                                 val storedBranchId = dataStore.getBranchId.first()
 
-                                dataStore.saveBranchId(this.user.profile?.branch.toString())
-                                Log.d("VMstoredToken", "Stored token is $storedToken")
-                                Log.d(
-                                    "VMstoredProfileId",
-                                    "Stored saveProfileId is $storedProfileId"
-                                )
-                                Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
-                                if (storedToken != null) {
-                                    bearToken = storedToken
-                                }
-                                /*  if(this.token=="TokenExpiredError"){
+                                 dataStore.saveToken(this.token)
+                                 dataStore.saveProfileId(this.user.profile?.id.toString())
+
+ //                                dataStore.saveDriverName(this.user.profile?.name.toString())
+                                 dataStore.saveImageUrl(this.user.profile?.profilePicURL.toString())
+                                 dataStore.saveAddress(this.user.profile?.address?.country.toString())
+
+                                 dataStore.saveBranchId(this.user.profile?.branch.toString())
+                                 Log.d("VMstoredToken", "Stored token is $storedToken")
+                                 Log.d(
+                                     "VMstoredProfileId",
+                                     "Stored saveProfileId is $storedProfileId"
+                                 )
+                                 Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
+                                 if (storedToken != null) {
+                                     bearToken = storedToken
+                                 }
+                                 *//*  if(this.token=="TokenExpiredError"){
                                       authUseCase.registerUserToServer(
                                           mAuthUser, LoginType.PHONE_NUMBER, number, context
                                       )
                                       Log.e("VM",this.token)
-                                  }*/
+                                  }*//*
                                 Log.e("VM", this.user.profile?.id.toString())
-
+*/
                                 Toast.makeText(
                                     context, "Verification successful..", Toast.LENGTH_SHORT
                                 ).show()
@@ -450,11 +456,18 @@ class DriverLoginViewModel @Inject constructor(
     }
 
 
-    fun getDriverDetailsVM() {
+    fun getDriverDetailsVM(context: Context) {
         service = "Profile"
+        val dataStore = StoreData(context)
         viewModelScope.launch(Dispatchers.Main.immediate) {
+            val storedProfileId = dataStore.getProfileId.first()
+
             try {
-                val responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
+                var responses = apiService.getProfile("f4f0dba7-1741-4c4c-b5c5-40d0bb7d02cb")
+
+                if(storedProfileId!=null){
+                    responses = apiService.getProfile(storedProfileId)
+                }
                 Log.e("ResponsesDLVM", " responses.createdAt " + responses.createdAt.toString())
                 Log.e("DLVM 11111 Responses", listResponse.toString())
 
@@ -468,14 +481,16 @@ class DriverLoginViewModel @Inject constructor(
     }
 
     fun getRouteList(context: Context): List<RouteListResponse>? {
-
+        val dataStore = StoreData(context)
         var responses: List<RouteListResponse>? = null
         service = "Route"
         try {
             viewModelScope.launch {
+                val storedBranchId = dataStore.getBranchId.first()
                 withContext(Dispatchers.Main) {
                     responses = apiService.getRouteList(
-                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+//                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+                        storedBranchId,
                         false,
                         "id,name,type"
                     )
@@ -583,6 +598,7 @@ class DriverLoginViewModel @Inject constructor(
             setNetworkError(e.localizedMessage)
         }
     }
+
     @Suppress("ComplexMethod")
     suspend fun startLocationService(
         rideType: String,
@@ -824,200 +840,258 @@ class DriverLoginViewModel @Inject constructor(
                                     }
                                 }
                         }
-                    }
-
-                    else{
+                    } else {
                         Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
 
                         Log.e("AAA  not null", "Res not null")
 
                     }
 
-                        /*   if (responses!![0].vehicle.isEmpty()) {
-                               emtList = "List Not Found"
-                               Log.e("EMT ",emtList)
+                    /*   if (responses!![0].vehicle.isEmpty()) {
+                           emtList = "List Not Found"
+                           Log.e("EMT ",emtList)
+                       }
+                       else {
+                           listResponseVehicle = responses
+                           vehicleList = responses
+                           if (responses != null) {
+                               dataStore.saveVehicleId(responses!![0].vehicle[0].id)
+                               stop1 =
+                                   vehicleList?.get(0)?.startPoint?.latitude?.let {
+                                       vehicleList?.get(0)?.startPoint?.longitude?.let { it1 ->
+                                           LatLng(
+                                               it,
+                                               it1
+                                           )
+                                       }
+                                   }
+                               stop2 =
+                                   vehicleList?.get(0)?.endPoint?.latitude?.let {
+                                       vehicleList?.get(0)?.endPoint?.longitude?.let { it1 ->
+                                           LatLng(
+                                               it,
+                                               it1
+                                           )
+                                       }
+                                   }
+                           }else{
+                               Log.e("responses ","Nulllll   responses")
                            }
-                           else {
-                               listResponseVehicle = responses
-                               vehicleList = responses
-                               if (responses != null) {
-                                   dataStore.saveVehicleId(responses!![0].vehicle[0].id)
-                                   stop1 =
-                                       vehicleList?.get(0)?.startPoint?.latitude?.let {
-                                           vehicleList?.get(0)?.startPoint?.longitude?.let { it1 ->
-                                               LatLng(
-                                                   it,
-                                                   it1
-                                               )
-                                           }
-                                       }
-                                   stop2 =
-                                       vehicleList?.get(0)?.endPoint?.latitude?.let {
-                                           vehicleList?.get(0)?.endPoint?.longitude?.let { it1 ->
-                                               LatLng(
-                                                   it,
-                                                   it1
-                                               )
-                                           }
-                                       }
-                               }else{
-                                   Log.e("responses ","Nulllll   responses")
-                               }
 
-                           }*/
+                       }*/
 
-                    }
-                    viewModelScope.launch {
-                        storedVehicleId = dataStore.getVehicleId.first()
-                        Log.e("VMstoredVehicleId", "storedVehicleId  $storedVehicleId")
-                    }
-
-                } catch (e: Exception) {
-                    Log.e("VMgetVehicleRouteList", "localizedMessage")
-                    setNetworkError(e.localizedMessage)
                 }
+                viewModelScope.launch {
+                    storedVehicleId = dataStore.getVehicleId.first()
+                    Log.e("VMstoredVehicleId", "storedVehicleId  $storedVehicleId")
+                }
+
+            } catch (e: Exception) {
+                Log.e("VMgetVehicleRouteList", "localizedMessage")
+                setNetworkError(e.localizedMessage)
             }
-        else {
+        } else {
             Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
-                Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
-            }
-            Log.e(
-                "ResponsesResult",
-                " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
-            )
+            Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
+        }
+        Log.e(
+            "ResponsesResult",
+            " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
+        )
 //            return Dummy(listResponseVehicle,emtList)
-            return listResponseVehicle
-        }
-
-        fun signIn(
-            ctryCode: String,
-            phone: String,
-            type: String,
-            navController: NavController? = null,
-            context: Context,
-        ) {
-            val dataStore = StoreData(context)
-            navController?.navigate(Routes.OTP.name)
-            getDriverDetailsVM()
-            viewModelScope.launch(Dispatchers.IO) {
-                /* if (isTokenExpired(token)) {
-                     println("Token has expired.")
-                 } else {
-                     println("Token is still valid.")
-                 }*/
-                authUseCase.checkRegisterMobileNumber(
-                    ctryCode, phone, type, navController, context
-                ).collect {
-                    withContext(Dispatchers.Main) {
-                        if (it.data?.name != null) {
-                            Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
-                            firebaseAuth(navController, context, phone)
-                            dataStore.saveDriverName(it.data.name)
-
-                        } else {
-//                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
-                            Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
-//                        navController?.navigate(Routes.Phone.name)
-                        }
-                        /* else if( it.data?.name == " "){
-                             Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
-                             Log.e("VVVMMWW2", "uiuiuiui 222error ${it.apiError?.message}")
-                             navController?.navigate(Routes.Phone.name)
-                         }else{
-                             Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
-                             Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
-                             navController?.navigate(Routes.Phone.name)
-                         }*/
-                    }
-                }
-            }
-        }
-
-        @Composable
-        fun Snackbars() {
-            Snackbar(modifier = Modifier.padding(4.dp)) {
-                Text(text = "Not Registered Number")
-            }
-        }
-
-        suspend fun signOut(navController: NavController? = null, context: Context) {
-            val dataStore = StoreData(context)
-            val storedToken = dataStore.getToken.first()
-            FirebaseAuth.getInstance().signOut()
-            dataStore.clearData()
-            Log.d("VMstoredToken After Clear", "Cleared token is $storedToken")
-            navController?.navigate(Routes.Dashboard.name)
-        }
-
-
-        //    MapActivity Starts here
-        fun checkLocationSetting(
-            context: Context, onDisabled: (IntentSenderRequest) -> Unit, onEnabled: () -> Unit
-        ) {
-            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
-                .setWaitForAccurateLocation(true).setMinUpdateIntervalMillis(50)
-                .setMaxUpdateDelayMillis(100).build()
-
-            val client: SettingsClient = LocationServices.getSettingsClient(context)
-            val builder: LocationSettingsRequest.Builder =
-                LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-
-            val gpsSettingTask: Task<LocationSettingsResponse> =
-                client.checkLocationSettings(builder.build())
-
-            gpsSettingTask.addOnSuccessListener { onEnabled() }
-            gpsSettingTask.addOnFailureListener { exception ->
-                if (exception is ResolvableApiException) {
-                    try {
-                        val intentSenderRequest =
-                            IntentSenderRequest.Builder(exception.resolution).build()
-                        onDisabled(intentSenderRequest)
-                    } catch (sendEx: IntentSender.SendIntentException) {
-                        // ignore here
-                    }
-                }
-            }
-        }
-
-        fun newLocation(a: LatLng): Location {
-            val location = Location("MyLocationProvider")
-            location.apply {
-                latitude = a.latitude
-                longitude = a.longitude
-            }
-            return location
-        }
-
-        fun bitmapDescriptorFromVector(
-            context: Context, vectorResId: Int
-        ): BitmapDescriptor? {
-
-            // retrieve the actual drawable
-            val drawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
-            drawable.setBounds(0, 0, 120, 120)
-            val bm = Bitmap.createBitmap(
-                120, 120, Bitmap.Config.ARGB_8888
-            )
-            // draw it onto the bitmap
-            val canvas = android.graphics.Canvas(bm)
-            drawable.draw(canvas)
-            return BitmapDescriptorFactory.fromBitmap(bm)
-        }
-
-        @SuppressLint("MissingPermission")
-        fun startLocationUpdates() {
-            locationCallback?.let {
-                val locationRequest = LocationRequest.create().apply {
-                    interval = 10000
-                    fastestInterval = 5000
-                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                }
-                fusedLocationClient?.requestLocationUpdates(
-                    locationRequest, it, Looper.getMainLooper()
-                )
-            }
-        }
-
+        return listResponseVehicle
     }
+
+    fun signIn(
+        ctryCode: String,
+        phone: String,
+        type: String,
+        navController: NavController? = null,
+        context: Context,
+    ) {
+        val dataStore = StoreData(context)
+        navController?.navigate(Routes.OTP.name)
+        getDriverDetailsVM(context)
+        viewModelScope.launch(Dispatchers.IO) {
+
+            authUseCase.checkRegisterMobileNumber(
+                ctryCode, phone, type, navController, context
+            ).collect {
+                withContext(Dispatchers.Main) {
+                    if (it.data?.name != null) {
+                        Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
+                        firebaseAuth(navController, context, phone)
+
+                        dataStore.saveDriverName(it.data.name)
+                        dataStore.saveProfileId(it.data.id.toString())
+//                                dataStore.saveDriverName(this.user.profile?.name.toString())
+                        dataStore.saveImageUrl(it.data.profilePicURL.toString())
+                        dataStore.saveAddress(it.data.address?.country.toString())
+
+                        dataStore.saveBranchId(it.data.branch.toString())
+
+                        val storedProfileId = dataStore.getProfileId.first()
+                        val storedBranchId = dataStore.getBranchId.first()
+                        Log.d(
+                            "VMstoredProfileId",
+                            "Stored saveProfileId is $storedProfileId"
+                        )
+                        Log.d("VMstoredBranchId", "Stored saveBranchId is $storedBranchId")
+//                            if (storedToken != null) {
+//                                bearToken = storedToken
+//                            }
+                        /*  if(this.token=="TokenExpiredError"){
+                              authUseCase.registerUserToServer(
+                                  mAuthUser, LoginType.PHONE_NUMBER, number, context
+                              )
+                              Log.e("VM",this.token)
+                          }*/
+                        Log.e("VM", "CheckMobileNumberResponse   " + it.data.toString())
+
+                        /*  var ana=   authUseCase.registerUserToServer(
+                                 mAuthUser, LoginType.PHONE_NUMBER, phone, context
+                             )
+                             Log.e("VMVMana",ana.toString())
+                             if (ana != null) {
+                                 Log.e("VMVMana",ana.token)
+                                 dataStore.saveToken(ana.token)
+
+                             }*/
+//                            Log.d("VMstoredToken", "Stored token is $storedToken")
+
+//                            Log.e("VM",this.token)
+
+                    } else {
+//                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                        Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
+//                        navController?.navigate(Routes.Phone.name)
+                    }
+                    /* else if( it.data?.name == " "){
+                         Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                         Log.e("VVVMMWW2", "uiuiuiui 222error ${it.apiError?.message}")
+                         navController?.navigate(Routes.Phone.name)
+                     }else{
+                         Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
+                         Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
+                         navController?.navigate(Routes.Phone.name)
+                     }*/
+                }
+            }
+        }
+    }
+
+    fun justForToken(
+        context: Context,
+    ) {
+        val dataStore = StoreData(context)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val storedToken = dataStore.getToken.first()
+            val storedphone = dataStore.getNo.first()
+
+            if (storedphone != "") {
+                var ana = authUseCase.registerUserToServer(
+                    mAuthUser, LoginType.PHONE_NUMBER, storedphone, context
+                )
+                Log.e("VMVMana", ana.toString())
+                if (ana != null) {
+                    Log.e("VMVMana", ana.token)
+                    dataStore.saveToken(ana.token)
+                }
+            }
+            if (storedToken != null && storedToken != "") {
+                bearToken = storedToken
+            }
+            Log.d("VMstoredToken", "Stored token is $storedToken")
+//                            Log.e("VM",this.token)
+        }
+    }
+
+    @Composable
+    fun Snackbars() {
+        Snackbar(modifier = Modifier.padding(4.dp)) {
+            Text(text = "Not Registered Number")
+        }
+    }
+
+    suspend fun signOut(navController: NavController? = null, context: Context) {
+        val dataStore = StoreData(context)
+        val storedToken = dataStore.getToken.first()
+        FirebaseAuth.getInstance().signOut()
+        dataStore.clearData()
+        Log.d("VMstoredToken After Clear", "Cleared token is $storedToken")
+        navController?.navigate(Routes.Dashboard.name)
+    }
+
+
+    //    MapActivity Starts here
+    fun checkLocationSetting(
+        context: Context, onDisabled: (IntentSenderRequest) -> Unit, onEnabled: () -> Unit
+    ) {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
+            .setWaitForAccurateLocation(true).setMinUpdateIntervalMillis(50)
+            .setMaxUpdateDelayMillis(100).build()
+
+        val client: SettingsClient = LocationServices.getSettingsClient(context)
+        val builder: LocationSettingsRequest.Builder =
+            LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+
+        val gpsSettingTask: Task<LocationSettingsResponse> =
+            client.checkLocationSettings(builder.build())
+
+        gpsSettingTask.addOnSuccessListener { onEnabled() }
+        gpsSettingTask.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    val intentSenderRequest =
+                        IntentSenderRequest.Builder(exception.resolution).build()
+                    onDisabled(intentSenderRequest)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // ignore here
+                }
+            }
+        }
+    }
+
+    fun newLocation(a: LatLng): Location {
+        val location = Location("MyLocationProvider")
+        location.apply {
+            latitude = a.latitude
+            longitude = a.longitude
+        }
+        return location
+    }
+
+    fun bitmapDescriptorFromVector(
+        context: Context, vectorResId: Int
+    ): BitmapDescriptor? {
+
+        // retrieve the actual drawable
+        val drawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
+        drawable.setBounds(0, 0, 120, 120)
+        val bm = Bitmap.createBitmap(
+            120, 120, Bitmap.Config.ARGB_8888
+        )
+        // draw it onto the bitmap
+        val canvas = android.graphics.Canvas(bm)
+        drawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bm)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        locationCallback?.let {
+            val locationRequest = LocationRequest.create().apply {
+                interval = 10000
+                fastestInterval = 5000
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+            fusedLocationClient?.requestLocationUpdates(
+                locationRequest, it, Looper.getMainLooper()
+            )
+        }
+    }
+
+}
 
 

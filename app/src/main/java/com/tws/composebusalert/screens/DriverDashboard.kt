@@ -156,6 +156,7 @@ fun DriverDashboard(
     val coroutineScope = rememberCoroutineScope()
 
     val showDialog = remember { mutableStateOf(false) }
+    val showExitDialog = remember { mutableStateOf(false) }
 
     var messages: VehicleRouteListResponse? = null
 
@@ -474,14 +475,8 @@ fun DriverDashboard(
                                     }
                                     IconButton(
                                         onClick = {
+                                            showExitDialog.value=true
 
-                                            scope.launch {
-                                                driverLoginViewModel?.signOut(
-                                                    navController,
-                                                    context
-                                                )
-                                            }
-                                            navController?.navigate(Routes.Dashboard.name)
                                         },
                                         modifier = Modifier.align(TopEnd)
                                     ) {
@@ -598,6 +593,36 @@ fun DriverDashboard(
                                 }
 //                        TextButton(onClick = { showDialog11.value = false }) {
 //                        }
+                            })
+
+                    }
+                    if (showExitDialog.value) {
+                        AlertDialog(shape = RoundedCornerShape(8.dp),
+                            containerColor = Color.White,
+                            modifier = Modifier.padding(5.dp),
+                            onDismissRequest = { showExitDialog.value = false },
+                            title = { Text(text = "ALERT") },
+                            text = { Text(text = "Are you sure to logout") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    scope.launch {
+                                        driverLoginViewModel?.signOut(
+                                            navController,
+                                            context
+                                        )
+                                    }
+                                    navController?.navigate(Routes.Dashboard.name)
+                                    showExitDialog.value = false
+                                }) {
+                                    Text("Yes")
+                                }
+                            },
+                            dismissButton = {
+                                Button(onClick = {
+                                    showExitDialog.value = false
+                                }) {
+                                    Text("No")
+                                }
                             })
 
                     }
@@ -810,9 +835,10 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
 
 //                    if(storedImage.value==null || storedImage.value.toString()==" "){
                     Image(
-                        painter = rememberAsyncImagePainter(
-                            "https://picsum.photos/id/237/200/300"
-                        ),
+//                        painter = rememberAsyncImagePainter(
+//                            "https://picsum.photos/id/237/200/300"
+//                        ),
+                        painter = painterResource(id = R.drawable.drivericon),
                         contentDescription = "Driver image", contentScale = ContentScale.Crop,
                         modifier = Modifier.size(60.dp)
                     )

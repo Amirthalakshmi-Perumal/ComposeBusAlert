@@ -66,15 +66,16 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
      var locationRequired = false
     var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         actionBar?.hide()
+
         driverLoginViewModel.fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this@MainActivity)
         storeData = StoreData(this)
          locationCallback=driverLoginViewModel.locationCallback
          fusedLocationClient=driverLoginViewModel.fusedLocationClient
-
         lifecycleScope.launch {
             val no = storeData.getNo.first()
 //            check = storeData.getScreen.first()
@@ -107,17 +108,21 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                         }
 //                        Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show()
                     }else{
+
                         if (check == "") {
                             Log.e("Main phno", phNo)
                             MyScreen(driverLoginViewModel, this,)
                         }
                         else {
+                            driverLoginViewModel.justForToken(this)
+
                             Navigation(
                                 flavor = "driver",
                                 startDestination = Routes.DriverDashboard.name,
                                 driverLoginViewModel = driverLoginViewModel,
                                 lifecycleOwner = this
                             )
+
                         }
                     }
 
@@ -132,7 +137,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
         driverLoginViewModel.q.value=true
 
         super.onResume()
-        driverLoginViewModel.getDriverDetailsVM()
+        driverLoginViewModel.getDriverDetailsVM(this)
         Log.e("ResumeMain", driverLoginViewModel.listResponse.toString())
         if (locationRequired) {
             driverLoginViewModel.startLocationUpdates()
@@ -215,6 +220,7 @@ fun isInternetAvailable(context: Context): Boolean {
         listener?.onLocationChanged(location)
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner
 ) {
