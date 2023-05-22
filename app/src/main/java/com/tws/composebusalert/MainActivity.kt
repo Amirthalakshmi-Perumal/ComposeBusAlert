@@ -147,6 +147,11 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
         super.onPause()
     }
 
+    override fun onDestroy() {
+//        driverLoginViewModel.endService(this)
+
+        super.onDestroy()
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun enterPictureInPictureModes() {

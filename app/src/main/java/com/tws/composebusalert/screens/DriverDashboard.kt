@@ -66,9 +66,9 @@ import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.*
 
-var vehicleList: ArrayList<VehicleRouteItem>? = null
-var listtt: VehicleRouteListResponse? = null
-var s = ""
+//var vehicleList: ArrayList<VehicleRouteItem>? = null
+//var listtt: VehicleRouteListResponse? = null
+//var s = ""
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
@@ -81,7 +81,10 @@ fun DriverDashboard(
 ) {
     val context = LocalContext.current
     var listvalue = ""
-
+//    var vehicleList: ArrayList<VehicleRouteItem>? = null
+    var vehicleList: ArrayList<VehicleRouteItem>? by remember {
+        mutableStateOf(null)
+    }
 //    Log.e("TTT", "TTT  " + vehicleList.toString())
     val scope = rememberCoroutineScope()
     val dataStore = StoreData(context)
@@ -230,7 +233,7 @@ fun DriverDashboard(
                         }
                         Log.d("vehicleList", "vehicleList")
                         Log.e("AAA ", "DD B4 ")
-                        if (vehicleList != null && !vehicleList!!.isEmpty() && s!="List Not Found") {
+                        if (vehicleList != null && vehicleList!!.isNotEmpty()) {
                             Log.e("AAA ", "DD After   not emt ${vehicleList.toString()}")
                             var selectedIndex by remember { mutableStateOf(-1) }
                             LazyColumn {
@@ -265,40 +268,19 @@ fun DriverDashboard(
                                                     selectedIndex =
                                                         vehicleList!!.indexOf(vehicleLists)
 
-                                                    if (listvalue == "PICKUP") {
-//                                                        driverLoginViewModel?.startService(
-//                                                            "Pickup",
-//                                                            context,
-//                                                            navController
-//                                                        )
-                                                        navController?.navigate(Routes.MapScreen.name) {
-                                                            launchSingleTop = true
-                                                        }
-                                                    }
-                                                    if (listvalue == "DROP") {
-//                                                        driverLoginViewModel?.startService(
-//                                                            "Drop",
-//                                                            context,
-//                                                            navController
-//                                                        )
-                                                        navController?.navigate(Routes.MapScreen.name) {
-                                                            launchSingleTop = true
-                                                        }
-                                                    }
-
-                                                    /*   scope.launch {
-                                                           dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
-                                                           Log.e("storedVehicleId", storedVehicleId.value.toString())
-  //                                                        driverLoginViewModel?.startTrackerService("forStart",context)
-  //                                                        driverLoginViewModel?.startService("Pickup",context,navController)
-
-                                                       }*/
                                                     driverLoginViewModel?.checkLocationSetting(
                                                         context = context,
                                                         onDisabled = { intentSenderRequest ->
                                                             settingResultRequest.launch(
                                                                 intentSenderRequest
                                                             )
+                                                            if (permissions.all {
+                                                                    ContextCompat.checkSelfPermission(
+                                                                        context, it
+                                                                    ) == PackageManager.PERMISSION_GRANTED
+                                                                }) {
+                                                                driverLoginViewModel.startLocationUpdates()
+                                                            }
                                                         },
                                                         onEnabled = {
                                                             if (permissions.all {
@@ -311,8 +293,44 @@ fun DriverDashboard(
                                                                 launcherMultiplePermissions.launch(
                                                                     permissions
                                                                 )
+                                                                if (permissions.all {
+                                                                        ContextCompat.checkSelfPermission(
+                                                                            context, it
+                                                                        ) == PackageManager.PERMISSION_GRANTED
+                                                                    }) {
+                                                                    driverLoginViewModel.startLocationUpdates()
+                                                                }
                                                             }
                                                         })
+                                                    if (listvalue == "PICKUP") {
+                                                        driverLoginViewModel?.startService(
+                                                            "Pickup",
+                                                            context,
+                                                            navController
+                                                        )
+                                                        navController?.navigate(Routes.MapScreen.name) {
+                                                            launchSingleTop = true
+                                                        }
+                                                    }
+                                                    if (listvalue == "DROP") {
+                                                        driverLoginViewModel?.startService(
+                                                            "Drop",
+                                                            context,
+                                                            navController
+                                                        )
+                                                        navController?.navigate(Routes.MapScreen.name) {
+                                                            launchSingleTop = true
+                                                        }
+                                                    }
+
+                                                    /*   scope.launch {
+                                                           dataStore.saveVehicleId(vehicleLists.vehicle[index].id)
+                                                           Log.e("storedVehicleId", storedVehicleId.value.toString())
+  //                                                        driverLoginViewModel?.startTrackerService("forStart",context)
+  //                                                        driverLoginViewModel?.startService("Pickup",context,navController)
+
+                                                       }*/
+
 
                                                 },
                                             ),
@@ -323,15 +341,12 @@ fun DriverDashboard(
 
 
                         }
-                        else if (vehicleList != null && vehicleList!!.isEmpty()) {
+                        else  {
+//                        else if (vehicleList = null && vehicleList!!.isEmpty()) {
                             Log.e("AAA ", "DD After    emt")
                             Text("List Not Found", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
-                        else if (vehicleList != null && vehicleList!!.isEmpty() && s=="List Not Found") {
-                            Log.e("AAA ", "DD After    emt")
-                            Text("List Not Found", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        else {
+                   /*     else {
                             Log.e("AAA ", "DD After    Res null")
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -348,7 +363,7 @@ fun DriverDashboard(
 
 //                            vehicleList=driverLoginViewModel?.getVehicleList("")
 
-                        }
+                        }*/
                         /*     LazyColumn {
                                  items(vehicleList?.toList() ?: emptyList()) { vehicleList ->
                                      // Add your composable item here
@@ -519,8 +534,7 @@ fun DriverDashboard(
                             confirmButton = {
                                 Button(onClick = {
                                     coroutineScope.launch {
-                                        vehicleList =driverLoginViewModel?.getVehicleList("PICKUP", context)?.a
-                                        s= driverLoginViewModel?.getVehicleList("PICKUP", context)?.b.toString()
+                                        vehicleList =driverLoginViewModel?.getVehicleList("PICKUP", context)
 //                                        bottomSheetText="Confirm"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
 //                                            CoroutineScope(Dispatchers.IO).launch {
@@ -558,8 +572,7 @@ fun DriverDashboard(
                                 Button(onClick = {
 
                                     coroutineScope.launch {
-                                        vehicleList =driverLoginViewModel?.getVehicleList("DROP", context)?.a
-                                        s= driverLoginViewModel?.getVehicleList("PICKUP", context)?.b.toString()
+                                        vehicleList =driverLoginViewModel?.getVehicleList("DROP", context)
 
                                         bottomSheetText = "Dismiss"
                                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
@@ -716,6 +729,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
         val context = LocalContext.current
         val dataStore = StoreData(context)
         val storedDriverName = dataStore.getDriverName.collectAsState(initial = "")
+        val storedRouteName = dataStore.getRouteName.collectAsState(initial = "")
         val storedToken = dataStore.getToken.collectAsState(initial = "")
         val storedImage = dataStore.getImageUrl.collectAsState(initial = "")
         val storedAddress = dataStore.getAddress.collectAsState(initial = "")
@@ -762,7 +776,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                     Log.e("SSSS", "storedDriverName.value" + storedToken.value.toString())
 
                     Text(
-                        storedDriverName.value.toString(),
+                        storedDriverName.value ?: "Driver Name",
                         fontWeight = FontWeight.Normal,
                         fontSize = 15.sp,
                         color = Color.Black,
@@ -774,7 +788,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                         color = Color.Black,
                     )
                     Text(
-                        storedAddress.value ?: "kjhnkjmb",
+                        storedRouteName.value,
                         fontWeight = FontWeight.Normal,
                         fontSize = 15.sp,
                         color = Color.Black,

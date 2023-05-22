@@ -214,7 +214,7 @@ fun MapScreen(
                             Text(
                                 text = "STOP",
                                 modifier = Modifier.selectable(selected = true, onClick = {
-//                                    driverLoginViewModel?.endService(context)
+                                    driverLoginViewModel.endService(context)
                                     navController?.navigate(Routes.DriverDashboard.name)
                                 }),
                             )
@@ -267,6 +267,7 @@ fun MapScreen(
                         Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
                     }
                 }
+
                 if (currentLocation.latitude > 0.0) {
 //                    Toast.makeText(context, "MAPPPPP", Toast.LENGTH_SHORT).show()
                     GoogleMapView(

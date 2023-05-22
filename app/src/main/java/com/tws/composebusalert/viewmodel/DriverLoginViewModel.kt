@@ -141,67 +141,11 @@ class DriverLoginViewModel @Inject constructor(
     var emtList = ""
 
     var bearToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjg0NzI5NzM1LCJleHAiOjE2ODQ4MTYxMzV9.TVmkZ6gYFxHBzLx1z38GyvtBQ1ONffknIiAPoQOkXno"
 //        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzMDAyOTE4LCJleHAiOjE2ODMwODkzMTh9.QL4lRM87hJgnp3E28zUQKmYFGNcgQ2ZLocqQKPOACOg"
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzNTQ4NTkyLCJleHAiOjE2ODM2MzQ5OTJ9.6K01zHHM8WdBGa6mMEEM0dod5Sdq1EOowGkZjdB0p0A"
 //   var bearToken = myData
 
 
-
-    val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
-        .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
-            val newRequest = chain.request().newBuilder().addHeader(
-                "Authorization",
-                "Bearer $bearToken"
-            ).build()
-            chain.proceed(newRequest)
-        }.build()
-
-    private fun provideClient(): OkHttpClient {
-        val client = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
-                val newRequest = chain.request().newBuilder().addHeader(
-                    "Authorization",
-                    "Bearer $bearToken"
-                ).build()
-                chain.proceed(newRequest)
-            }
-//        Log.d("JJJ", "JJJ TOken  " + myData.toString())
-        return client.authenticator(NetworkAuthenticator(createAppSettingWebService(client.build())))
-            .build()
-    }
-
-    var service = ""
-
-    private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
-        val retrofit =
-            Retrofit.Builder()
-                .baseUrl(SERVER_URL)
-                .client(okHttpClient)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create()).build()
-
-        return retrofit.create(AppSettingDataSource::class.java)
-    }
-
-    //    Profile   Route
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(
-            if (service == "Profile")
-                "http://206.189.137.65/api/v1/profile/" else if (service == "startService") "http://206.189.137.65/api/v1/relation/start"
-            else if (service == "endService") "http://206.189.137.65/api/v1/relation/end"
-            else "http://206.189.137.65/api/v1/route/"
-        )
-        .client(provideClient())
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
-
-
-//    var bearToken =
-//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzMDAyOTE4LCJleHAiOjE2ODMwODkzMTh9.QL4lRM87hJgnp3E28zUQKmYFGNcgQ2ZLocqQKPOACOg"
 
 //    val client = OkHttpClient.Builder()
 //        .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
@@ -212,20 +156,76 @@ class DriverLoginViewModel @Inject constructor(
 //            ).build()
 //            chain.proceed(newRequest)
 //        }.build()
+//
+//    private fun provideClient(): OkHttpClient {
+//        val client = OkHttpClient.Builder()
+//            .connectTimeout(30, TimeUnit.SECONDS)
+//            .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
+//                val newRequest = chain.request().newBuilder().addHeader(
+//                    "Authorization",
+//                    "Bearer $bearToken"
+//                ).build()
+//                chain.proceed(newRequest)
+//            }
+////        Log.d("JJJ", "JJJ TOken  " + myData.toString())
+//        return client.authenticator(NetworkAuthenticator(createAppSettingWebService(client.build())))
+//            .build()
+//    }
+//
 //    var service = ""
 //
+//    private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
+//        val retrofit =
+//            Retrofit.Builder()
+//                .baseUrl(SERVER_URL)
+//                .client(okHttpClient)
+//                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                .addConverterFactory(GsonConverterFactory.create()).build()
+//
+//        return retrofit.create(AppSettingDataSource::class.java)
+//    }
+//
 //    //    Profile   Route
-//    val retrofit = Retrofit.Builder()
-//        .baseUrl(if (service == "Profile")
-//            "http://206.189.137.65/api/v1/profile/" else if(service=="startService") "http://206.189.137.65/api/v1/relation/start"
-//        else if(service=="endService")  "http://206.189.137.65/api/v1/relation/end"
-//        else "http://206.189.137.65/api/v1/route/")
-//        .client(client)
+//    val retrofit: Retrofit = Retrofit.Builder()
+//        .baseUrl(
+//            if (service == "Profile")
+//                "http://206.189.137.65/api/v1/profile/" else if (service == "startService") "http://206.189.137.65/api/v1/relation/start"
+//            else if (service == "endService") "http://206.189.137.65/api/v1/relation/end"
+//            else "http://206.189.137.65/api/v1/route/"
+//        )
+//        .client(provideClient())
 //        .addConverterFactory(GsonConverterFactory.create())
 //        .build()
 //
 //    private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
-//
+
+
+//    var bearToken =
+//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjgzMDAyOTE4LCJleHAiOjE2ODMwODkzMTh9.QL4lRM87hJgnp3E28zUQKmYFGNcgQ2ZLocqQKPOACOg"
+
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
+        .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
+            val newRequest = chain.request().newBuilder().addHeader(
+                "Authorization",
+                "Bearer $bearToken"
+            ).build()
+            chain.proceed(newRequest)
+        }.build()
+    var service = ""
+
+    //    Profile   Route
+    val retrofit = Retrofit.Builder()
+        .baseUrl(if (service == "Profile")
+            "http://206.189.137.65/api/v1/profile/" else if(service=="startService") "http://206.189.137.65/api/v1/relation/start"
+        else if(service=="endService")  "http://206.189.137.65/api/v1/relation/end"
+        else "http://206.189.137.65/api/v1/route/")
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
+
 
     private val _onSuccess = MutableStateFlow("")
     val onSuccess get() = _onSuccess as StateFlow<String>
@@ -359,7 +359,8 @@ class DriverLoginViewModel @Inject constructor(
 
                                 dataStore.saveToken(this.token)
                                 dataStore.saveProfileId(this.user.profile?.id.toString())
-                                dataStore.saveDriverName(this.user.profile?.name.toString())
+
+//                                dataStore.saveDriverName(this.user.profile?.name.toString())
                                 dataStore.saveImageUrl(this.user.profile?.profilePicURL.toString())
                                 dataStore.saveAddress(this.user.profile?.address?.country.toString())
 
@@ -514,7 +515,7 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
-    /*fun startService(rideType: String, context: Context, navController: NavController?) {
+    fun startService(rideType: String, context: Context, navController: NavController?) {
         var responses: StartLocationServiceResponse
         service = "startService"
         val dataStore = StoreData(context)
@@ -582,7 +583,6 @@ class DriverLoginViewModel @Inject constructor(
             setNetworkError(e.localizedMessage)
         }
     }
-*/
     @Suppress("ComplexMethod")
     suspend fun startLocationService(
         rideType: String,
@@ -591,7 +591,7 @@ class DriverLoginViewModel @Inject constructor(
         context: Context
     ) {
         val dataStore = StoreData(context)
-        val routeId: String? = if (rideType == "Pickup") {
+        val routeId: String = if (rideType == "Pickup") {
 
             dataStore.getPickUpId.first()
 //            settings.pickupId
@@ -761,9 +761,9 @@ class DriverLoginViewModel @Inject constructor(
             }
         }
     }
-data class Dummy(val a:VehicleRouteListResponse?,val b:String)
+//data class Dummy(val a:VehicleRouteListResponse?,val b:String)
 
-    suspend fun getVehicleList(from: String, context: Context): Dummy {
+    suspend fun getVehicleList(from: String, context: Context): VehicleRouteListResponse? {
         var responses: VehicleRouteListResponse? = null
 //    var routeId:String?="2835693b-736d-4275-a21f-628c3e5f7208"
         var routeId: String? = null
@@ -773,18 +773,21 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
 
         val pickUpId = dataStore.getPickUpId.first()
         val dropId = dataStore.getDropId.first()
+
         Log.d("BBBB", "Stored pickUpId is $pickUpId")
         Log.d("BBBB", "Stored dropId is $dropId")
         if (from == "PICKUP") {
             routeId = pickUpId
+
+
         }
         if (from == "DROP") {
             routeId = dropId
+
         }
         if (routeId != null) {
             Log.d("BBBB", "Stored routeId  which is by if  is $routeId")
             try {
-
                 withContext(Dispatchers.Main) {
                     Log.e("AAA ", "B4")
                     responses = apiService.getVehicleList(routeId, "vehicle")
@@ -795,6 +798,7 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
                             dataStore.saveVehicleId("")
                             emtList = "List Not Found"
                             Log.e("AAA ", "Res not null nut List Not Found ")
+                            listResponseVehicle = null
 
                             Log.e("EMT ", emtList)
                         } else {
@@ -821,7 +825,10 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
                                 }
                         }
                     }
+
                     else{
+                        Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
+
                         Log.e("AAA  not null", "Res not null")
 
                     }
@@ -869,15 +876,17 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
                     Log.e("VMgetVehicleRouteList", "localizedMessage")
                     setNetworkError(e.localizedMessage)
                 }
-            } else {
-//            Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
+            }
+        else {
+            Toast.makeText(context, "Vehicle List Fails", Toast.LENGTH_SHORT).show()
                 Log.e("VehicleGGGGGGGG", "  Vehicle List Fails")
             }
             Log.e(
                 "ResponsesResult",
                 " Response VMgetVehicleRouteList ${this.listResponseVehicle.toString()}"
             )
-            return Dummy(listResponseVehicle,emtList)
+//            return Dummy(listResponseVehicle,emtList)
+            return listResponseVehicle
         }
 
         fun signIn(
@@ -887,6 +896,7 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
             navController: NavController? = null,
             context: Context,
         ) {
+            val dataStore = StoreData(context)
             navController?.navigate(Routes.OTP.name)
             getDriverDetailsVM()
             viewModelScope.launch(Dispatchers.IO) {
@@ -902,6 +912,8 @@ data class Dummy(val a:VehicleRouteListResponse?,val b:String)
                         if (it.data?.name != null) {
                             Log.e("VVVMMWW1", "uiuiuiui " + it.data.name.toString())
                             firebaseAuth(navController, context, phone)
+                            dataStore.saveDriverName(it.data.name)
+
                         } else {
 //                        Toast.makeText(context,"Not Registered Number",Toast.LENGTH_LONG).show()
                             Log.e("VVVMMWW33", "uiuiuiui 3333error ${it.apiError?.message}")
