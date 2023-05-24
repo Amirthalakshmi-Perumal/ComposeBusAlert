@@ -2,6 +2,7 @@ package com.tws.composebusalert.usecase
 
 import Status
 import android.content.Context
+import android.text.TextUtils
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import com.google.maps.android.PolyUtil
+import com.tws.composebusalert.preference.PREF_STUDENT_CODE
+
 private const val TYPE_CARE_TAKER = "careTaker"
 private const val TYPE_DRIVER = "driver"
 
@@ -190,6 +193,21 @@ class AuthUseCase @Inject constructor(
         }
     }
 
+/*    @Throws(ApiFailureException::class)
+    suspend fun getStudentList(): List<Profile>? {
+
+        val careTakerId = "student_codes"
+        if (!TextUtils.isEmpty(careTakerId)) {
+            authorizationRepo.getStudentList(careTakerId).apply {
+                return when (this.status) {
+                    Status.SUCCESS -> this.data
+                    Status.ERROR -> throw ApiFailureException(this.message)
+                    else -> null
+                }
+            }
+        }
+        return null
+    }*/
 
     @Throws(ApiFailureException::class)
     suspend fun getDriverDetails(): Profile? {

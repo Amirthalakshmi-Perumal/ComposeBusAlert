@@ -39,6 +39,7 @@ interface AuthorizationRepo {
 
     suspend fun startLocationService(startLocationServiceRequest: StartLocationServiceRequest):
             ResourceBus<StartLocationServiceResponse>
+//    suspend fun getStudentList(code: String?): ResourceBus<List<Profile>>
 
     suspend fun stopLocationUpdate(stopLocationServiceRequest: StopLocationUpdateRequest):
             ResourceBus<StartLocationServiceResponse>

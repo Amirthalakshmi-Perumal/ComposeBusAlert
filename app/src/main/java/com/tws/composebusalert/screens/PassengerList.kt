@@ -17,38 +17,45 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColor
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
 
+@Preview
+@Composable
+fun Pre() {
+    PassengerList()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PassengerList(navController: NavController? = null) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Box(Modifier.fillMaxWidth()) {
-            TopAppBar(
-                title = {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(105.dp, 0.dp, 0.dp, 0.dp)
-                    ) {
-                        //                        Spacer(modifier = Modifier.width(55.dp))
-                        Text(
-                            text = "DASHBOARD",
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                //                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .align(Alignment.CenterVertically)
-                        )
-                        //                        Spacer(modifier = Modifier.width(15.dp))
-                        IconButton(
-                            onClick = { /*TODO*/ },
+            /* TopAppBar(
+                 title = {
+                     Row(
+                         Modifier
+                             .fillMaxWidth()
+                             .padding(105.dp, 0.dp, 0.dp, 0.dp)
+                     ) {
+                         //                        Spacer(modifier = Modifier.width(55.dp))
+                         Text(
+                             text = "DASHBOARD",
+                             textAlign = TextAlign.Center,
+                             fontSize = 20.sp,
+                             fontWeight = FontWeight.Bold,
+                             modifier = Modifier
+                                 //                                .fillMaxWidth()
+                                 .padding(10.dp)
+                                 .align(Alignment.CenterVertically)
+                         )
+                         //                        Spacer(modifier = Modifier.width(15.dp))
+                         IconButton(
+                             onClick = { *//*TODO*//* },
                             modifier = Modifier.padding(70.dp, 0.dp, 2.dp, 0.dp)
                         ) {
                             Icon(
@@ -64,12 +71,58 @@ fun PassengerList(navController: NavController? = null) {
 
                 },
                 modifier = Modifier.height(50.dp),
+//                colors = TopAppBarDefaults.smallTopAppBarColors(
+//                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+//                    containerColor = MaterialTheme.colorScheme.onSecondary,
+//                )
+            )
+*/
+
+            TopAppBar(
+                title = {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+//                                    .padding(105.dp, 0.dp, 0.dp, 0.dp)
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "DASHBOARD",
+                                textAlign = TextAlign.Center,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .align(Alignment.Center)
+                            )
+
+                            IconButton(
+                                onClick = {
+//                                    showExitDialog.value=true
+
+                                },
+                                modifier = Modifier.align(TopEnd)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = null,
+                                    tint = Color.White,
+
+                                    )
+                            }
+                        }
+
+                    }
+                },
+                modifier = Modifier.height(50.dp),
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.onSecondary,
+                    titleContentColor = Color.White,
+                    containerColor = Color(0xFF03A9F4),
                 )
             )
-
         }
         CardList()
     }
@@ -108,51 +161,68 @@ fun CardViewStudent() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp, 18.dp, 16.dp, 2.dp),
+        colors =CardDefaults.cardColors(containerColor=Color(0xFFFFE5B4) )
 //            .background(Color.Green),
 
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.onTertiary)
+//                .background(MaterialTheme.colorScheme.onTertiary)
                 .padding(8.dp),
         ) {
             Column(Modifier.padding(2.dp)) {
                 Text(
-                    "Student Name",
+                    "Name",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
 
                     )
                 Text(
-                    "No of Students",
+                    "Class",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
 
                     )
                 Text(
-                    "Bus Routes",
+                    "Section",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
 
                     )
                 Text(
-                    "No of Students",
+                    "Route",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
 
                     )
                 Text(
-                    "Bus Routes",
+                    "Pickup Stop",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
 
                     )
+                Text(
+                    "Drop Stop",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+
+                    )
+                Text(
+                    "Notify Time",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+
+                    )
+
+
             }
             Spacer(modifier = Modifier.width(20.dp))
             Column(Modifier.padding(2.dp)) {
@@ -181,13 +251,26 @@ fun CardViewStudent() {
                     color = Color.Black,
                 )
                 Text(
-                    "",
+                    "dfdasda",
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
                     color = Color.Black,
                 )
+                Text(
+                    "qweqwe",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                )
+                Text(
+                    "saaad",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                )
+
             }
-            Spacer(modifier = Modifier.width(80.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column() {
                 IconButton(
                     onClick = {
@@ -243,11 +326,13 @@ fun CardViewStudent() {
 
 
                 }
-            /*    Image(
-                    painter = painterResource(id = R.drawable.student),
-                    contentDescription = "My Image",
-                    contentScale = ContentScale.Crop
-                )*/
+
+                    Image(
+                        painter = painterResource(id = R.drawable.img_1),
+                        contentDescription = "My Image",
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier.size(130.dp).padding(8.dp)
+                    )
             }
 
         }
@@ -364,7 +449,7 @@ fun CardList() {
          "Item 4",
          "Item 5",
      )*/
-    val items = 15
+    val items = 3
 
     LazyColumn(
 //        verticalArrangement = Arrangement.spacedBy(16.dp),

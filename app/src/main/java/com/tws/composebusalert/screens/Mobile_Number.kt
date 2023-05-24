@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Mobile_Number(
     navController: NavController? = null,
-    loginViewModel: DriverLoginViewModel? = null,
+    loginViewModel: DriverLoginViewModel? = null, flavor: String,
 ) {
     val context = LocalContext.current
 
@@ -133,6 +133,7 @@ fun Mobile_Number(
             )
             Spacer(modifier = Modifier.height(16.dp))
             val context = LocalContext.current
+            var type=""
             Button(
                 onClick = {
                     if (TextUtils.isEmpty(number)) {
@@ -142,8 +143,13 @@ fun Mobile_Number(
                     } else if (number.length == 10) {
 
                         Toast.makeText(context, "Verifying..", Toast.LENGTH_SHORT).show()
+                        if(flavor=="user"){
+                            type="caretaker"
+                        }else{
+                            type="driver"
+                        }
                         loginViewModel?.signIn(
-                            "+91", number, "driver", navController, context
+                            "+91", number,type , navController, context
                         )
                         scope.launch {
                             dataStore.saveNo(number)

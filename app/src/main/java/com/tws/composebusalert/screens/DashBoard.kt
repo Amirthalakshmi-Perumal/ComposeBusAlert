@@ -33,7 +33,9 @@ fun DashBoard(flavor: String, navController: NavController? = null) {
         modifier = Modifier.fillMaxSize()
     ) {
         if (flavor == "user") {
-            PassengerDashBoard(navController)
+            PassengerLogin(navController)
+//            PassengerDashBoard(navController)
+
         } else {
             DriverLogin(navController)
         }

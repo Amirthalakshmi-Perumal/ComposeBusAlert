@@ -39,10 +39,11 @@ class StoreData(private val context: Context) {
 //val STOPPINGS= listOf (stringPreferencesKey("Stoppings"))
 
         val STOPPINGS = stringPreferencesKey("Stoppings")
+        val CARETAKERID = stringPreferencesKey("CareTaker")
 
     }
 
-    val getStartServiceId:Flow<String?> = context.dataStore.data
+    val getStartServiceId: Flow<String?> = context.dataStore.data
         .map { preference: Preferences ->
             preference[STARTSERVICEID] ?: ""
         }
@@ -106,7 +107,20 @@ class StoreData(private val context: Context) {
         .map { preferences ->
             preferences[DROP_ID] ?: ""
         }
+    val getCareTakerId: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[CARETAKERID] ?: ""
+        }
 
+    suspend fun saveCareTakerId(id: String) {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences[CARETAKERID] = id
+            }
+        } catch (e: Exception) {
+            Log.e("Storedata", "Token Exception")
+        }
+    }
     suspend fun saveToken(token: String) {
         try {
             context.dataStore.edit { preferences ->
@@ -238,24 +252,24 @@ class StoreData(private val context: Context) {
         }
     }
 
-    suspend fun saveStartService(id:String){
-        try{
+    suspend fun saveStartService(id: String) {
+        try {
             context.dataStore.edit { preference ->
-                preference[STARTSERVICEID] =id
+                preference[STARTSERVICEID] = id
             }
-        }catch(e:Exception){
-            Log.e("StoreData","No Exception ")
+        } catch (e: Exception) {
+            Log.e("StoreData", "No Exception ")
         }
     }
 
     suspend fun saveStoppings(items: List<StoppingListDS>) {
         val itemsJson = Gson().toJson(items)
-        try{
+        try {
             context.dataStore.edit { preference ->
-                preference[STOPPINGS] =itemsJson
+                preference[STOPPINGS] = itemsJson
             }
-        }catch(e:Exception){
-            Log.e("StoreData","No Exception ")
+        } catch (e: Exception) {
+            Log.e("StoreData", "No Exception ")
         }
     }
 

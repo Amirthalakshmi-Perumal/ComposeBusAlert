@@ -27,6 +27,9 @@ interface UserDataSource {
         @Query("isDeleted") deleteItem: Boolean,
         @Query("fields") value: String
     ): List<RouteListResponse>
+
+//    @GET("/api/v1/profile")
+//    suspend fun getStudentList(@Query("caretaker") token: String?): List<Profile>
     @GET("/api/v1/route")
     suspend fun getVehicleList(
         @Query("id") routeId: String?,

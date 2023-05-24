@@ -41,7 +41,9 @@ data class StartLocationServiceResponse(
     @SerializedName("updatedBy")
     val updatedBy: @RawValue Any?,
     @SerializedName("vehicle")
-    val vehicle: @RawValue Any?
+    val vehicle: @RawValue Any?,
+    @SerializedName("error")
+    val error: String?,
 ) :Parcelable {
     var latitude: Double = 0.0
         set(value) {

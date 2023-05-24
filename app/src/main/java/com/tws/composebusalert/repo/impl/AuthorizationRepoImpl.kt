@@ -101,7 +101,14 @@ class AuthorizationRepoImpl @Inject constructor(
             responseHandler.handleException(e)
         }
     }
-
+  /*  override suspend fun getStudentList(code: String?): ResourceBus<List<Profile>> {
+        return try {
+            val response = userDataSource.getStudentList(code)
+            responseHandler.handleSuccess(response)
+        } catch (e: Exception) {
+            responseHandler.handleException(e)
+        }
+    }*/
 
     override suspend fun registerUser(userData: UserData): ResourceBus<UserRegisterResponse> {
         return try {
@@ -161,6 +168,8 @@ class AuthorizationRepoImpl @Inject constructor(
             responseHandler.handleException(e)
         }
     }
+
+
 }
 
 

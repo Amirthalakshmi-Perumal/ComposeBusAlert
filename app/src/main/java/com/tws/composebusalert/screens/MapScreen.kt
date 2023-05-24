@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PictureInPictureParams
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -76,11 +77,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun MapScreen(
     navController: NavController? = null,
-    driverLoginViewModel: DriverLoginViewModel= androidx.lifecycle.viewmodel.compose.viewModel()
+    driverLoginViewModel: DriverLoginViewModel= androidx.lifecycle.viewmodel.compose.viewModel(),
+    context: Context
 ) {
+
+    val dataStore = StoreData(context)
      var isInPictureInPictureMode = remember {
          mutableStateOf(false)
      }
+    val storedDriverName = dataStore.getDriverName.collectAsState(initial = "")
+    val storedRouteName = dataStore.getRouteName.collectAsState(initial = "")
     val pipScreen by driverLoginViewModel.w.collectAsState(initial = false)
 
     val rational = Rational(1, 2)
@@ -171,7 +177,7 @@ fun MapScreen(
                             Spacer(modifier = Modifier.width(20.dp))
                             Column(Modifier.padding(2.dp)) {
                                 Text(
-                                    name,
+                                    storedDriverName.value.toString(),
                                     fontWeight = FontWeight.Normal,
                                     fontSize = 15.sp,
                                     color = Color.Black,
@@ -183,7 +189,7 @@ fun MapScreen(
                                     color = Color.Black,
                                 )
                                 Text(
-                                    "Villiyanur",
+                                    storedRouteName.value.toString(),
                                     fontWeight = FontWeight.Normal,
                                     fontSize = 15.sp,
                                     color = Color.Black,
@@ -326,6 +332,7 @@ fun MapScreen(
                     IconButton(onClick = {
                         coroutineScope.launch {
                             if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             } else {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -549,6 +556,10 @@ fun GoogleMapView(
                 )
             }
 
+            Polyline(points = googlePlacesInfoViewModel.polyLinesPoints.value,
+                color = Color.Blue,
+                width = 20f,
+                onClick = {})
             Polyline(points = googlePlacesInfoViewModel.polyLinesPoints.value,
                 color = Color.Blue,
                 width = 20f,

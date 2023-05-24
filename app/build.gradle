@@ -84,7 +84,7 @@ android {
     }
 }
 dependencies {
-
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.8.0'
 
         // Import the BoM for the Firebase platform
         implementation platform('com.google.firebase:firebase-bom:32.0.0')

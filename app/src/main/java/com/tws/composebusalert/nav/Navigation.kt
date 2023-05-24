@@ -37,8 +37,8 @@ fun Navigation(
     driverLoginViewModel: DriverLoginViewModel,
     startDestination: String,
     lifecycleOwner: LifecycleOwner,
+    context:Context
 ) {
-
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -48,7 +48,7 @@ fun Navigation(
             DashBoard(flavor, navController)
         }
         composable(route = Routes.Phone.name) {
-            Mobile_Number(navController, driverLoginViewModel)
+            Mobile_Number(navController, driverLoginViewModel,flavor)
         }
         composable(route = Routes.OTP.name) {
             OTPScreen(navController, driverLoginViewModel)
@@ -77,7 +77,7 @@ fun Navigation(
             DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
         }
         composable(route = Routes.MapScreen.name) {
-            MapScreen(navController, driverLoginViewModel)
+            MapScreen(navController, driverLoginViewModel,context)
         }
     }
 }

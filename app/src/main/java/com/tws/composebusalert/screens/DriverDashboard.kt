@@ -309,6 +309,7 @@ fun DriverDashboard(
                                                             context,
                                                             navController
                                                         )
+
                                                         navController?.navigate(Routes.MapScreen.name) {
                                                             launchSingleTop = true
                                                         }
@@ -501,9 +502,9 @@ fun DriverDashboard(
                     RippleLoadingAnimation(
 //                        navController = navController,
                         text = "Start",
-                        box1 = 500.dp,
-                        box2 = 130.dp,
-                        box3 = 130.dp,
+                        box1 = 350.dp,
+                        box2 = 120.dp,
+                        box3 = 125.dp,
                         fontSize = 29.sp,
                         alignment = Center,
                         onClick = {
@@ -747,7 +748,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
         border = BorderStroke(1.dp, Color.Yellow),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 65.dp, 16.dp, 2.dp),
+            .padding(8.dp, 65.dp, 8.dp, 2.dp),
 //            .background(Color.Green),
 
     ) {
@@ -771,9 +772,12 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.onTertiary)
-                    .padding(8.dp),
+                    .padding(6.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column(Modifier.padding(2.dp)) {
+                Column(
+//                    Modifier.padding(6.dp)
+                ) {
                     Text(
                         "Driver Name",
                         fontWeight = FontWeight.Normal,
@@ -795,11 +799,12 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                         color = Color.Black,
                     )
                 }
-                Spacer(modifier = Modifier.width(20.dp))
-                Column(Modifier.padding(2.dp)) {
+//                Spacer(modifier = Modifier.width(20.dp))
+                Column(
+//                    Modifier.padding(6.dp)
+                ) {
                     Log.e("SSSS", "storedDriverName.value" + storedDriverName.value.toString())
                     Log.e("SSSS", "storedDriverName.value" + storedToken.value.toString())
-
                     Text(
                         storedDriverName.value ?: "Driver Name",
                         fontWeight = FontWeight.Normal,
@@ -819,7 +824,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
                         color = Color.Black,
                     )
                 }
-                Spacer(modifier = Modifier.width(60.dp))
+//                Spacer(modifier = Modifier.width(60.dp))
                 androidx.compose.material.IconButton(onClick = {
                     CoroutineScope(Dispatchers.IO).launch {
 //                        driverLoginViewModel?.getVehicleList("")
@@ -828,7 +833,7 @@ fun CardView(driverLoginViewModel: DriverLoginViewModel?, lifecycleOwner: Lifecy
 //                        Log.e("AMIRTHA LL", vehicleList?.get(0)?.startPoint?.latitude.toString())
                     }
 
-                }, modifier = Modifier.align(CenterVertically)) {
+                }) {
 //                    Log.e("LAK", storedImage.value.toString())
 //                    Log.e("LAK", storedDriverName.value.toString())
 //                    Log.e("LAK", storedAddress.value.toString())

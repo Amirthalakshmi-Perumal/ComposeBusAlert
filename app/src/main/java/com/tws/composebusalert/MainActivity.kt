@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         actionBar?.hide()
-
+//        driverLoginViewModel.endService(this)
+//        driverLoginViewModel.getStudentList(this)
         driverLoginViewModel.fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this@MainActivity)
         storeData = StoreData(this)
@@ -111,16 +112,18 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
 
                         if (check == "") {
                             Log.e("Main phno", phNo)
-                            MyScreen(driverLoginViewModel, this,)
+                            MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
                         }
                         else {
-                            driverLoginViewModel.justForToken(this)
+//                            driverLoginViewModel.justForToken(this)
 
                             Navigation(
-                                flavor = "driver",
+//                                flavor = "driver",
+                                flavor = BuildConfig.FLAVOR,
                                 startDestination = Routes.DriverDashboard.name,
                                 driverLoginViewModel = driverLoginViewModel,
-                                lifecycleOwner = this
+                                lifecycleOwner = this,
+                               context =  this
                             )
 
                         }
@@ -152,11 +155,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
         super.onPause()
     }
 
-    override fun onDestroy() {
-//        driverLoginViewModel.endService(this)
 
-        super.onDestroy()
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun enterPictureInPictureModes() {
@@ -222,14 +221,14 @@ fun isInternetAvailable(context: Context): Boolean {
 }
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner
+fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner, context : Context,flavor:String
 ) {
 
     Navigation(
-        "driver",
+        flavor,
         driverLoginViewModel = loginViewModel,
         startDestination = Routes.Dashboard.name,
-        lifecycleOwner = lifecycleOwner,
+        lifecycleOwner = lifecycleOwner, context =  context
     )
 }
 
