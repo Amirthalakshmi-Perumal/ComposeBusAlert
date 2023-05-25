@@ -51,8 +51,12 @@ fun Navigation(
             Mobile_Number(navController, driverLoginViewModel,flavor)
         }
         composable(route = Routes.OTP.name) {
-            OTPScreen(navController, driverLoginViewModel)
+            OTPScreen(navController, driverLoginViewModel,flavor)
         }
+        composable(route = Routes.PassengerList.name) {
+            PassengerList(navController, driverLoginViewModel,lifecycleOwner)
+        }
+
         composable(
             route = "A/{arg}",
             arguments = listOf(navArgument("arg") { type = NavType.StringType })

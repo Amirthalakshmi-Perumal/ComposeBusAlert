@@ -28,6 +28,11 @@ interface UserDataSource {
         @Query("fields") value: String
     ): List<RouteListResponse>
 
+    @POST("/api/v1/getPassengerDetail")
+    suspend fun getPassengersDetail(
+        @Body passengerDetailRequest: PassengerDetailRequest,@Query("isDeleted") isDelete: Boolean
+    ): List<PassengerDetailResponse>
+
 //    @GET("/api/v1/profile")
 //    suspend fun getStudentList(@Query("caretaker") token: String?): List<Profile>
     @GET("/api/v1/route")

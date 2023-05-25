@@ -42,6 +42,7 @@ import com.tws.composebusalert.network.NetworkAuthenticator
 import com.tws.composebusalert.network.ResponseHandler
 import com.tws.composebusalert.repo.impl.AuthorizationRepoImpl
 import com.tws.composebusalert.request.GeoPositionRequest
+import com.tws.composebusalert.request.PassengerDetailRequest
 import com.tws.composebusalert.request.StartLocationServiceRequest
 import com.tws.composebusalert.request.StartWayPoint
 import com.tws.composebusalert.request.StopLocationUpdateRequest
@@ -91,6 +92,9 @@ class DriverLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 //    @ApplicationContext applicationContext: ApplicationContext,
 ) : ViewModel() {
+
+    var res = MutableLiveData<List<PassengerDetailResponse>>()
+
     val firstName = MediatorLiveData<String>().apply {
         addSource(driverUserResponse) {
             value = it?.createdAt.toString()
@@ -151,7 +155,8 @@ class DriverLoginViewModel @Inject constructor(
 //   var bearToken = myData
 
 
-    var bearToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiY2M3ZDU0Y2UtMTYzMi00YjZlLThhMTMtN2YwMmM5ZDU5OTE5IiwiaWF0IjoxNjg0OTA0NDM3LCJleHAiOjE2ODQ5OTA4Mzd9.RUdTVqJoHHFN3Hd_6miYbKqREqhRairycQa5fYS5Gf0"
+    var bearToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1MDA5MTE4LCJleHAiOjE2ODUwOTU1MTh9.WmQtO-1cTBySyMgKr1Ivw6LqMlGojvL2FWkrNF8EQkk"
     /*  val client = OkHttpClient.Builder()
           .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
           .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
@@ -211,6 +216,7 @@ class DriverLoginViewModel @Inject constructor(
             if (service == "Profile")
                 "http://206.189.137.65/api/v1/profile/" else if (service == "startService") "http://206.189.137.65/api/v1/relation/start"
             else if (service == "endService") "http://206.189.137.65/api/v1/relation/end"
+            else if (service == "PassengersDetail") "http://206.189.137.65"
             else "http://206.189.137.65/api/v1/route/"
         )
         .client(provideClient())
@@ -593,7 +599,6 @@ class DriverLoginViewModel @Inject constructor(
 //                        "Pickup", "2835693b-736d-4275-a21f-628c3e5f7208",
 //                         "0c064365-1abd-4983-90c6-4d7b21ff1230", currentLocation.latitude, currentLocation.longitude
 //                    )
-
 
 
                     try {
@@ -1068,6 +1073,38 @@ class DriverLoginViewModel @Inject constructor(
             Text(text = "Not Registered Number")
         }
     }
+
+    fun getPassengersDetail(context: Context): List<PassengerDetailResponse>? {
+        val dataStore = StoreData(context)
+        var responses: List<PassengerDetailResponse>? = null
+        service = "PassengersDetail"
+        try {
+            viewModelScope.launch {
+                val storedNo = dataStore.getNo.first()
+                val obj = PassengerDetailRequest("+91", "8667858046")
+                withContext(Dispatchers.Main) {
+                    res.value = apiService.getPassengersDetail(obj, false)
+                    Log.e("ResponsesRRR", "New Responses  ${responses}")
+                }
+            }
+            /*  runBlocking {
+                  val storedNo = dataStore.getNo.first()
+                  val obj= PassengerDetailRequest("+91","8667858046")
+ //                 withContext(Dispatchers.Main) {
+                  responses = apiService.getPassengersDetail( obj  ,false)
+                  Log.e("ResponsesRRR", "New Responses  ${responses}")
+ //                 }
+              }*/
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
+        }
+
+        Log.e("ResponsesRRR", " Response ${responses}")
+        return responses
+    }
+
+
     /* fun getStudentList(context: Context): List<Profile>? {
          val dataStore = StoreData(context)
          var responses: List<Profile>? = null
@@ -1173,7 +1210,6 @@ class DriverLoginViewModel @Inject constructor(
             )
         }
     }
-
 }
 /*
 override fun authenticate(route: Route?, response: Response): Request? {

@@ -1,9 +1,7 @@
 package com.tws.composebusalert.responses
 
-import android.location.Address
 import androidx.core.app.ComponentActivity
 import com.google.gson.annotations.SerializedName
-import okhttp3.Route
 
 
 data class PassengerDetailResponse(
@@ -24,7 +22,7 @@ data class PassengerDetailResponse(
     @SerializedName("dropStopping")
     val dropStopping: DropStopping?,
     @SerializedName("extraData")
-    val extraData: ComponentActivity.ExtraData?,
+    val extraData: ExtraData?,
     @SerializedName("firstName")
     val firstName: String?,
     @SerializedName("id")

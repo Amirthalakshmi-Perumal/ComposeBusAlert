@@ -36,7 +36,7 @@ import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 @Composable
 fun OTPScreen(
     navController: NavController? = null,
-    loginViewModel: DriverLoginViewModel? = null,
+    loginViewModel: DriverLoginViewModel? = null, flavor: String,
 //    authorizationRepoImpl: AuthorizationRepoImpl? = null
 )  {
     Box(
@@ -127,7 +127,7 @@ fun OTPScreen(
                             .show()
                     } else {
                         Log.e("OTP",otpValue)
-                        loginViewModel?.checkSuccess(navController,"driver" ,number,context)
+                        loginViewModel?.checkSuccess(navController,flavor ,number,context)
                     }
                 },
                 modifier = Modifier

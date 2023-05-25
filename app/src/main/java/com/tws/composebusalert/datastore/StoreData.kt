@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import com.tws.composebusalert.responses.PassengerDetailResponse
 import com.tws.composebusalert.responses.StoppingListDS
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +42,10 @@ class StoreData(private val context: Context) {
         val STOPPINGS = stringPreferencesKey("Stoppings")
         val CARETAKERID = stringPreferencesKey("CareTaker")
 
+
+        val PASS = stringPreferencesKey("PASS")
+
+        var rRRresponses: List<PassengerDetailResponse>? = null
     }
 
     val getStartServiceId: Flow<String?> = context.dataStore.data
@@ -121,6 +126,17 @@ class StoreData(private val context: Context) {
             Log.e("Storedata", "Token Exception")
         }
     }
+
+ /*   suspend fun savePass(id: List<PassengerDetailResponse>?) {
+        try {
+            context.dataStore.edit { preferences ->
+                preferences[PASS] = id
+            }
+        } catch (e: Exception) {
+            Log.e("Storedata", "Token Exception")
+        }
+    }*/
+
     suspend fun saveToken(token: String) {
         try {
             context.dataStore.edit { preferences ->
