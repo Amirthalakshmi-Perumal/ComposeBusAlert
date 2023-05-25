@@ -500,8 +500,8 @@ class DriverLoginViewModel @Inject constructor(
 
             } catch (e: Exception) {
 
-                Log.e("DLVM", "Api call failed")
-                Log.e("DLVM", e.message.toString())
+//                Log.e("DLVM", "Api call failed")
+//                Log.e("DLVM", e.message.toString())
 //                setNetworkError(e.localizedMessage)
             }
         }
