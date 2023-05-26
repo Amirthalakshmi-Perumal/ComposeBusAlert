@@ -323,7 +323,9 @@ fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
         modifier = Modifier
             .fillMaxWidth()
 //            .padding(16.dp, 18.dp, 16.dp, 2.dp),
-            .padding(18.dp),
+            .padding(18.dp).clickable {
+
+            },
         colors = CardDefaults.cardColors(containerColor = color.value)
 //            .background(Color.Green),
 
