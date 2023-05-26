@@ -11,6 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.Top
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Alignment.Companion.TopStart
@@ -287,202 +291,239 @@ fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
          "60 mins",
      )
      var selectedOption by remember { mutableStateOf(options[0]) }*/
-var color = remember {
-    mutableStateOf(Color(0xFF84D560))
-}
-    var mins = remember {
-        mutableStateOf(0)
+    var color = remember {
+        mutableStateOf(Color(0xFFFFE5B4))
     }
-   /* if(studentList[index].notificationDetails?.get(0)?.notifyTime==null){
-//            studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
-    Color(0xFF84D560)
-}else{
-    Color(0xFFFFE5B4)
-}*/
+ /* if(studentList[index].notificationDetails?.size==0){
+        color.value=Color(0xFF84D560)
+    }else{
+        color.value=Color(0xFFFFE5B4)
+    }*/
+
+    var mins = remember {
+        mutableStateOf(
+            if(studentList[index].notificationDetails?.size==0){
+                color.value=Color(0xFF84D560)
+              "0 mins"
+            }else{
+                studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
+            }
+
+        )
+    }
+    /* if(studentList[index].notificationDetails?.get(0)?.notifyTime==null){
+    //            studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
+        Color(0xFF84D560)
+    }else{
+        Color(0xFFFFE5B4)
+    }*/
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, Color.Yellow),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 18.dp, 16.dp, 2.dp),
-        colors = CardDefaults.cardColors(containerColor =color.value)
+//            .padding(16.dp, 18.dp, 16.dp, 2.dp),
+            .padding(18.dp),
+        colors = CardDefaults.cardColors(containerColor = color.value)
 //            .background(Color.Green),
 
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
+        Box(modifier = Modifier.fillMaxSize()){
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxSize()
 //                .background(MaterialTheme.colorScheme.onTertiary)
-                .padding(8.dp),
-        ) {
-            Column(Modifier.padding(2.dp)) {
-                Text(
-                    "Name",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
+                    .padding(12.dp),
 
-                    )
-                Text(
-                    "Class",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-                Text(
-                    "Section",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-                Text(
-                    "Route",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-                Text(
-                    "Pickup Stop",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-                Text(
-                    "Drop Stop",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-                Text(
-                    "Notify Time",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-
-                    )
-
-
-            }
-            Spacer(modifier = Modifier.width(20.dp))
-            Column(Modifier.padding(2.dp)) {
-                Text(
-                    studentList[index].name ?: "Dummy Name",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    studentList[index].extraData?.standard ?: "Dummy Name",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    studentList[index].extraData?.section ?: "Dummy Name",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    studentList[index].route?.get(0)?.name ?: "Dummy route",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    studentList[index].pickupStopping?.name ?: "Dummy pickupStopping",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    studentList[index].dropStopping?.name ?: "Dummy dropStopping",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-                Text(
-                    mins.value.toString()
-//                    studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
-//                    studentList[index].notificationDetails?.get(index-1)?.notifyTime.toString(),
-                    ,fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column() {
-                IconButton(
-                    onClick = {
-                        showDialog.value = true
-//                        showDialog1 = true
-                    }, modifier = Modifier.padding(80.dp, 0.dp, 0.dp, 0.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = null,
-                        tint = Color.Black,
-                    )
-                }
-                if (showDialog.value) {
-//                    AlertDialogWithDropdownList()
-//                    Summa()
-                    AlertDialog(
-                        onDismissRequest = {
-                            showDialog.value = false
-                        },
-//        title = { Text("Select an op") },
-                        title = {
-                            Text(
-                                text = "ENTER PASSENGER CODE",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        },
-
-                        text = {
-                            Row {
-                                Text(text = "Notify before", fontWeight = FontWeight.Bold)
-                                MainScreen()
-                            }
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    showDialog.value = false
-                                color.value= Color(0xFFFFE5B4)
-//                                    mins.value=
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-//                shape = RectangleShape,
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color.Transparent),
-                            ) {
-                                Text("SUBMIT", textAlign = TextAlign.Center)
-                            }
-                        },
-                        shape = RoundedCornerShape(14.dp),
+//            verticalAlignment = Alignment.CenterVertically
+            )
+            {
+                Column(Modifier.padding(2.dp)) {
+                    Text(
+                        "Name",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
 
                         )
+                    Text(
+                        "Class",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+                    Text(
+                        "Section",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+                    Text(
+                        "Route",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+                    Text(
+                        "Pickup Stop",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+                    Text(
+                        "Drop Stop",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+                    Text(
+                        "Notify Time",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+
+                        )
+
                 }
-                Image(
-//                        painter = rememberAsyncImagePainter(
-//                            "https://picsum.photos/id/237/200/300"
-//                        ),
-                    painter = painterResource(id = R.drawable.img_1),
-                    contentDescription = "My Image",
-                    contentScale = ContentScale.Inside,
-                    modifier = Modifier
-                        .size(130.dp)
-                        .padding(8.dp)
+//            Spacer(modifier = Modifier.width(20.dp))
+                Column(Modifier.padding(2.dp)) {
+                    Text(
+                        studentList[index].name ?: "Dummy Name",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        studentList[index].extraData?.standard ?: "Dummy Name",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        studentList[index].extraData?.section ?: "Dummy Name",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        studentList[index].route?.get(0)?.name ?: "Dummy route",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        studentList[index].pickupStopping?.name ?: "Dummy pickupStopping",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        studentList[index].dropStopping?.name ?: "Dummy dropStopping",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                    Text(
+                        mins.value,
+//                    studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
+//                    studentList[index].notificationDetails?.get(index-1)?.notifyTime.toString(),
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                    )
+                }
+//            Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    Modifier
+                        .padding(2.dp)
+//                        .padding(start = 19.dp)
+//                .align(Bottom)
+                ) {
+                    if (showDialog.value) {
+//                    AlertDialogWithDropdownList()
+//                    Summa()
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDialog.value = false
+                            },
+//        title = { Text("Select an op") },
+                            title = {
+                                Text(
+                                    text = "ENTER PASSENGER CODE",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            },
+
+                            text = {
+                                Row {
+                                    Text(text = "Notify before", fontWeight = FontWeight.Bold)
+                                    mins.value = MainScreen()
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog.value = false
+                                        color.value = Color(0xFFFFE5B4)
+//                                    mins.value="Sub"
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+//                shape = RectangleShape,
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, Color.Transparent),
+                                ) {
+                                    Text("SUBMIT", textAlign = TextAlign.Center)
+                                }
+                            },
+                            shape = RoundedCornerShape(14.dp),
+                        )
+                    }
+                    /*   Image(
+       //                        painter = rememberAsyncImagePainter(
+       //                            "https://picsum.photos/id/237/200/300"
+       //                        ),
+                           painter = painterResource(id = R.drawable.img_1),
+                           contentDescription = "My Image",
+                           contentScale = ContentScale.Fit,
+                           modifier = Modifier.height(150.dp).width(200.dp).align(CenterEnd)
+       //                        .size(130.dp)
+       //                        .padding(18.dp)
+                       )*/
+                    Image(
+                        painter = painterResource(id = R.drawable.img_1),
+                        contentDescription = "My Image",
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier
+                            .height(150.dp)
+                            .width(200.dp)
+//                        .size(130.dp)
+//                        .padding(18.dp)
+                    )
+                }
+            }
+            IconButton(
+                onClick = {
+                    showDialog.value = true
+//                        showDialog1 = true
+                }, modifier = Modifier.align(TopEnd)
+//                        .padding(0.dp, 0.dp,0.dp, 120.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = null,
+                    tint = Color.Black,
                 )
             }
+
         }
+
     }
 }
 
@@ -648,7 +689,7 @@ fun MyUI() {
 
 
 @Composable
-fun MainScreen():String {
+fun MainScreen(): String {
     val list = listOf(
         "2 mins",
         "5 mins",
@@ -706,7 +747,6 @@ fun MainScreen():String {
                 ) {
                     list.forEach {
                         DropdownMenuItem(
-
                             onClick = {
                                 currentValue.value = it
                                 expanded.value = false
@@ -715,20 +755,12 @@ fun MainScreen():String {
                             text = {
                                 Text(text = it)
                             })
-
                     }
                 }
-
-
             }
-
-
         }
-
     }
-
-
 //    }
 
-return ""
+    return currentValue.value
 }
