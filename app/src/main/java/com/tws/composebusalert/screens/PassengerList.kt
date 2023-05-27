@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
+import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.responses.PassengerDetailResponse
+import com.tws.composebusalert.responses.Route
 import com.tws.composebusalert.responses.RouteListResponse
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +45,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PassengerList(
-    navController: NavController? = null,
+    navController: NavController,
     loginViewModel: DriverLoginViewModel? = null, lifecycleOwner: LifecycleOwner,
 ) {
     val context = LocalContext.current
@@ -109,7 +111,7 @@ fun PassengerList(
                 )
             )
         }
-        CreateView(passenderList = passengerDetails?.value)
+        CreateView(passenderList = passengerDetails?.value, navController)
 
     }
 
@@ -118,7 +120,7 @@ fun PassengerList(
 
 @Composable
 fun CreateView(
-    passenderList: List<PassengerDetailResponse>?,
+    passenderList: List<PassengerDetailResponse>?, navController: NavController,
 ) {
     if (passenderList == null) {
         CircularProgressIndicator(
@@ -137,7 +139,7 @@ fun CreateView(
                 .fillMaxSize()
                 .background(Color.White)
         ) {
-            CardList(passenderList)
+            CardList(passenderList, navController)
         }
     }
 }
@@ -245,7 +247,7 @@ fun Summa() {
 
 
 @Composable
-fun CardList(studentList: List<PassengerDetailResponse>?) {
+fun CardList(studentList: List<PassengerDetailResponse>?, navController: NavController) {
     /* val items = listOf(
          "Item 1",
          "Item 2",
@@ -260,14 +262,18 @@ fun CardList(studentList: List<PassengerDetailResponse>?) {
 //        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
             items(items) { item ->
-                CardViewStudent(studentList, item)
+                CardViewStudent(studentList, item, navController)
             }
         }
     }
 }
 
 @Composable
-fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
+fun CardViewStudent(
+    studentList: List<PassengerDetailResponse>,
+    index: Int,
+    navController: NavController,
+) {
     val showDialog = remember { mutableStateOf(false) }
     var showDialog1 by remember { mutableStateOf(false) }
 //    val options = listOf("Option 1", "Option 2", "Option 3")
@@ -294,18 +300,18 @@ fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
     var color = remember {
         mutableStateOf(Color(0xFFFFE5B4))
     }
- /* if(studentList[index].notificationDetails?.size==0){
-        color.value=Color(0xFF84D560)
-    }else{
-        color.value=Color(0xFFFFE5B4)
-    }*/
+    /* if(studentList[index].notificationDetails?.size==0){
+           color.value=Color(0xFF84D560)
+       }else{
+           color.value=Color(0xFFFFE5B4)
+       }*/
 
     var mins = remember {
         mutableStateOf(
-            if(studentList[index].notificationDetails?.size==0){
-                color.value=Color(0xFF84D560)
-              "0 mins"
-            }else{
+            if (studentList[index].notificationDetails?.size == 0) {
+                color.value = Color(0xFF84D560)
+                "0 mins"
+            } else {
                 studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
             }
 
@@ -317,20 +323,29 @@ fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
     }else{
         Color(0xFFFFE5B4)
     }*/
+    var colorCheck = remember {
+        mutableStateOf(false)
+    }
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, Color.Yellow),
         modifier = Modifier
             .fillMaxWidth()
 //            .padding(16.dp, 18.dp, 16.dp, 2.dp),
-            .padding(18.dp).clickable {
+            .padding(18.dp)
+            .clickable {
+                if (studentList[index].notificationDetails?.size == 0) {
+                    colorCheck.value = true
+                } else {
+                    navController.navigate(Routes.MapScreenPassenger.name)
+                }
 
             },
         colors = CardDefaults.cardColors(containerColor = color.value)
 //            .background(Color.Green),
 
     ) {
-        Box(modifier = Modifier.fillMaxSize()){
+        Box(modifier = Modifier.fillMaxSize()) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
@@ -525,6 +540,10 @@ fun CardViewStudent(studentList: List<PassengerDetailResponse>, index: Int) {
             }
 
         }
+
+    }
+
+    if(colorCheck.value==true){
 
     }
 }

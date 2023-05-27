@@ -109,17 +109,24 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                         }
 //                        Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show()
                     }else{
-                        Navigation(
+                     /*   Navigation(
                             flavor = BuildConfig.FLAVOR,
                             startDestination = Routes.PassengerList.name,
                             driverLoginViewModel = driverLoginViewModel,
                             lifecycleOwner = this,
                             context =  this
-                        )
-/*
+                        )*/
                         if (check == "") {
                             Log.e("Main phno", phNo)
-                            MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
+//                            MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
+                            Navigation(
+                                flavor = "driver",
+//                                flavor = BuildConfig.FLAVOR,
+                                startDestination = Routes.DriverDashboard.name,
+                                driverLoginViewModel = driverLoginViewModel,
+                                lifecycleOwner = this,
+                                context =  this
+                            )
                         }
                         else {
 //                            driverLoginViewModel.justForToken(this)
@@ -134,7 +141,6 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                             )
 
                         }
-                        */
 
                     }
 

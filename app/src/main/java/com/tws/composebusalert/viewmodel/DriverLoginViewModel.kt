@@ -156,7 +156,7 @@ class DriverLoginViewModel @Inject constructor(
 
 
     var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1MDA5MTE4LCJleHAiOjE2ODUwOTU1MTh9.WmQtO-1cTBySyMgKr1Ivw6LqMlGojvL2FWkrNF8EQkk"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1MTgxNDY5LCJleHAiOjE2ODUyNjc4Njl9.yVLt_UOmYbeN1mHcyUJkXg7Y1gWYNvKQH7TrWZ0kva4"
     /*  val client = OkHttpClient.Builder()
           .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
           .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
@@ -213,6 +213,16 @@ class DriverLoginViewModel @Inject constructor(
     //    Profile   Route
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(
+             "http://206.189.137.65"
+        )
+        .client(provideClient())
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+
+    /*//    Profile   Route
+    val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(
             if (service == "Profile")
                 "http://206.189.137.65/api/v1/profile/" else if (service == "startService") "http://206.189.137.65/api/v1/relation/start"
             else if (service == "endService") "http://206.189.137.65/api/v1/relation/end"
@@ -222,6 +232,7 @@ class DriverLoginViewModel @Inject constructor(
         .client(provideClient())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+    */
 
     private val apiService: UserDataSource = retrofit.create(UserDataSource::class.java)
 

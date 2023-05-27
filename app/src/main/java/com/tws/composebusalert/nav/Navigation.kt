@@ -37,7 +37,7 @@ fun Navigation(
     driverLoginViewModel: DriverLoginViewModel,
     startDestination: String,
     lifecycleOwner: LifecycleOwner,
-    context:Context
+    context: Context
 ) {
     NavHost(
         navController = navController,
@@ -48,13 +48,16 @@ fun Navigation(
             DashBoard(flavor, navController)
         }
         composable(route = Routes.Phone.name) {
-            Mobile_Number(navController, driverLoginViewModel,flavor)
+            Mobile_Number(navController, driverLoginViewModel, flavor)
         }
         composable(route = Routes.OTP.name) {
-            OTPScreen(navController, driverLoginViewModel,flavor)
+            OTPScreen(navController, driverLoginViewModel, flavor)
         }
         composable(route = Routes.PassengerList.name) {
-            PassengerList(navController, driverLoginViewModel,lifecycleOwner)
+            PassengerList(navController, driverLoginViewModel, lifecycleOwner)
+        }
+        composable(route = Routes.MapScreenPassenger.name) {
+            MapScreenPassenger(navController, driverLoginViewModel, context)
         }
 
         composable(
@@ -70,18 +73,18 @@ fun Navigation(
                     argValue
                 )
             } else {
-                Log.e("asdasdcascasd","Argument value: $argValue")
+                Log.e("asdasdcascasd", "Argument value: $argValue")
                 Text(text = "Argument value: $argValue")
             }
         }
-      /*  composable(route = Routes.DriverDashboard.name) {
-            DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
-        }*/
+        /*  composable(route = Routes.DriverDashboard.name) {
+              DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
+          }*/
         composable(route = Routes.DriverDashboard.name) {
             DriverDashboard(navController, driverLoginViewModel, lifecycleOwner)
         }
         composable(route = Routes.MapScreen.name) {
-            MapScreen(navController, driverLoginViewModel,context)
+            MapScreen(navController, driverLoginViewModel, context)
         }
     }
 }

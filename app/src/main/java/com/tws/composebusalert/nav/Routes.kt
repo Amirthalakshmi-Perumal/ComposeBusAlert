@@ -11,7 +11,8 @@ enum class Routes {
     MapScreen,
     PassengerList,
     BottomSheet,
-    Summa
+    Summa,
+    MapScreenPassenger
 }
 enum class LoginType {
     GOOGLE,
