@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
         actionBar?.hide()
 //        driverLoginViewModel.endService(this)
 //        driverLoginViewModel.getStudentList(this)
+        driverLoginViewModel.justForToken(this)
         driverLoginViewModel.fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this@MainActivity)
         storeData = StoreData(this)

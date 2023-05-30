@@ -280,32 +280,10 @@ fun CardViewStudent(
 //    val selectedOption = remember { mutableStateOf(options[0]) }
 
     var expanded by remember { mutableStateOf(false) }
-//    val options = listOf("Option 1", "Option 2", "Option 3")
-    /* val options = listOf(
-         "2 mins",
-         "5 mins",
-         "10 mins",
-         "15 mins",
-         "20 mins",
-         "25 mins",
-         "30 mins",
-         "35 mins",
-         "40 mins",
-         "45 mins",
-         "50 mins",
-         "55 mins",
-         "60 mins",
-     )
-     var selectedOption by remember { mutableStateOf(options[0]) }*/
+
     var color = remember {
         mutableStateOf(Color(0xFFFFE5B4))
     }
-    /* if(studentList[index].notificationDetails?.size==0){
-           color.value=Color(0xFF84D560)
-       }else{
-           color.value=Color(0xFFFFE5B4)
-       }*/
-
     var mins = remember {
         mutableStateOf(
             if (studentList[index].notificationDetails?.size == 0) {
@@ -317,12 +295,7 @@ fun CardViewStudent(
 
         )
     }
-    /* if(studentList[index].notificationDetails?.get(0)?.notifyTime==null){
-    //            studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
-        Color(0xFF84D560)
-    }else{
-        Color(0xFFFFE5B4)
-    }*/
+
     var colorCheck = remember {
         mutableStateOf(false)
     }
@@ -331,7 +304,6 @@ fun CardViewStudent(
         border = BorderStroke(1.dp, Color.Yellow),
         modifier = Modifier
             .fillMaxWidth()
-//            .padding(16.dp, 18.dp, 16.dp, 2.dp),
             .padding(18.dp)
             .clickable {
                 if (studentList[index].notificationDetails?.size == 0) {
@@ -342,7 +314,6 @@ fun CardViewStudent(
 
             },
         colors = CardDefaults.cardColors(containerColor = color.value)
-//            .background(Color.Green),
 
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -350,9 +321,7 @@ fun CardViewStudent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxSize()
-//                .background(MaterialTheme.colorScheme.onTertiary)
                     .padding(12.dp),
-
 //            verticalAlignment = Alignment.CenterVertically
             )
             {
@@ -459,17 +428,12 @@ fun CardViewStudent(
                 Box(
                     Modifier
                         .padding(2.dp)
-//                        .padding(start = 19.dp)
-//                .align(Bottom)
                 ) {
                     if (showDialog.value) {
-//                    AlertDialogWithDropdownList()
-//                    Summa()
                         AlertDialog(
                             onDismissRequest = {
                                 showDialog.value = false
                             },
-//        title = { Text("Select an op") },
                             title = {
                                 Text(
                                     text = "ENTER PASSENGER CODE",
@@ -502,17 +466,10 @@ fun CardViewStudent(
                             shape = RoundedCornerShape(14.dp),
                         )
                     }
-                    /*   Image(
+
        //                        painter = rememberAsyncImagePainter(
        //                            "https://picsum.photos/id/237/200/300"
-       //                        ),
-                           painter = painterResource(id = R.drawable.img_1),
-                           contentDescription = "My Image",
-                           contentScale = ContentScale.Fit,
-                           modifier = Modifier.height(150.dp).width(200.dp).align(CenterEnd)
-       //                        .size(130.dp)
-       //                        .padding(18.dp)
-                       )*/
+
                     Image(
                         painter = painterResource(id = R.drawable.img_1),
                         contentDescription = "My Image",
@@ -520,17 +477,13 @@ fun CardViewStudent(
                         modifier = Modifier
                             .height(150.dp)
                             .width(200.dp)
-//                        .size(130.dp)
-//                        .padding(18.dp)
                     )
                 }
             }
             IconButton(
                 onClick = {
                     showDialog.value = true
-//                        showDialog1 = true
                 }, modifier = Modifier.align(TopEnd)
-//                        .padding(0.dp, 0.dp,0.dp, 120.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Edit,
@@ -543,172 +496,10 @@ fun CardViewStudent(
 
     }
 
-    if(colorCheck.value==true){
-
-    }
-}
-
-/*
-@Composable
-fun DropdownList(options: List<String>, selectedOption: MutableState<String>) {
-    var a by remember {
-        mutableStateOf(false)
-    }
-
-    Row {
-        Text(text = "Notify before", fontWeight = FontWeight.Bold)
-        MainScreen()
-
-        */
-/*  IconButton(
-              onClick = {
-                  a = true
-              }, modifier = Modifier.padding(120.dp, 0.dp, 0.dp, 0.dp)
-          ) {
-              Icon(
-                  imageVector = Icons.Filled.ArrowDropDown,
-                  contentDescription = null,
-                  tint = Color.Black,
-              )
-          }*//*
-
-    }
-//    if (a) {
-//        DropdownMenu(
-//            expanded = a, onDismissRequest = { a = false }, modifier = Modifier.width(120.dp)
-//        ) {
+//    if(colorCheck.value==true){
 //
-//            options.forEach { option ->
-//                DropdownMenuItem(
-////                    modifier = Modifier.align(End),
-//                    onClick = {
-//                        a = false
-//                        selectedOption.value = option
-//                    },
-//                    text = { Text(option) },
-//                )
-//            }
-//        }
 //    }
-
-
 }
-*/
-/*
-
-@Composable
-fun AlertDialogWithDropdownList() {
-    val options = listOf(
-        "5 mins",
-        "10 mins",
-        "15 mins",
-//        "20 mins",
-//        "25 mins",
-//        "30 mins",
-//        "35 mins",
-//        "40 mins",
-//        "45 mins",
-//        "50 mins",
-//        "55 mins",
-//        "60 mins",
-    )
-    val selectedOption = remember { mutableStateOf(options[0]) }
-    AlertDialog(
-        onDismissRequest = {
-
-        },
-//        title = { Text("Select an op") },
-        title = {
-            Text(
-                text = "ENTER PASSENGER CODE", fontSize = 15.sp, fontWeight = FontWeight.SemiBold
-            )
-        },
-
-        text = { DropdownList(options, selectedOption) },
-        confirmButton = {
-            Button(
-                onClick = {
-
-                    // Do something with the selected option
-                },
-                modifier = Modifier.fillMaxWidth(),
-//                shape = RectangleShape,
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, Color.Yellow),
-            ) {
-                Text("SUBMIT", textAlign = TextAlign.Center)
-            }
-        },
-        shape = RoundedCornerShape(14.dp),
-
-        )
-}
-*/
-
-/*
-
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
-@Composable
-fun MyUI() {
-    val listItems = arrayOf("Favorites", "Options", "Settings", "Share")
-    val contextForToast = LocalContext.current.applicationContext
-
-    // state of the menu
-    var expanded by remember {
-        mutableStateOf(false)
-    }
-
-    // remember the selected item
-    var selectedItem by remember {
-        mutableStateOf(listItems[0])
-    }
-
-    // box
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = {
-            expanded = !expanded
-        }
-    ) {
-        // text field
-        TextField(
-            value = selectedItem,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(text = "Label") },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded
-                )
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
-        )
-
-        // menu
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            // this is a column scope
-            // all the items are added vertically
-            listItems.forEach { selectedOption ->
-                // menu item
-                DropdownMenuItem(
-                    text = {
-                        Text(text = selectedOption)
-                    }
-                    ,onClick = {
-                    selectedItem = selectedOption
-                    Toast.makeText(contextForToast, selectedOption, Toast.LENGTH_SHORT).show()
-                    expanded = false
-                })
-            }
-        }
-    }
-}
-*/
-
-
 @Composable
 fun MainScreen(): String {
     val list = listOf(
@@ -726,15 +517,8 @@ fun MainScreen(): String {
         "55 mins",
         "60 mins",
     )
-//    val list = listOf("one", "two", "three", "four", "five")
     val expanded = remember { mutableStateOf(false) }
     val currentValue = remember { mutableStateOf(list[0]) }
-
-    val scrollState = rememberScrollState()
-    var offset by remember { mutableStateOf(0f) }
-
-
-//    Surface(modifier = Modifier.fillMaxSize()) {
 
     Box(
         modifier = Modifier
@@ -781,7 +565,5 @@ fun MainScreen(): String {
             }
         }
     }
-//    }
-
     return currentValue.value
 }
