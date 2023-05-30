@@ -124,22 +124,21 @@ class DriverLoginViewModel @Inject constructor(
     var emtList = ""
 
     var bearToken =
-        ""
-//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1NDIyMTM2LCJleHAiOjE2ODU1MDg1MzZ9.a3wvUDr3j4P2Scxwz60-mDx0SNThzG9v_4Xb90K4qxc"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1NDM1Mjc2LCJleHAiOjE2ODU1MjE2NzZ9.8fycEMabxv4u6rbsjdrFfjbWau8VvKKoe4R0jXClii8"
 
-    /*
+
      val client = OkHttpClient.Builder()
           .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
           .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
               val newRequest = chain.request().newBuilder().addHeader(
                   "Authorization",
-                  "Bearer $bearToken"
+                  "Bearer ${refreshToken()}"
+
               ).build()
               chain.proceed(newRequest)
           }.build()
-          */
 
-    private fun provideClient(): OkHttpClient {
+   /* private fun provideClient(): OkHttpClient {
 
         val interceptor = HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -156,11 +155,11 @@ class DriverLoginViewModel @Inject constructor(
 
         return client.authenticator(NetworkAuthenticator(createAppSettingWebService(client.build())))
             .build()
-    }
+    }*/
 
     var service = ""
 
-    private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
+   /* private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(SERVER_URL)
@@ -169,13 +168,13 @@ class DriverLoginViewModel @Inject constructor(
                 .addConverterFactory(GsonConverterFactory.create()).build()
         return retrofit.create(AppSettingDataSource::class.java)
     }
-
+*/
     //    Profile   Route
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(
             "http://206.189.137.65"
         )
-        .client(provideClient())
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -729,7 +728,7 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
-    fun justForToken(
+   /* fun justForToken(
         context: Context,
     ) {
         val dataStore = StoreData(context)
@@ -754,7 +753,7 @@ class DriverLoginViewModel @Inject constructor(
             Log.d("VMstoredToken", "Stored token is $storedToken")
             //                            Log.e("VM",this.token)
         }
-    }
+    }*/
 
     fun getPassengersDetail(context: Context): List<PassengerDetailResponse>? {
         val dataStore = StoreData(context)
@@ -778,6 +777,26 @@ class DriverLoginViewModel @Inject constructor(
         Log.e("ResponsesRRR", " Response ${responses}")
         return responses
     }
+
+
+    fun refreshToken(): String {
+
+        try {
+//            viewModelScope.launch {
+//                val storedNo = dataStore.getNo.first()
+//                withContext(Dispatchers.Main) {
+                    bearToken=apiService.getRefreshToken()
+                    Log.e("ResponsesRRR", "New bearToken  ${bearToken}")
+//                }
+//            }
+
+        } catch (e: Exception) {
+            Log.e("VMgetRouteList", "localizedMessage")
+//            setNetworkError(e.localizedMessage)
+        }
+        return bearToken
+    }
+
 
     suspend fun signOut(navController: NavController? = null, context: Context) {
         val dataStore = StoreData(context)
@@ -873,6 +892,10 @@ override fun authenticate(route: Route?, response: Response): Request? {
         .header("Authorization", String.format("Bearer %s", settings.token))
         .build()
     */
+
+
+
+
 fun refreshBearerToken(refreshToken: String): String? {
 
     val client = OkHttpClient.Builder()

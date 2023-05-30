@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
         actionBar?.hide()
 //        driverLoginViewModel.endService(this)
 //        driverLoginViewModel.getStudentList(this)
-        driverLoginViewModel.justForToken(this)
+//        driverLoginViewModel.justForToken(this)
         driverLoginViewModel.fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this@MainActivity)
         storeData = StoreData(this)
@@ -110,39 +110,46 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                         }
 //                        Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show()
                     }else{
-                     /*   Navigation(
+                        Navigation(
                             flavor = BuildConfig.FLAVOR,
                             startDestination = Routes.PassengerList.name,
                             driverLoginViewModel = driverLoginViewModel,
                             lifecycleOwner = this,
                             context =  this
-                        )*/
-                        if (check == "") {
+                        )
+                   /*     if (check == "") {
                             Log.e("Main phno", phNo)
-//                            MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
-                            Navigation(
+                            MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
+                        *//*    Navigation(
                                 flavor = "driver",
 //                                flavor = BuildConfig.FLAVOR,
                                 startDestination = Routes.DriverDashboard.name,
                                 driverLoginViewModel = driverLoginViewModel,
                                 lifecycleOwner = this,
                                 context =  this
-                            )
+                            )*//*
                         }
                         else {
 //                            driverLoginViewModel.justForToken(this)
-
-                            Navigation(
+                            if(BuildConfig.FLAVOR=="driver"){
+                                Navigation(
 //                                flavor = "driver",
-                                flavor = BuildConfig.FLAVOR,
-                                startDestination = Routes.DriverDashboard.name,
-                                driverLoginViewModel = driverLoginViewModel,
-                                lifecycleOwner = this,
-                               context =  this
-                            )
-
-                        }
-
+                                    flavor = BuildConfig.FLAVOR,
+                                    startDestination = Routes.DriverDashboard.name,
+                                    driverLoginViewModel = driverLoginViewModel,
+                                    lifecycleOwner = this,
+                                    context =  this
+                                )
+                            }else{
+                                Navigation(
+                                    flavor = BuildConfig.FLAVOR,
+                                    startDestination = Routes.PassengerList.name,
+                                    driverLoginViewModel = driverLoginViewModel,
+                                    lifecycleOwner = this,
+                                    context =  this
+                                )
+                            }
+                        }*/
                     }
 
                 }

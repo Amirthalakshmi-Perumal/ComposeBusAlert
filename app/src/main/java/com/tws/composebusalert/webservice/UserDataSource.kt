@@ -35,6 +35,8 @@ interface UserDataSource {
 
 //    @GET("/api/v1/profile")
 //    suspend fun getStudentList(@Query("caretaker") token: String?): List<Profile>
+    @GET("/api/v1/refreshToken")
+     fun getRefreshToken(): String
     @GET("/api/v1/route")
     suspend fun getVehicleList(
         @Query("id") routeId: String?,
