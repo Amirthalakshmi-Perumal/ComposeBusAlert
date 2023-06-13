@@ -77,14 +77,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun MapScreen(
     navController: NavController? = null,
-    driverLoginViewModel: DriverLoginViewModel= androidx.lifecycle.viewmodel.compose.viewModel(),
+    driverLoginViewModel: DriverLoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     context: Context
 ) {
 
     val dataStore = StoreData(context)
-     var isInPictureInPictureMode = remember {
-         mutableStateOf(false)
-     }
+    var isInPictureInPictureMode = remember {
+        mutableStateOf(false)
+    }
     val storedDriverName = dataStore.getDriverName.collectAsState(initial = "")
     val storedRouteName = dataStore.getRouteName.collectAsState(initial = "")
     val pipScreen by driverLoginViewModel.w.collectAsState(initial = false)
@@ -98,7 +98,7 @@ fun MapScreen(
     val context = LocalContext.current
     val activity = (LocalContext.current as Activity)
     BackHandler(true) {
-        pip.value=true
+        pip.value = true
         activity.enterPictureInPictureMode(params)
 
 //        activity.finish()
@@ -204,9 +204,12 @@ fun MapScreen(
         ) {
             a = LatLng(currentLocation.latitude, currentLocation.longitude)
             Log.e("Lat", a.longitude.toString())
-            Box(Modifier.fillMaxSize()  .clickable {
-                pip.value = false
-            }
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        pip.value = false
+                    }
                     .background(Color.White)
             ) {
                 if (showDialog.value) {
@@ -251,7 +254,7 @@ fun MapScreen(
                     }
                 }
 
-                driverLoginViewModel?.locationCallback = object : LocationCallback() {
+                driverLoginViewModel.locationCallback = object : LocationCallback() {
                     override fun onLocationResult(p0: LocationResult) {
                         for (lo in p0.locations) {
                             Log.e("AAA", "Launched onLocationResult")
@@ -276,6 +279,8 @@ fun MapScreen(
 
                 if (currentLocation.latitude > 0.0) {
 //                    Toast.makeText(context, "MAPPPPP", Toast.LENGTH_SHORT).show()
+                    driverLoginViewModel.updateGeoLocation(currentLocation,null, 0.0,true)
+
                     GoogleMapView(
                         modifier = Modifier.fillMaxSize(),
                         onMapLoaded = {
@@ -287,7 +292,6 @@ fun MapScreen(
                         driverLoginViewModel = driverLoginViewModel,
                         a
                     )
-
                     if (!isMapLoaded) {
                         AnimatedVisibility(
                             modifier = Modifier.fillMaxSize(),
@@ -305,7 +309,7 @@ fun MapScreen(
 
                 }
 //                if(!pip.value){
-                if(pipScreen){
+                if (pipScreen) {
                     TopAppBar(
                         title = {
                             Row(
@@ -324,7 +328,9 @@ fun MapScreen(
                                         .align(Alignment.CenterVertically)
                                 )
                             }
-                        }, modifier = Modifier.height(50.dp), colors = TopAppBarDefaults.smallTopAppBarColors(
+                        },
+                        modifier = Modifier.height(50.dp),
+                        colors = TopAppBarDefaults.smallTopAppBarColors(
                             titleContentColor = MaterialTheme.colorScheme.onPrimary,
                             containerColor = MaterialTheme.colorScheme.onSecondary,
                         )
@@ -381,23 +387,27 @@ fun GoogleMapView(
     a: LatLng
 ) {
 
-    val asa= listOf(StoppingListDS(11.93702, 79.80877), StoppingListDS(11.92442, 79.80949), StoppingListDS(11.91877, 79.81569))
+    val asa = listOf(
+        StoppingListDS(11.93702, 79.80877),
+        StoppingListDS(11.92442, 79.80949),
+        StoppingListDS(11.91877, 79.81569)
+    )
 
     val context = LocalContext.current
 //    val myLoation = LatLng(11.930390, 79.807510)
     val myLoation = LatLng(a.latitude, a.longitude)
 //    val stop1 = LatLng(11.930390, 79.807510)
 //    val stop2 = LatLng(11.940837, 79.763548)
-       val stopp1 = LatLng(11.93702, 79.80877)
+    val stopp1 = LatLng(11.93702, 79.80877)
     val stopp2 = LatLng(11.92442, 79.80949)
-       val stopp3 = LatLng(11.91877, 79.81569)
+    val stopp3 = LatLng(11.91877, 79.81569)
 
     val scope = rememberCoroutineScope()
     val stop1 = driverLoginViewModel?.stop1
     val stop2 = driverLoginViewModel?.stop2
     val dataStore = StoreData(context)
     val storedStoppings = dataStore.getStoppingList.collectAsState(initial = "")
-    val h=storedStoppings.value
+    val h = storedStoppings.value
     Log.d("LATLONG", "${myLoation.latitude}${myLoation.longitude} was clicked")
     val _makerList: MutableList<LatLng> = mutableListOf<LatLng>()
     val _makerList1: MutableList<LatLng> = mutableListOf<LatLng>()
@@ -438,7 +448,7 @@ fun GoogleMapView(
 
     val uiSettings by remember {
         mutableStateOf(
-            MapUiSettings(compassEnabled = true,zoomControlsEnabled=false)
+            MapUiSettings(compassEnabled = true, zoomControlsEnabled = false)
         )
     }
     val locationSource = MyLocationSource()
@@ -567,29 +577,29 @@ fun GoogleMapView(
 
         }
 
-      /*  TopAppBar(
-            title = {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(105.dp, 0.dp, 0.dp, 0.dp)
-                ) {
+        /*  TopAppBar(
+              title = {
+                  Row(
+                      Modifier
+                          .fillMaxWidth()
+                          .padding(105.dp, 0.dp, 0.dp, 0.dp)
+                  ) {
 
-                    Text(
-                        text = "DASHBOARD",
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                }
-            }, modifier = Modifier.height(50.dp), colors = TopAppBarDefaults.smallTopAppBarColors(
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                containerColor = MaterialTheme.colorScheme.onSecondary,
-            )
-        )*/
+                      Text(
+                          text = "DASHBOARD",
+                          textAlign = TextAlign.Center,
+                          fontSize = 20.sp,
+                          fontWeight = FontWeight.Bold,
+                          modifier = Modifier
+                              .padding(10.dp)
+                              .align(Alignment.CenterVertically)
+                      )
+                  }
+              }, modifier = Modifier.height(50.dp), colors = TopAppBarDefaults.smallTopAppBarColors(
+                  titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                  containerColor = MaterialTheme.colorScheme.onSecondary,
+              )
+          )*/
     }
 }
 

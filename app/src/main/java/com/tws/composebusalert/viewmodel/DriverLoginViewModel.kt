@@ -7,10 +7,13 @@ import android.content.Context
 import android.content.IntentSender
 import android.graphics.Bitmap
 import android.location.Location
+import android.os.Build
 import android.os.Looper
+import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -52,12 +55,18 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val NUMBER_ZERO = 0
 private const val ANCHORING_VALUE: Float = 0.5f
+private var startId: String? = null
 
 @HiltViewModel
 class DriverLoginViewModel @Inject constructor(
@@ -109,6 +118,9 @@ class DriverLoginViewModel @Inject constructor(
     private var previousLatLng: LatLng? = null
     private var isDriverStarted: Boolean = false
 
+    private val _studentLocationResponse = MutableLiveData<StartLocationServiceResponse>()
+    val studentLocationResponse: LiveData<StartLocationServiceResponse> =
+        _studentLocationResponse.toSingleEvent()
 
     var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
@@ -124,21 +136,20 @@ class DriverLoginViewModel @Inject constructor(
     var emtList = ""
 
     var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg1NDM1Mjc2LCJleHAiOjE2ODU1MjE2NzZ9.8fycEMabxv4u6rbsjdrFfjbWau8VvKKoe4R0jXClii8"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg2NjMzMjA0LCJleHAiOjE2ODY3MTk2MDR9.X_eI1VXUs-BDB6N_34dZ8krc9GcxOwWclMebLe291oQ"
 
 
-     val client = OkHttpClient.Builder()
+    /*  val client = OkHttpClient.Builder()
           .connectTimeout(30, TimeUnit.SECONDS) // set the connect timeout to 30 seconds
           .readTimeout(30, TimeUnit.SECONDS).addInterceptor { chain ->
               val newRequest = chain.request().newBuilder().addHeader(
                   "Authorization",
                   "Bearer ${refreshToken()}"
-
               ).build()
               chain.proceed(newRequest)
-          }.build()
+          }.build()*/
 
-   /* private fun provideClient(): OkHttpClient {
+    private fun provideClient(): OkHttpClient {
 
         val interceptor = HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -149,17 +160,17 @@ class DriverLoginViewModel @Inject constructor(
                     "Authorization",
                     "Bearer $bearToken"
                 ).build()
-//                    Log.e("ZZZZ",newRequest.url.toString())
+                //                    Log.e("ZZZZ",newRequest.url.toString())
                 chain.proceed(newRequest)
             }.addInterceptor(interceptor)
 
         return client.authenticator(NetworkAuthenticator(createAppSettingWebService(client.build())))
             .build()
-    }*/
+    }
 
     var service = ""
 
-   /* private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
+    private fun createAppSettingWebService(okHttpClient: OkHttpClient): AppSettingDataSource {
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(SERVER_URL)
@@ -168,13 +179,13 @@ class DriverLoginViewModel @Inject constructor(
                 .addConverterFactory(GsonConverterFactory.create()).build()
         return retrofit.create(AppSettingDataSource::class.java)
     }
-*/
+
     //    Profile   Route
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(
             "http://206.189.137.65"
         )
-        .client(client)
+        .client(provideClient())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -410,8 +421,8 @@ class DriverLoginViewModel @Inject constructor(
                 val storedBranchId = dataStore.getBranchId.first()
                 withContext(Dispatchers.Main) {
                     responses = apiService.getRouteList(
-//                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
-                        storedBranchId,
+                        "30f012e9-4a1e-4249-ba5d-992d4ae990a4",
+//                        storedBranchId,
                         false,
                         "id,name,type"
                     )
@@ -469,6 +480,7 @@ class DriverLoginViewModel @Inject constructor(
                         responses = apiService.startLocationService(obj)
                         Log.d("rrrr", "responses $responses")
                         responses.id?.let {
+                            startId = responses.id
                             dataStore.saveStartService(it)
                             Log.d("DDDRR", "responses $it")
                             Log.d("DDDRR", "responses ${responses.toString()}")
@@ -519,6 +531,59 @@ class DriverLoginViewModel @Inject constructor(
 
         } catch (e: Exception) {
             Log.e("VMgetRouteList", "localizedMessage")
+            setNetworkError(e.localizedMessage)
+        }
+    }
+    fun updateGeoLocation(
+        location: LocationDetails,
+        startPoint: Location?,
+        movementLength: Double,
+        showProgress: Boolean
+    )
+    {
+        var responses:GeoPositionResponse?=null
+        try {
+            viewModelScope.launch {
+
+                Log.e("9999", "b4444")
+
+               /* responses =  apiService.updateGeoLocation(
+                    GeoPositionRequest(
+                        11.9305882531181,
+                        79.79175288768954,
+                        "a3686d1f-4129-40a6-9f38-57a6ed150843",
+                        StartWayPoint(11.93056, 79.79175),
+                        3.1572723388671875
+                    )
+                )*/
+                try {
+                    startId?.let {
+                        responses =   apiService.updateGeoLocation(
+                            GeoPositionRequest(
+                                location.latitude,
+                                location.longitude,
+//                                "a3686d1f-4129-40a6-9f38-57a6ed150843",
+                                it,
+                                StartWayPoint(startPoint?.latitude, startPoint?.longitude),
+                                movementLength
+                            )
+                        )
+                        Log.e("99999", "Attter")
+                        Log.e("99999", responses.toString())
+//                Log.e("99999", responses!!.id.toString())
+
+                        _isLoading.value = false
+//                _showProgress.value = false
+                    }
+                } catch (e: Exception) {
+                    _isLoading.value = false
+                    e.printStackTrace()
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e("99999", responses.toString())
+            Log.e("99999 VMgetRouteList", "localizedMessage")
             setNetworkError(e.localizedMessage)
         }
     }
@@ -728,32 +793,32 @@ class DriverLoginViewModel @Inject constructor(
         }
     }
 
-   /* fun justForToken(
-        context: Context,
-    ) {
-        val dataStore = StoreData(context)
+    /* fun justForToken(
+         context: Context,
+     ) {
+         val dataStore = StoreData(context)
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val storedToken = dataStore.getToken.first()
-            val storedphone = "8870068009"
+         viewModelScope.launch(Dispatchers.IO) {
+             val storedToken = dataStore.getToken.first()
+             val storedphone = "8870068009"
 
-            if (storedphone != "") {
-                val ana = authUseCase.registerUserToServer(
-                    mAuthUser, LoginType.PHONE_NUMBER, storedphone, context
-                )
-                Log.e("VMVMana", ana.toString())
-                if (ana != null) {
-                    Log.e("VMVMana", ana.token)
-                    dataStore.saveToken(ana.token)
-                }
-            }
-            if (storedToken != null && storedToken != "") {
-                bearToken = storedToken
-            }
-            Log.d("VMstoredToken", "Stored token is $storedToken")
-            //                            Log.e("VM",this.token)
-        }
-    }*/
+             if (storedphone != "") {
+                 val ana = authUseCase.registerUserToServer(
+                     mAuthUser, LoginType.PHONE_NUMBER, storedphone, context
+                 )
+                 Log.e("VMVMana", ana.toString())
+                 if (ana != null) {
+                     Log.e("VMVMana", ana.token)
+                     dataStore.saveToken(ana.token)
+                 }
+             }
+             if (storedToken != null && storedToken != "") {
+                 bearToken = storedToken
+             }
+             Log.d("VMstoredToken", "Stored token is $storedToken")
+             //                            Log.e("VM",this.token)
+         }
+     }*/
 
     fun getPassengersDetail(context: Context): List<PassengerDetailResponse>? {
         val dataStore = StoreData(context)
@@ -779,14 +844,123 @@ class DriverLoginViewModel @Inject constructor(
     }
 
 
-    fun refreshToken(): String {
+        fun getCurrentBusLocation() {
+
+            service = "getCurrentBusLocation"
+            var responses: DriverCurrentLocationResponse? = null
+
+            try {
+                viewModelScope.launch(Dispatchers.Main) {
+                    responses =apiService.getCurrentBusLocation("a3686d1f-4129-40a6-9f38-57a6ed150843")
+                    withContext(Dispatchers.Main) {
+                        Log.d("888", "responses $responses")
+                        if (responses != null && !TextUtils.isEmpty(responses!!.activity.toString())) {
+
+                            Log.d("8888", "responses activity ${responses!!.activity.toString()}")
+                            Log.d("888", "responses chh $responses")
+
+                        } else {
+                            Log.d("888", "response  Bus null  $responses")
+
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("Exception", "localizedMessage")
+                setNetworkError(e.localizedMessage)
+            }
+        }
+
+        fun getStudentRoute(studentId: String): String {
+        var responses: StartLocationServiceResponse? = null
+//        setProgress(true)
+        var toCheck = ""
+        var start = ""
+        var end = ""
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            start = calculateDate(true)
+            end = calculateDate(false)
+        }
+            Log.e("studentId", "responses $studentId")
+
+            _isLoading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                responses = apiService.getStudentRoute(
+//                    "4d9d94ab-c73d-4ea6-8fa2-3cfc3f43b87f",
+                    studentId,
+                    start,
+                    end
+                )
+                Log.e("responses", "responses $responses")
+                     withContext(Dispatchers.Main) {
+                         Log.d("777", "responses $responses")
+                         if (responses != null && !TextUtils.isEmpty(responses!!.id)) {
+                             toCheck = "R"
+                             responses.let { _studentLocationResponse.value = it }
+
+                             Log.d("777SS", "responses IIDD ${responses!!.id.toString()}")
+                             Log.d("777", "responses chh $responses")
+
+                         } else {
+                             toCheck = "F"
+                             Log.d("777", "response  Bus not started yet $responses")
+
+                             _validationError.value = "Bus not started yet"
+                         }
+                     }
+//                        responseHandler.handleSuccess(responses)
+            } catch (e: Exception) {
+                toCheck = "F"
+                Log.e("777VMgetRouteListwer", "localizedMessage ${e.toString()}")
+//                        responseHandler.handleException(e)
+            }
+
+        }
+
+  /*      try {
+
+
+        } catch (e: Exception) {
+            Log.e("777VMgetRouteList", "localizedMessage")
+//            setNetworkError(e.localizedMessage)
+            Toast.makeText(context, "Start service not Ended", Toast.LENGTH_SHORT).show()
+//            toCheck = "F"
+        }*/
+        Log.e("777ResponsesResult", " Responselll ${responses.toString()}")
+
+
+        return toCheck
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun calculateDate(isStart: Boolean): String {
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val localDate = LocalDate.now()   // your current date time
+        val startOfDay: LocalDateTime = localDate.atStartOfDay() // date time at start of the date
+        val endOfDate: LocalDateTime =
+            localDate.atTime(LocalTime.MAX) // date time at end of the date
+        val timestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant()
+            .toEpochMilli() // start time to timestamp
+        var returnVal: String = ""
+        returnVal = if (isStart) {
+            startOfDay.format(dateFormatter)
+        } else {
+            endOfDate.format(dateFormatter)
+        }
+        return returnVal
+    }
+
+    private fun refreshToken(): String {
 
         try {
 //            viewModelScope.launch {
 //                val storedNo = dataStore.getNo.first()
 //                withContext(Dispatchers.Main) {
-                    bearToken=apiService.getRefreshToken()
-                    Log.e("ResponsesRRR", "New bearToken  ${bearToken}")
+            bearToken = apiService.getRefreshToken()
+            Log.e("ResponsesRRR", "New bearToken  ${bearToken}")
 //                }
 //            }
 
@@ -794,6 +968,7 @@ class DriverLoginViewModel @Inject constructor(
             Log.e("VMgetRouteList", "localizedMessage")
 //            setNetworkError(e.localizedMessage)
         }
+
         return bearToken
     }
 

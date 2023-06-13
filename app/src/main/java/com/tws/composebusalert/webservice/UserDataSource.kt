@@ -58,6 +58,23 @@ interface UserDataSource {
     @POST("/api/v1/geoposition")
     suspend fun updateGeoLocation(@Body geoPositionRequest: GeoPositionRequest): GeoPositionResponse
 
+    /**
+     * To update the passengerDetail
+     * */
+    @GET("/api/v1/passengerLocation")
+    suspend fun getStudentRoute(
+        @Query("passenger") studentId: String,
+        @Query("startDate") startDate: String,
+        @Query("endDate") endDate: String
+    ): StartLocationServiceResponse?
+
+    /**
+     * To update the passengerDetail
+     * */
+    @GET("/api/v1/vehicleLocation")
+    suspend fun getCurrentBusLocation(
+        @Query("activity") activityId: String
+    ): DriverCurrentLocationResponse
 
 
 }

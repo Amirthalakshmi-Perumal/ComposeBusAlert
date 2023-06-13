@@ -117,10 +117,10 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                             lifecycleOwner = this,
                             context =  this
                         )
-                   /*     if (check == "") {
+                        /*if (check == "") {
                             Log.e("Main phno", phNo)
                             MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
-                        *//*    Navigation(
+                         *//* Navigation(
                                 flavor = "driver",
 //                                flavor = BuildConfig.FLAVOR,
                                 startDestination = Routes.DriverDashboard.name,
