@@ -38,7 +38,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun PassengerList(
     navController: NavController,
-    loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwner,
+    loginViewModel: DriverLoginViewModel,
+    lifecycleOwner: LifecycleOwner,
 ) {
     val context = LocalContext.current
     var studentList: List<PassengerDetailResponse>? = null
@@ -84,7 +85,7 @@ fun PassengerList(
                                     IconButton(
                                         onClick = {
 //                                    showExitDialog.value=true
-
+                                            loginViewModel.getPassengersDetail(context)
                                         },
                                         modifier = Modifier.align(TopEnd)
                                     ) {
@@ -140,9 +141,9 @@ fun CreateView(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .clickable {
-                    isSnackbarVisible.value = true
-                }
+//                .clickable {
+//                    isSnackbarVisible.value = true
+//                }
         ) {
             CardList(passenderList, navController, loginViewModel) {
                 onCardClick()

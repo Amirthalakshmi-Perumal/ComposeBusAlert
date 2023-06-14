@@ -335,7 +335,7 @@ fun GoogleMapViewPassenger(
                     title = "Stopping ",
                     snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
                     onClick = markerClick,
-                    icon = driverLoginViewModel?.bitmapDescriptorFromVector(
+                    icon = driverLoginViewModel.bitmapDescriptorFromVector(
                         LocalContext.current, R.drawable.bus_stop
                     )
                 )
