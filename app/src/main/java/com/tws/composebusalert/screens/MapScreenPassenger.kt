@@ -468,7 +468,21 @@ fun drawPolyLineOnMap(list: List<LatLng?>, context: Context, mMap: GoogleMap) {
     val cu = CameraUpdateFactory.newLatLngBounds(bounds, 50)
     mMap?.animateCamera(cu)
 }
+/* fun setMarkerMovement(latLng: LatLng) {
+    if (marker == null) {
+        marker = mMap?.addMarker(
+            MarkerOptions().position(latLng)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_medium))
+        )
+    }
 
+    if (previousLatLng != latLng) {
+        marker?.let { animateMarkerToGB(it, latLng, LatLngInterpolator.Spherical()) }
+        mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, NAVIGATE_LEVEL_ZOOM))
+        previousLatLng?.let { getBearing(latLng, it) }?.let { marker?.setRotation(it) }
+        previousLatLng = latLng
+    }
+}*/
 
 
 /*

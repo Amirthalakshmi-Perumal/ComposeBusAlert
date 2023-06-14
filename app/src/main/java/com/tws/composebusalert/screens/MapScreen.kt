@@ -403,7 +403,8 @@ fun GoogleMapView(
     val stopp3 = LatLng(11.91877, 79.81569)
 
     val scope = rememberCoroutineScope()
-    val stop1 = driverLoginViewModel?.stop1
+//    val stop1 = driverLoginViewModel?.stop1
+    val stop1 = myLoation
     val stop2 = driverLoginViewModel?.stop2
     val dataStore = StoreData(context)
     val storedStoppings = dataStore.getStoppingList.collectAsState(initial = "")
@@ -467,6 +468,8 @@ fun GoogleMapView(
     }
     val locationState =
         locationFlow.collectAsState(initial = driverLoginViewModel?.newLocation(myLoation))
+
+
     Box {
         GoogleMap(
             modifier = modifier,
@@ -513,7 +516,8 @@ fun GoogleMapView(
             if (stop1 != null) {
                 if (stop2 != null) {
                     googlePlacesInfoViewModel.getDirection(
-                        origin = "${stop1.latitude}, ${stop1.longitude}",
+//                        origin = "${stop1.latitude}, ${stop1.longitude}",
+                        origin = "${myLoation.latitude}, ${myLoation.longitude}",
                         destination = "${stop2.latitude}, ${stop2.longitude}",
                         key = MapKey.KEY
                     )
@@ -526,7 +530,7 @@ fun GoogleMapView(
                 snippet = "Marker in Stoppings ${myLoation.latitude}, ${myLoation.longitude}",
                 onClick = markerClick,
                 icon = driverLoginViewModel?.bitmapDescriptorFromVector(
-                    LocalContext.current, R.drawable.baseline_location_on_24
+                    LocalContext.current, R.drawable.bus_medium
                 )
             )
             Log.e(
@@ -540,7 +544,7 @@ fun GoogleMapView(
                     snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
                     onClick = markerClick,
                     icon = driverLoginViewModel?.bitmapDescriptorFromVector(
-                        LocalContext.current, R.drawable.bus_medium
+                        LocalContext.current, R.drawable.baseline_location_on_24
                     )
                 )
 
@@ -559,7 +563,6 @@ fun GoogleMapView(
                         LocalContext.current, R.drawable.bus_stop
                     )
                 )
-
                 Log.e(
                     "New LAT",
                     "${posistion.latitude.toString()}    ${posistion.longitude.toString()}"
@@ -570,10 +573,10 @@ fun GoogleMapView(
                 color = Color.Blue,
                 width = 20f,
                 onClick = {})
-            Polyline(points = googlePlacesInfoViewModel.polyLinesPoints.value,
-                color = Color.Blue,
-                width = 20f,
-                onClick = {})
+//            Polyline(points = googlePlacesInfoViewModel.polyLinesPoints.value,
+//                color = Color.Blue,
+//                width = 20f,
+//                onClick = {})
 
         }
 

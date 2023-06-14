@@ -223,7 +223,7 @@ fun CardViewStudent(
                         } else {
 //                        snackbar.value = true
                             onCardClick.invoke()
-                            navController.navigate(Routes.MapScreenPassenger.name)
+//                            navController.navigate(Routes.MapScreenPassenger.name)
 //                        loginViewModel.getCurrentBusLocation()
                         }
                     }

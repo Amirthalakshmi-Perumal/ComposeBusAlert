@@ -20,17 +20,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.fontResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tws.composebusalert.R
 import com.tws.composebusalert.nav.Routes
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -108,18 +118,10 @@ fun OTPScreen(
                 loginViewModel?.checkoneTime = "checked"
             }
             Spacer(modifier = Modifier.height(16.dp))
-            val text = " Resend"
             val context = LocalContext.current
-
-            ClickableText(
-                text = AnnotatedString(text),
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.Start),
-                onClick = {
-                    loginViewModel?.firebaseAuth(navController,context, number)
-                })
-
+            TimerScreen{
+                loginViewModel?.firebaseAuth(navController,context, number)
+            }
             Button(
                 onClick = {
                     if (otpValue.isEmpty()|| otpValue.length!=6) {
@@ -145,7 +147,52 @@ fun OTPScreen(
     }
 }
 
+@Composable
+fun TimerScreen(call:()->Unit) {
+    var timer by remember { mutableStateOf(8) }
+    var isButtonVisible by remember { mutableStateOf(false) }
 
+    val coroutineScope = rememberCoroutineScope()
+    val text = "Resend"
+
+    LaunchedEffect(Unit) {
+            while (timer > 0) {
+                delay(1000)
+                timer -= 1
+            }
+            isButtonVisible = true
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (timer > 0) {
+            Text(text = "Resend OTP $timer:00 sec", fontSize = 23.sp ,color = MaterialTheme.colorScheme.primary)
+        } else {
+            ClickableText(
+                text = AnnotatedString(text),
+                style= TextStyle(fontSize = 23.sp, color = Color.Black),
+                modifier = Modifier
+                    .padding(16.dp)
+//                    .align(Alignment.Start)
+                ,
+                onClick = {
+                    call.invoke()
+                    timer = 8
+                    isButtonVisible = false
+                    coroutineScope.launch(Dispatchers.Default) {
+                        while (timer > 0) {
+                            delay(1000)
+                            timer -= 1
+                        }
+                        isButtonVisible = true
+                    }
+                })
+        }
+    }
+}
 
 @Composable
 fun OtpTextField(

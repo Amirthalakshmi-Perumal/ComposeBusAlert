@@ -135,8 +135,8 @@ class DriverLoginViewModel @Inject constructor(
 
     var emtList = ""
 
-    var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg2NzIyNzc1LCJleHAiOjE2ODY4MDkxNzV9.pMhKPxYpnmyr-ktKdZe7igjh_5d7I8MjVbohfeBLaos"
+    var bearToken =refreshToken()
+//        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg2NzIyNzc1LCJleHAiOjE2ODY4MDkxNzV9.pMhKPxYpnmyr-ktKdZe7igjh_5d7I8MjVbohfeBLaos"
 
 
     /*  val client = OkHttpClient.Builder()
@@ -821,6 +821,7 @@ class DriverLoginViewModel @Inject constructor(
      }*/
 
     fun getPassengersDetail(context: Context): List<PassengerDetailResponse>? {
+
         val dataStore = StoreData(context)
         var responses: List<PassengerDetailResponse>? = null
         service = "PassengersDetail"
@@ -861,11 +862,9 @@ class DriverLoginViewModel @Inject constructor(
 
                         } else {
                             Log.d("888", "response  Bus null  $responses")
-
                         }
                     }
                 }
-
             } catch (e: Exception) {
                 Log.e("Exception", "localizedMessage")
                 setNetworkError(e.localizedMessage)
