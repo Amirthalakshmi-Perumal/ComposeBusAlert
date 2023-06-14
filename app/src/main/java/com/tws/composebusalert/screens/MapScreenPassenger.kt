@@ -3,14 +3,9 @@ package com.tws.composebusalert.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.PictureInPictureParams
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import android.util.Rational
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -26,37 +21,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.*
-import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.*
 import com.tws.composebusalert.*
 import com.tws.composebusalert.R
 import com.tws.composebusalert.datastore.StoreData
 import com.tws.composebusalert.maps.GooglePlacesInfoViewModel
-import com.tws.composebusalert.nav.Routes
-import com.tws.composebusalert.responses.LocationDetails
-import com.tws.composebusalert.responses.PassengerDetailResponse
-import com.tws.composebusalert.responses.StoppingListDS
 import com.tws.composebusalert.responses.Stoppings
 import com.tws.composebusalert.ui.theme.ComposeBusAlertTheme
 import com.tws.composebusalert.viewmodel.DriverLoginViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.shareIn
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 
@@ -162,14 +142,17 @@ fun GoogleMapViewPassenger(
 //    LaunchedEffect(Unit) {
 //        driverLoginViewModel.getPassengersDetail(context1)
 //    }
-    var stop1 = LatLng(11.93702, 79.80877)
+    var stop1 = LatLng(0.0, 0.0)
     val _makerList: MutableList<LatLng> = mutableListOf<LatLng>()
     val _makerList1: MutableList<LatLng> = mutableListOf<LatLng>()
+    val trackPoints: MutableList<LatLng> = mutableListOf<LatLng>()
 
     val passengerDetails = driverLoginViewModel.res.observeAsState(initial = emptyList())
-    val pd1 by remember {
-        mutableStateOf(passengerDetails.value)
-    }
+    Log.e("0000",passengerDetails.value.toString())
+    val pd1=passengerDetails.value
+//    val pd1 by remember {
+//        mutableStateOf(passengerDetails.value)
+//    }
 
     Log.e("PD", "fulll data ${pd1}")
     var stopp1 by remember {
@@ -184,16 +167,47 @@ fun GoogleMapViewPassenger(
 //        stopp2 = LatLng(11.92442, 79.80949)
 //        stopp3 = LatLng(11.91877, 79.81569)
 
-    } else {
+    }
+    else {
         val items = pd1.size
-        Log.e("PD", "!null data $pd1")
+        Log.e("0000PD", "!null data $pd1")
+        //dropStopping
         _makerList1.add(
             LatLng(
                 pd1[0].dropStopping?.address?.latitude!!,
                 pd1[0].dropStopping?.address?.longitude!!
             )
         )
-        Log.e("PD", "just _makerList1 data ${_makerList1.toString()}")
+        _makerList1.add(
+            LatLng(
+                pd1[0].pickupStopping?.address?.latitude!!,
+                pd1[0].pickupStopping?.address?.longitude!!
+            )
+        )
+//        pickupStopping
+        _makerList.add(
+            LatLng(
+                pd1[0].pickupStopping?.address?.latitude!!,
+                pd1[0].pickupStopping?.address?.longitude!!
+            )
+        )
+
+//        ll.add(LatLng(11.93082851941884, 79.76937826381055))
+//        ll.add(LatLng(11.930833508790617, 79.79173868255614))
+
+     // track
+        trackPoints.add( LatLng(
+            pd1[0].route?.get(0)?.startPoint?.latitude!!,
+            pd1[0].route?.get(0)?.startPoint?.longitude!!
+        ))
+        trackPoints.add( LatLng(
+            pd1[0].route?.get(0)?.endPoint?.latitude!!,
+            pd1[0].route?.get(0)?.endPoint?.longitude!!
+        ))
+
+        Log.e("PD111111", "just _makerList1 data ${_makerList1.toString()}")
+        Log.e("PD", "just _makerList1 data ${_makerList.toString()}")
+
         stop1 = (LatLng(
             pd1[0].dropStopping?.address?.latitude!!,
             pd1[0].dropStopping?.address?.longitude!!
@@ -230,16 +244,16 @@ fun GoogleMapViewPassenger(
 //        _makerList.add(stop1)
 //    }
 
-    _makerList1.add(stopp1)
+//    _makerList1.add(stopp1)
 //    _makerList1.add(stopp2)
 //    _makerList1.add(stopp3)
 
 //    if (stop2 != null) {
 //        _makerList.add(stop2)
 //    }
-//    val pos2 by remember {
-//        mutableStateOf(_makerList)
-//    }
+    val pos2 by remember {
+        mutableStateOf(_makerList)
+    }
     val pos1 by remember {
         mutableStateOf(_makerList1)
     }
@@ -275,7 +289,8 @@ fun GoogleMapViewPassenger(
                     )
                 )
             },
-        ) {
+        )
+        {
             Log.d("TAG", " on map...")
 
             val markerClick: (Marker) -> Boolean = {
@@ -292,14 +307,12 @@ fun GoogleMapViewPassenger(
 //                }
 //            }
 
-            val ll: MutableList<LatLng> = mutableListOf<LatLng>()
-            ll.add(LatLng(11.93082851941884, 79.76937826381055))
-            ll.add(LatLng(11.930833508790617, 79.79173868255614))
-            ll.forEach { posistion ->
+
+            trackPoints.forEach { posistion ->
                 Marker(
                     state = MarkerState(position = posistion),
                     title = "Stopping ",
-                    snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
+                    snippet = "Marker in Stopping ${posistion.latitude}, ${posistion.longitude}",
                     onClick = markerClick,
                     icon = driverLoginViewModel.bitmapDescriptorFromVector(
                         LocalContext.current, R.drawable.baseline_location_on_24
@@ -320,19 +333,30 @@ fun GoogleMapViewPassenger(
                         )
                     ),
                     title = "Stopping ",
-                    snippet = "Marker in Stoppings ${stop1.latitude}, ${stop1.longitude}",
+                    snippet = "Marker in Drop Stoppings ${stop1.latitude}, ${stop1.longitude}",
                     onClick = markerClick,
                     icon = driverLoginViewModel?.bitmapDescriptorFromVector(
                         LocalContext.current, R.drawable.bus_stop
                     )
                 )
-
+                Marker(
+                    state = MarkerState(position = LatLng(
+                        pd1[0].pickupStopping?.address?.latitude!!,
+                        pd1[0].pickupStopping?.address?.longitude!!
+                    )),
+                    title = "PickupStopping ",
+                    snippet = "Marker in Pickup Stopping",
+                    onClick = markerClick,
+                    icon = driverLoginViewModel.bitmapDescriptorFromVector(
+                        LocalContext.current, R.drawable.bus_medium
+                    )
+                )
             }
 
-            pos1.forEach { posistion ->
+         /*   pos1.forEach { posistion ->
                 Marker(
                     state = MarkerState(position = posistion),
-                    title = "Stopping ",
+                    title = "DropStopping ",
                     snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
                     onClick = markerClick,
                     icon = driverLoginViewModel.bitmapDescriptorFromVector(
@@ -344,8 +368,24 @@ fun GoogleMapViewPassenger(
                     "${posistion.latitude.toString()}    ${posistion.longitude.toString()}"
                 )
             }
+            pos2.forEach { posistion ->
+                Marker(
+                    state = MarkerState(position = posistion),
+                    title = "PickupStopping ",
+                    snippet = "Marker in Stoppings ${posistion.latitude}, ${posistion.longitude}",
+                    onClick = markerClick,
+                    icon = driverLoginViewModel.bitmapDescriptorFromVector(
+                        LocalContext.current, R.drawable.bus_medium
+                    )
+                )
+                Log.e(
+                    "PickupStopping",
+                    "${posistion.latitude.toString()}    ${posistion.longitude.toString()}"
+                )
+            }*/
+
             Polyline(
-                points = ll,
+                points = trackPoints,
                 color = Color.Blue,
                 width = 20f,
                 onClick = {}
