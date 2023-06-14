@@ -136,7 +136,7 @@ class DriverLoginViewModel @Inject constructor(
     var emtList = ""
 
     var bearToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg2NjMzMjA0LCJleHAiOjE2ODY3MTk2MDR9.X_eI1VXUs-BDB6N_34dZ8krc9GcxOwWclMebLe291oQ"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9maWxlIjoiODExYjA4ZjgtYTg5Zi00NmY5LWJlMzgtNTYzOWZhYzlkOGVmIiwiaWF0IjoxNjg2NzIyNzc1LCJleHAiOjE2ODY4MDkxNzV9.pMhKPxYpnmyr-ktKdZe7igjh_5d7I8MjVbohfeBLaos"
 
 
     /*  val client = OkHttpClient.Builder()
@@ -872,7 +872,7 @@ class DriverLoginViewModel @Inject constructor(
             }
         }
 
-        fun getStudentRoute(studentId: String): String {
+        fun getStudentRoute(studentId: String): StartLocationServiceResponse? {
         var responses: StartLocationServiceResponse? = null
 //        setProgress(true)
         var toCheck = ""
@@ -893,20 +893,16 @@ class DriverLoginViewModel @Inject constructor(
                     start,
                     end
                 )
-                Log.e("responses", "responses $responses")
+                Log.e("7777responses", "responses $responses")
                      withContext(Dispatchers.Main) {
                          Log.d("777", "responses $responses")
                          if (responses != null && !TextUtils.isEmpty(responses!!.id)) {
-                             toCheck = "R"
                              responses.let { _studentLocationResponse.value = it }
 
                              Log.d("777SS", "responses IIDD ${responses!!.id.toString()}")
                              Log.d("777", "responses chh $responses")
-
                          } else {
-                             toCheck = "F"
                              Log.d("777", "response  Bus not started yet $responses")
-
                              _validationError.value = "Bus not started yet"
                          }
                      }
@@ -929,9 +925,10 @@ class DriverLoginViewModel @Inject constructor(
 //            toCheck = "F"
         }*/
         Log.e("777ResponsesResult", " Responselll ${responses.toString()}")
+        Log.e("55rr", responses.toString())
 
 
-        return toCheck
+        return responses
     }
 
 

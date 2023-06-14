@@ -1,5 +1,6 @@
 package com.tws.composebusalert.screens
 
+import android.text.TextUtils
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -214,14 +215,15 @@ fun CardViewStudent(
                     colorCheck.value = true
                 } else {
                     studentId?.let {
-                        Log.e("5555", loginViewModel.getStudentRoute(studentId))
-                        if (loginViewModel.getStudentRoute(studentId) == "R") {
+                        val dd = loginViewModel.getStudentRoute(studentId)
+                        Log.e("5555",dd.toString() )
+                        if ((dd != null) && !dd.id.isNullOrBlank() && !TextUtils.isEmpty(dd.id)) {
                             navController.navigate(Routes.MapScreenPassenger.name)
 //                            loginViewModel.getCurrentBusLocation()
                         } else {
 //                        snackbar.value = true
                             onCardClick.invoke()
-                            navController.navigate(Routes.MapScreenPassenger.name)
+//                            navController.navigate(Routes.MapScreenPassenger.name)
 //                        loginViewModel.getCurrentBusLocation()
                         }
                     }

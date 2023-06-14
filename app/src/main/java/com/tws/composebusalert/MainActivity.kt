@@ -251,7 +251,8 @@ fun MyScreen(loginViewModel: DriverLoginViewModel, lifecycleOwner: LifecycleOwne
         flavor,
         driverLoginViewModel = loginViewModel,
         startDestination = Routes.Dashboard.name,
-        lifecycleOwner = lifecycleOwner, context =  context
+        lifecycleOwner = lifecycleOwner,
+        context =  context
     )
 }
 
