@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.map
 class StoreData(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("Tokenhgzdjcgdctzk")
-
+        private val TOKEN_KEY = stringPreferencesKey("jwt_token")
         //        private val Context.dataStore:DataStore<Preferences> by preferencesDataStore("Token")
         val TOKEN = stringPreferencesKey("token")
         val NO = stringPreferencesKey("no")
@@ -56,6 +56,7 @@ class StoreData(private val context: Context) {
         .map { preferences ->
             preferences[TOKEN] ?: ""
         }
+
     val getVehicleId: Flow<String?> = context.dataStore.data
         .map { preferences ->
             preferences[VEHICLEID] ?: ""
@@ -295,6 +296,28 @@ class StoreData(private val context: Context) {
             preferences.clear()
         }
     }
+
+    //Just for Refresh Token
+    fun getToken(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[TOKEN_KEY]
+        }
+    }
+
+    suspend fun saveTokenR(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TOKEN_KEY] = token
+        }
+    }
+
+    suspend fun deleteToken() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(TOKEN_KEY)
+        }
+    }
+
+
+
 }
 
 

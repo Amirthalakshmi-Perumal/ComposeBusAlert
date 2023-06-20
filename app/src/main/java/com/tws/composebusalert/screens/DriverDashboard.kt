@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -597,6 +598,8 @@ fun DriverDashboard(
                             })
 
                     }
+//                     val tokenViewModel= TokenViewModel(StoreData(context))
+
                     if (showExitDialog.value) {
                         AlertDialog(shape = RoundedCornerShape(8.dp),
                             containerColor = Color.White,
@@ -611,6 +614,7 @@ fun DriverDashboard(
                                             navController,
                                             context
                                         )
+//                                        driverLoginViewModel?.deleteToken()
                                     }
                                     navController?.navigate(Routes.Dashboard.name)
                                     showExitDialog.value = false

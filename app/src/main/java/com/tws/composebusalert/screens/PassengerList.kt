@@ -191,13 +191,16 @@ fun CardViewStudent(
         mutableStateOf(
             if (studentList[index].notificationDetails?.size == 0) {
                 color.value = Color(0xFF84D560)
-                "0 mins"
+                0
             } else {
-                studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
+//                studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
+                studentList[index].notificationDetails?.get(0)?.notifyTime
             }
 
         )
     }
+    val studentId = studentList[index].id
+    val caretakerName = studentList[index].notificationDetails?.get(0)?.caretaker!!
 
     val colorCheck = remember {
         mutableStateOf(false)
@@ -210,13 +213,12 @@ fun CardViewStudent(
             .fillMaxWidth()
             .padding(18.dp)
             .clickable {
-                val studentId = studentList[index].id
                 if (studentList[index].notificationDetails?.size == 0) {
                     colorCheck.value = true
                 } else {
                     studentId?.let {
                         val dd = loginViewModel.getStudentRoute(studentId)
-                        Log.e("5555",dd.toString() )
+                        Log.e("5555", dd.toString())
                         if ((dd != null) && !dd.id.isNullOrBlank() && !TextUtils.isEmpty(dd.id)) {
                             navController.navigate(Routes.MapScreenPassenger.name)
 //                            loginViewModel.getCurrentBusLocation()
@@ -336,7 +338,7 @@ fun CardViewStudent(
                         color = Color.Black,
                     )
                     Text(
-                        mins.value,
+                        "${mins.value} mins",
 //                    studentList[index].notificationDetails?.get(0)?.notifyTime.toString() + " mins"
 //                    studentList[index].notificationDetails?.get(index-1)?.notifyTime.toString(),
                         fontWeight = FontWeight.Normal,
@@ -351,7 +353,7 @@ fun CardViewStudent(
                     if (showDialog.value) {
                         AlertDialog(
                             onDismissRequest = {
-                                showDialog.value = false
+//                                showDialog.value = false
                             },
                             title = {
                                 Text(
@@ -371,6 +373,14 @@ fun CardViewStudent(
                                     onClick = {
                                         showDialog.value = false
                                         color.value = Color(0xFFFFE5B4)
+                                        studentId?.let{
+                                            mins.value?.let { it1 ->
+                                                loginViewModel.updatePassengerNotification(studentId,caretakerName,
+                                                    it1
+                                                )
+                                            }
+
+                                        }
 //                                    mins.value="Sub"
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -431,21 +441,22 @@ fun SnackBars(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun MainScreen(): String {
+fun MainScreen(): Int {
     val list = listOf(
-        "2 mins",
-        "5 mins",
-        "10 mins",
-        "15 mins",
-        "20 mins",
-        "25 mins",
-        "30 mins",
-        "35 mins",
-        "40 mins",
-        "45 mins",
-        "50 mins",
-        "55 mins",
-        "60 mins",
+        2,
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        55,
+        60
+
     )
     val expanded = remember { mutableStateOf(false) }
     val currentValue = remember { mutableStateOf(list[0]) }
@@ -469,7 +480,7 @@ fun MainScreen(): String {
                 }
             )*/
         ) {
-            Text(text = currentValue.value)
+            Text(text = "${currentValue.value} mins")
             Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
             DropdownMenu(expanded = expanded.value, onDismissRequest = {
                 expanded.value = false
@@ -488,8 +499,9 @@ fun MainScreen(): String {
                             },
 //                        modifier = Modifier.verticalScroll(rememberScrollState()),
                             text = {
-                                Text(text = it)
-                            })
+                                Text(text = "$it mins")
+                            }
+                        )
                     }
                 }
             }
@@ -498,6 +510,7 @@ fun MainScreen(): String {
     return currentValue.value
 }
 
+/*
 @Composable
 fun Summa() {
 
@@ -597,5 +610,6 @@ fun Summa() {
 
 
 }
+*/
 
 

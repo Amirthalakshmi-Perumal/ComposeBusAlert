@@ -1,14 +1,12 @@
 package com.tws.composebusalert.di
 
 
-import android.app.Application
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.tws.composebusalert.BuildConfig
 import com.tws.composebusalert.network.HttpInterceptor
 import com.tws.composebusalert.network.NetworkAuthenticator
 import com.tws.composebusalert.preference.PreferenceManager
-import com.tws.composebusalert.viewmodel.DriverLoginViewModel
 import com.tws.composebusalert.webservice.AppSettingDataSource
 import com.tws.composebusalert.webservice.BusDataSource
 import com.tws.composebusalert.webservice.UserDataSource
@@ -124,5 +122,62 @@ object BussModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+
+    //refresh
+  /*  @Provides
+    @Singleton
+    fun provideTokenManager(@ApplicationContext context: Context): StoreData = StoreData(context)
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        authAuthenticator: AuthAuthenticator,
+    ): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor()
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .authenticator(authAuthenticator)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(tokenManager: StoreData): AuthInterceptor =
+        AuthInterceptor(tokenManager)
+
+    @Provides
+    @Singleton
+    fun provideAuthAuthenticator(tokenManager: StoreData): AuthAuthenticator =
+        AuthAuthenticator(tokenManager)
+
+    @Provides
+    @Singleton
+    fun provideRetrofitBuilder(): Retrofit.Builder =
+        Retrofit.Builder()
+            .baseUrl(  "http://206.189.137.65")
+            .addConverterFactory(GsonConverterFactory.create())
+
+    @Provides
+    @Singleton
+    fun provideAuthAPIService(retrofit: Retrofit.Builder): UserDataSource =
+        retrofit
+            .build()
+            .create(UserDataSource::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMainAPIService(okHttpClient: OkHttpClient, retrofit: Retrofit.Builder): UserDataSource =
+        retrofit
+            .client(okHttpClient)
+            .build()
+            .create(UserDataSource::class.java)
+
+*/
+
 
 }

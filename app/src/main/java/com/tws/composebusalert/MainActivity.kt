@@ -54,11 +54,9 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
     val params = PictureInPictureParams.Builder()
         .setAspectRatio(rational)
         .build()
-
-
-
     private val driverLoginViewModel by viewModels<DriverLoginViewModel>()
-//    private val driverLoginViewModel=DriverLoginViewModel(context = this)
+
+    //    private val driverLoginViewModel=DriverLoginViewModel(context = this)
     lateinit var storeData: StoreData
     var phNo = ""
     val Context.dataStore by preferencesDataStore(name = "my_data_store")
@@ -66,6 +64,10 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
      var locationRequired = false
     var locationCallback: LocationCallback? = null
     var fusedLocationClient: FusedLocationProviderClient? = null
+
+
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +75,7 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
 //        driverLoginViewModel.endService(this)
 //        driverLoginViewModel.getStudentList(this)
 //        driverLoginViewModel.justForToken(this)
+
         driverLoginViewModel.fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this@MainActivity)
         storeData = StoreData(this)
@@ -110,14 +113,14 @@ class MainActivity : ComponentActivity(), OnMapReadyCallback {
                         }
 //                        Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show()
                     }else{
-                        MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
-//                        Navigation(
-//                            flavor = BuildConfig.FLAVOR,
-//                            startDestination = Routes.DriverDashboard.name,
-//                            driverLoginViewModel = driverLoginViewModel,
-//                            lifecycleOwner = this,
-//                            context =  this
-//                        )
+//                        MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
+                        Navigation(
+                            flavor = BuildConfig.FLAVOR,
+                            startDestination = Routes.PassengerList.name,
+                            driverLoginViewModel = driverLoginViewModel,
+                            lifecycleOwner = this,
+                            context =  this
+                        )
                         /*if (check == "") {
                             Log.e("Main phno", phNo)
                             MyScreen(driverLoginViewModel, this,this,BuildConfig.FLAVOR)
